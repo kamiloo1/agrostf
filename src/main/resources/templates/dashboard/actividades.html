@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Actividades</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      /* Paleta de colores unificada AgroSoft */
+      --verde-oscuro: #0d4f3d;
+      --verde-med: #1a7a5e;
+      --verde-acento: #2d8659;
+      --verde-claro: #e8f5f0;
+      --verde-suave: #d4edda;
+      --gris-fondo: #f5f7fa;
+      --blanco: #ffffff;
+      --texto: #1a1a1a;
+      --texto-suave: #495057;
+      --sombra: rgba(13, 79, 61, 0.15);
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      background: var(--gris-fondo);
+      color: var(--texto);
+    }
+    aside {
+      width: 250px;
+      background: var(--verde-oscuro);
+      color: white;
+      height: 100vh;
+      padding: 25px;
+      position: fixed;
+    }
+    aside h2 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    aside a {
+      display: block;
+      color: #d9ead3;
+      text-decoration: none;
+      margin: 12px 0;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    aside a:hover {
+      background: #4a7c59;
+      color: #fff;
+    }
+
+    main {
+      flex: 1;
+      padding: 30px;
+      margin-left: 250px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: var(--verde-oscuro);
+    }
+
+    .form-section {
+      background: #f1fdf2;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+    }
+
+    .form-section h3 {
+      margin-top: 0;
+      color: var(--verde-oscuro);
+    }
+
+    input, select, textarea {
+      padding: 10px;
+      margin: 8px;
+      width: calc(25% - 16px);
+      border: 1px solid #a8d5ba;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      width: calc(50% - 16px);
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .form-section button {
+      padding: 10px 20px;
+      background: var(--verde-acento);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .form-section button:hover {
+      background: #388e3c;
+    }
+
+    table {
+      width: 100%;
+      background: white;
+      border-collapse: collapse;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px;
+      border-bottom: 1px solid #e0f0e9;
+      text-align: center;
+    }
+
+    th {
+      background: var(--verde-oscuro);
+      color: white;
+    }
+
+    tr:hover {
+      background: #f1fdf2;
+    }
+
+    .actions button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .edit-btn { background: #3b82f6; color: white; }
+    .delete-btn { background: #ef4444; color: white; }
+
+    .edit-btn:hover { background: #2563eb; }
+    .delete-btn:hover { background: #dc2626; }
+
+    .estado-pendiente { color: #f59e0b; font-weight: bold; }
+    .estado-completada { color: #10b981; font-weight: bold; }
+  </style>
+
+  <script>
+    function mostrarFormularioEditar(id, cultivoId, tipo, desc, fecha, trabajador, estado) {
+      document.getElementById('form-editar').style.display = 'block';
+      document.getElementById('edit-id').value = id;
+      document.getElementById('edit-cultivo').value = cultivoId || '';
+      document.getElementById('edit-tipo').value = tipo || '';
+      document.getElementById('edit-desc').value = desc || '';
+      document.getElementById('edit-fecha').value = fecha || '';
+      document.getElementById('edit-trabajador').value = trabajador || '';
+      document.getElementById('edit-estado').value = estado || 'Pendiente';
+    }
+
+    function eliminarActividad(id, fila) {
+      if (confirm('¿Eliminar esta actividad?')) {
+        fetch('/trabajador/actividades/eliminar/' + id, { method: 'DELETE' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'ok') fila.remove();
+            else alert('Error al eliminar');
+          });
+      }
+    }
+  </script>
+</head>
+<body>
+
+<aside>
+  <h2>📋 Actividades</h2>
+  <p>👤 Trabajador</p>
+  <hr>
+  <a th:href="@{/dashboard/trabajador}">🏠 Panel Principal</a>
+  <a th:href="@{/trabajador/actividades}">📋 Actividades</a>
+  <a th:href="@{/admin/cultivos}">🌾 Cultivos</a>
+  <a th:href="@{/logout}">🔒 Cerrar sesión</a>
+</aside>
+
+<main>
+  <h1>Gestión de Actividades</h1>
+
+  <div class="form-section">
+    <h3>Registrar nueva actividad</h3>
+    <form method="post" th:action="@{/trabajador/actividades/guardar}">
+      <select name="idCultivo" required>
+        <option value="">-- Seleccione Cultivo --</option>
+        <option th:each="c : ${cultivos}" th:value="${c.idCultivo}" th:text="${c.nombre}"></option>
+      </select>
+      <input type="text" name="tipoActividad" placeholder="Tipo de actividad" required>
+      <input type="date" name="fechaActividad" required>
+      <input type="text" name="trabajadorResponsable" placeholder="Trabajador responsable">
+      <br>
+      <textarea name="descripcion" placeholder="Descripción de la actividad"></textarea>
+      <select name="estado">
+        <option value="Pendiente">Pendiente</option>
+        <option value="En proceso">En proceso</option>
+        <option value="Completada">Completada</option>
+      </select>
+      <br>
+      <button type="submit">Registrar</button>
+    </form>
+  </div>
+
+  <div id="form-editar" class="form-section" style="display:none;">
+    <h3>Editar actividad</h3>
+    <form method="post" th:action="@{/trabajador/actividades/actualizar}">
+      <input type="hidden" name="idActividad" id="edit-id">
+      <select name="idCultivo" id="edit-cultivo" required>
+        <option th:each="c : ${cultivos}" th:value="${c.idCultivo}" th:text="${c.nombre}"></option>
+      </select>
+      <input type="text" name="tipoActividad" id="edit-tipo" required>
+      <input type="date" name="fechaActividad" id="edit-fecha" required>
+      <input type="text" name="trabajadorResponsable" id="edit-trabajador">
+      <br>
+      <textarea name="descripcion" id="edit-desc" placeholder="Descripción"></textarea>
+      <select name="estado" id="edit-estado">
+        <option value="Pendiente">Pendiente</option>
+        <option value="En proceso">En proceso</option>
+        <option value="Completada">Completada</option>
+      </select>
+      <br>
+      <button type="submit">Actualizar</button>
+      <button type="button" onclick="document.getElementById('form-editar').style.display='none'">Cancelar</button>
+    </form>
+  </div>
+
+  <table>
+    <tr>
+      <th>ID</th><th>Cultivo</th><th>Tipo</th><th>Descripción</th><th>Fecha</th><th>Trabajador</th><th>Estado</th><th>Acciones</th>
+    </tr>
+    <tr th:each="a : ${actividades}">
+      <td th:text="${a.idActividad}"></td>
+      <td th:text="${a.cultivo?.nombre}"></td>
+      <td th:text="${a.tipoActividad}"></td>
+      <td th:text="${a.descripcion}"></td>
+      <td th:text="${a.fechaActividad}"></td>
+      <td th:text="${a.trabajadorResponsable}"></td>
+      <td>
+        <span th:classappend="${a.estado == 'Pendiente'} ? 'estado-pendiente' : 'estado-completada'"
+              th:text="${a.estado}"></span>
+      </td>
+      <td class="actions">
+        <button class="edit-btn"
+                th:onclick="'mostrarFormularioEditar(' + ${a.idActividad} + ', ' + (${a.cultivo?.idCultivo} ?: 0) + ', \'' + (${a.tipoActividad} ?: '') + '\', \'' + (${a.descripcion} ?: '') + '\', \'' + (${a.fechaActividad} ?: '') + '\', \'' + (${a.trabajadorResponsable} ?: '') + '\', \'' + (${a.estado} ?: 'Pendiente') + '\')'">
+          Editar
+        </button>
+        <button class="delete-btn" th:onclick="'eliminarActividad(' + ${a.idActividad} + ', this.closest(\\'tr\\'))'">
+          Eliminar
+        </button>
+      </td>
+    </tr>
+  </table>
+</main>
+</body>
+</html>

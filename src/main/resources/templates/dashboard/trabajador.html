@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Trabajador - AgroSoft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      /* Paleta de colores unificada AgroSoft */
+      --verde-oscuro: #0d4f3d;
+      --verde-med: #1a7a5e;
+      --verde-acento: #2d8659;
+      --verde-claro: #e8f5f0;
+      --verde-suave: #d4edda;
+      --gris-fondo: #f5f7fa;
+      --blanco: #ffffff;
+      --texto: #1a1a1a;
+      --texto-suave: #495057;
+      --sombra: rgba(13, 79, 61, 0.15);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--verde-oscuro) 0%, var(--verde-med) 100%);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: linear-gradient(180deg, var(--verde-oscuro) 0%, #0a3d2d 100%);
+      color: white;
+      padding: 30px 20px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: 4px 0 20px var(--sombra);
+      z-index: 1000;
+    }
+
+    .sidebar-header {
+      text-align: center;
+      padding-bottom: 30px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 30px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--verde-claro), #ffffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-header .role-badge {
+      display: inline-block;
+      padding: 6px 15px;
+      background: rgba(232, 245, 240, 0.2);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--verde-claro);
+      border: 1px solid rgba(232, 245, 240, 0.3);
+    }
+
+    .nav-menu {
+      list-style: none;
+    }
+
+    .nav-menu li {
+      margin-bottom: 8px;
+    }
+
+    .nav-menu a {
+      display: flex;
+      align-items: center;
+      padding: 14px 18px;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .nav-menu a i {
+      margin-right: 12px;
+      font-size: 20px;
+      width: 24px;
+    }
+
+    .nav-menu a:hover,
+    .nav-menu a.active {
+      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      color: white;
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(26, 122, 94, 0.3);
+    }
+
+    .nav-menu .logout {
+      margin-top: 30px;
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .nav-menu .logout:hover {
+      background: rgba(255, 107, 107, 0.2);
+      transform: translateX(0);
+    }
+
+    .main-content {
+      margin-left: 280px;
+      flex: 1;
+      padding: 40px;
+      min-height: 100vh;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-header h2 {
+      font-size: 36px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .page-header p {
+      color: rgba(255,255,255,0.9);
+      font-size: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--verde-med), var(--verde-acento));
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+    }
+
+    .stat-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .stat-card-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: white;
+    }
+
+    .stat-card-icon.cultivos { background: linear-gradient(135deg, var(--verde-med), var(--verde-acento)); }
+    .stat-card-icon.pendientes { background: linear-gradient(135deg, #ffc107, #ff9800); }
+    .stat-card-icon.completadas { background: linear-gradient(135deg, var(--verde-acento), #45b87a); }
+
+    .stat-card-value {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--verde-oscuro);
+      margin-bottom: 5px;
+    }
+
+    .stat-card-label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .cultivos-list {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      margin-bottom: 30px;
+    }
+
+    .cultivos-list h3 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--verde-oscuro);
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+    }
+
+    .cultivos-list h3 i {
+      margin-right: 10px;
+      color: var(--verde-acento);
+    }
+
+    .cultivo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .cultivo-item:hover {
+      background: #e9ecef;
+      transform: translateX(5px);
+    }
+
+    .cultivo-info h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--verde-oscuro);
+      margin-bottom: 5px;
+    }
+
+    .cultivo-info p {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .cultivo-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-active {
+      background: #d3f9d8;
+      color: #2b8a3e;
+    }
+
+    .quick-actions {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+
+    .quick-actions h3 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--verde-oscuro);
+      margin-bottom: 25px;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .action-btn {
+      padding: 18px 24px;
+      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .action-btn i {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px var(--sombra);
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>🌾 AgroSoft</h1>
+    <span class="role-badge">Trabajador</span>
+  </div>
+  <ul class="nav-menu">
+    <li><a href="#" class="active"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+    <li><a th:href="@{/trabajador/actividades}"><i class="ri-task-line"></i> Actividades</a></li>
+    <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
+    <li><a href="#"><i class="ri-calendar-line"></i> Calendario</a></li>
+    <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+  </ul>
+</aside>
+
+<div class="main-content">
+  <div class="page-header">
+    <h2>Panel de Trabajador</h2>
+    <p>Gestión de cultivos y actividades agrícolas</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <div>
+          <div class="stat-card-value" th:text="${cultivos.size()}">0</div>
+          <div class="stat-card-label">Cultivos Asignados</div>
+        </div>
+        <div class="stat-card-icon cultivos">
+          <i class="ri-leaf-line"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <div>
+          <div class="stat-card-value" th:text="${actividadesPendientes}">0</div>
+          <div class="stat-card-label">Actividades Pendientes</div>
+        </div>
+        <div class="stat-card-icon pendientes">
+          <i class="ri-time-line"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <div>
+          <div class="stat-card-value" th:text="${actividadesCompletadas}">0</div>
+          <div class="stat-card-label">Actividades Completadas</div>
+        </div>
+        <div class="stat-card-icon completadas">
+          <i class="ri-checkbox-circle-line"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cultivos-list">
+    <h3><i class="ri-leaf-line"></i> Mis Cultivos</h3>
+    <div th:each="cultivo : ${cultivos}" class="cultivo-item">
+      <div class="cultivo-info">
+        <h4 th:text="${cultivo.nombre}">Cultivo</h4>
+        <p th:text="${cultivo.tipo} + ' - Área: ' + ${cultivo.area} + ' m²'">Tipo - Área</p>
+      </div>
+      <span class="cultivo-badge badge-active" th:text="${cultivo.estado ?: 'Activo'}">Activo</span>
+    </div>
+    <p th:if="${cultivos == null or cultivos.isEmpty()}" style="text-align: center; color: #666; padding: 40px;">
+      No tienes cultivos asignados
+    </p>
+  </div>
+
+  <div class="quick-actions">
+    <h3>Acciones Rápidas</h3>
+    <div class="actions-grid">
+      <a th:href="@{/trabajador/actividades}" class="action-btn">
+        <i class="ri-add-circle-line"></i> Nueva Actividad
+      </a>
+      <a th:href="@{/admin/cultivos}" class="action-btn">
+        <i class="ri-eye-line"></i> Ver Cultivos
+      </a>
+      <a href="#" class="action-btn">
+        <i class="ri-calendar-line"></i> Ver Calendario
+      </a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

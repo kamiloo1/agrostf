@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Paleta de colores unificada AgroSoft */
+            --verde-oscuro: #0d4f3d;
+            --verde-med: #1a7a5e;
+            --verde-acento: #2d8659;
+            --verde-claro: #e8f5f0;
+            --verde-suave: #d4edda;
+            --gris-fondo: #f5f7fa;
+            --gris-borde: #e9ecef;
+            --blanco: #ffffff;
+            --texto: #1a1a1a;
+            --texto-suave: #495057;
+            --sombra: rgba(13, 79, 61, 0.15);
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0;
+            padding: 20px;
+            background: var(--gris-fondo);
+            color: var(--texto);
+        }
+        
+        h1 {
+            color: var(--verde-oscuro);
+            margin-bottom: 30px;
+        }
+        
+        h3 { 
+            margin-top: 30px;
+            color: var(--verde-med);
+        }
+        
+        .form-user { 
+            margin-bottom: 25px; 
+            padding: 20px; 
+            background: var(--blanco);
+            border: 1px solid var(--gris-borde); 
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--sombra);
+        }
+        
+        .form-user input, .form-user select { 
+            margin: 8px 0; 
+            padding: 10px; 
+            width: 100%;
+            border: 1px solid var(--gris-borde);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .form-user input:focus, .form-user select:focus {
+            outline: none;
+            border-color: var(--verde-acento);
+            box-shadow: 0 0 0 3px rgba(45, 134, 89, 0.1);
+        }
+        
+        .form-user button { 
+            margin-top: 10px; 
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .form-user button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--sombra);
+        }
+        
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            margin-top: 20px;
+            background: var(--blanco);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px var(--sombra);
+        }
+        
+        th { 
+            background: linear-gradient(135deg, var(--verde-oscuro), var(--verde-med));
+            color: white;
+            padding: 14px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        td { 
+            border-bottom: 1px solid var(--gris-borde); 
+            padding: 12px; 
+            text-align: center;
+        }
+        
+        tr:hover {
+            background: var(--verde-claro);
+        }
+        
+        .actions button { 
+            margin: 0 4px;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+        
+        .actions button:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn-editar {
+            background: var(--verde-med);
+            color: white;
+        }
+        
+        .btn-eliminar {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-eliminar:hover {
+            background: #c82333;
+        }
+        
+        .btn-editar:hover {
+            background: var(--verde-oscuro);
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    function mostrarFormularioEditarDesdeFila(btn) {
+        const fila = btn.closest('tr');
+        const id = fila.dataset.id;
+        const nombre = fila.dataset.nombre;
+        const email = fila.dataset.email;
+        const rol = fila.dataset.rol;
+
+        document.getElementById('form-editar').style.display = 'block';
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-nombre').value = nombre;
+        document.getElementById('edit-email').value = email;
+        document.getElementById('edit-rol').value = rol;
+    }
+
+    function eliminarUsuarioDesdeFila(btn) {
+        const fila = btn.closest('tr');
+        const id = fila.dataset.id;
+
+        if (confirm('¿Eliminar este usuario?')) {
+            fetch('/admin/usuarios/eliminar/' + id, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    fila.remove();
+                } else {
+                    alert('Error al eliminar el usuario.');
+                }
+            });
+        }
+    }
+</script>
+
+<!-- FORMULARIO CREAR USUARIO -->
+<div class="form-user">
+    <h3>Crear Usuario</h3>
+    <form method="post" th:action="@{/admin/usuarios/guardar}">
+        <input type="text" name="nombre" placeholder="Nombre" required>
+        <input type="email" name="email" placeholder="Correo" required>
+        <input type="password" name="contrasena" placeholder="Contraseña" required>
+        <select name="rol" required>
+            <option value="">-- Seleccione Rol --</option>
+            <option value="administrador">Administrador</option>
+            <option value="veterinario">Veterinario</option>
+            <option value="trabajador">Trabajador</option>
+        </select>
+        <button type="submit">Crear Usuario</button>
+    </form>
+</div>
+
+<!-- FORMULARIO EDITAR USUARIO -->
+<div id="form-editar" class="form-user" style="display: none;">
+    <h3>Editar Usuario</h3>
+    <form method="post" th:action="@{/admin/usuarios/actualizar}">
+        <input type="hidden" name="idUsuario" id="edit-id">
+        <input type="text" name="nombre" id="edit-nombre" required>
+        <input type="email" name="email" id="edit-email" required>
+        <select name="rol" id="edit-rol" required>
+            <option value="administrador">Administrador</option>
+            <option value="veterinario">Veterinario</option>
+            <option value="trabajador">Trabajador</option>
+        </select>
+        <button type="submit">Actualizar</button>
+        <button type="button" onclick="document.getElementById('form-editar').style.display='none'">Cancelar</button>
+    </form>
+</div>
+
+<!-- TABLA USUARIOS -->
+<h3>Lista de Usuarios</h3>
+<table>
+  <tr>
+    <th>#</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th>
+  <tr th:each="u, iStat : ${usuariosLista}"
+    th:attr="data-id=${u.idUsuario}, 
+             data-nombre=${#strings.escapeXml(u.nombre)}, 
+             data-email=${#strings.escapeXml(u.email)}, 
+             data-rol=${#strings.escapeXml(u.rol)}">
+  <td th:text="${iStat.index + 1}"></td>
+  <td th:text="${u.nombre}"></td>
+  <td th:text="${u.email}"></td>
+  <td th:text="${u.rol}"></td>
+  <td class="actions">
+    <button class="edit-btn" onclick="mostrarFormularioEditarDesdeFila(this)">Editar</button>
+    <button class="delete-btn" onclick="eliminarUsuarioDesdeFila(this)">Eliminar</button>
+  </td>
+</tr>
+</table>
+
+
+<!-- BOTÓN EXPORTAR A EXCEL -->
+<div style="margin-top:15px;">
+    <a th:href="@{/admin/usuarios/exportar}" class="btn btn-success">
+        Exportar a Excel
+    </a>
+</div>
+
+</body>
+</html>

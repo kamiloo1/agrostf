@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Usuarios - AgroSoft</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Paleta de colores unificada AgroSoft */
+            --verde-oscuro: #0d4f3d;
+            --verde-med: #1a7a5e;
+            --verde-acento: #2d8659;
+            --verde-claro: #e8f5f0;
+            --verde-suave: #d4edda;
+            --gris-fondo: #f5f7fa;
+            --gris-borde: #e9ecef;
+            --blanco: #ffffff;
+            --texto: #1a1a1a;
+            --texto-suave: #495057;
+            --sombra: rgba(13, 79, 61, 0.15);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--gris-fondo);
+            color: var(--texto);
+        }
+        header {
+            background: var(--verde-med);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        .container {
+            padding: 25px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .form-user {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px var(--sombra);
+        }
+        .form-user h3 {
+            margin-top: 0;
+            color: var(--verde-med);
+        }
+        .form-user input, .form-user select {
+            margin: 8px 0;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid var(--gris-borde);
+            border-radius: 8px;
+        }
+        .form-user button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: var(--verde-med);
+            color: white;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .form-user button:hover { background: var(--verde-oscuro); }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 15px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px var(--sombra);
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--gris-borde);
+        }
+        th {
+            background: var(--verde-med);
+            color: white;
+        }
+        .actions button {
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            margin: 0 3px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .edit-btn { background: var(--verde-acento); color: white; }
+        .edit-btn:hover { background: var(--verde-med); }
+        .delete-btn { background: #dc3545; color: white; }
+        .delete-btn:hover { background: #c82333; }
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-excel { background: var(--verde-med); }
+        .btn-excel:hover { background: var(--verde-oscuro); }
+        .btn-back { background: var(--texto-suave); }
+        .btn-back:hover { background: var(--texto); }
+    </style>
+</head>
+<body>
+
+<header>Gestión de Usuarios</header>
+
+<div class="container">
+
+    <!-- FORMULARIO CREAR USUARIO -->
+    <div class="form-user">
+        <h3>Crear Usuario</h3>
+        <form method="post" th:action="@{/admin/usuarios/guardar}">
+            <input type="text" name="nombre" placeholder="Nombre" required>
+            <input type="email" name="email" placeholder="Correo" required>
+            <input type="password" name="contrasena" placeholder="Contraseña" required>
+            <select name="rol" required>
+                <option value="">-- Seleccione Rol --</option>
+                <option value="administrador">Administrador</option>
+                <option value="veterinario">Veterinario</option>
+                <option value="trabajador">Trabajador</option>
+            </select>
+            <button type="submit"><i class="ri-add-circle-line"></i> Crear Usuario</button>
+        </form>
+    </div>
+
+    <!-- FORMULARIO EDITAR USUARIO -->
+    <div id="form-editar" class="form-user" style="display: none;">
+        <h3>Editar Usuario</h3>
+        <form method="post" th:action="@{/admin/usuarios/actualizar}">
+            <input type="hidden" name="idUsuario" id="edit-id">
+            <input type="text" name="nombre" id="edit-nombre" required>
+            <input type="email" name="email" id="edit-email" required>
+            <select name="rol" id="edit-rol" required>
+                <option value="administrador">Administrador</option>
+                <option value="veterinario">Veterinario</option>
+                <option value="trabajador">Trabajador</option>
+            </select>
+            <button type="submit"><i class="ri-save-3-line"></i> Actualizar</button>
+            <button type="button" onclick="document.getElementById('form-editar').style.display='none'"><i class="ri-close-circle-line"></i> Cancelar</button>
+        </form>
+    </div>
+
+    <!-- TABLA USUARIOS -->
+    <h3>Lista de Usuarios</h3>
+    <table>
+        <tr>
+            <th>#</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th>
+        </tr>
+        <tr th:each="u, iStat : ${usuariosLista}">
+            <td th:text="${iStat.index + 1}"></td>
+            <td th:text="${u.nombre}"></td>
+            <td th:text="${u.email}"></td>
+            <td th:text="${u.rol}"></td>
+            <td class="actions">
+                <button class="edit-btn" th:onclick="|mostrarFormularioEditar('${u.idUsuario}', '${u.nombre}', '${u.email}', '${u.rol}')|">
+                    <i class="ri-pencil-line"></i> Editar
+                </button>
+                <button class="delete-btn" th:onclick="|eliminarUsuario('${u.idUsuario}', this.closest('tr'))|">
+                    <i class="ri-delete-bin-line"></i> Eliminar
+                </button>
+            </td>
+        </tr>
+    </table>
+
+    <!-- BOTONES -->
+    <div class="buttons">
+        <a th:href="@{/admin/usuarios/exportarExcel}" class="btn btn-excel">
+            <i class="ri-file-excel-2-line"></i> Exportar a Excel
+        </a>
+        <a th:href="@{/admin/dashboard}" class="btn btn-back">
+            <i class="ri-arrow-go-back-line"></i> Volver al Dashboard
+        </a>
+    </div>
+</div>
+
+<script>
+    function mostrarFormularioEditar(id, nombre, email, rol) {
+        document.getElementById('form-editar').style.display = 'block';
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-nombre').value = nombre;
+        document.getElementById('edit-email').value = email;
+        document.getElementById('edit-rol').value = rol;
+    }
+
+    function eliminarUsuario(id, fila) {
+        if (confirm('¿Eliminar este usuario?')) {
+            fetch('/admin/usuarios/eliminar/' + id, { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    fila.remove();
+                } else {
+                    alert('Error al eliminar el usuario.');
+                }
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

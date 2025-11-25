@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar Sesión - AgroSoft</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      /* Paleta de colores unificada AgroSoft */
+      --verde-oscuro: #0d4f3d;
+      --verde-med: #1a7a5e;
+      --verde-acento: #2d8659;
+      --verde-claro: #e8f5f0;
+      --verde-suave: #d4edda;
+      --gris-fondo: #f5f7fa;
+      --gris-borde: #e9ecef;
+      --texto: #1a1a1a;
+      --texto-suave: #495057;
+      --blanco: #ffffff;
+      --sombra-suave: rgba(13, 79, 61, 0.08);
+      --sombra-media: rgba(13, 79, 61, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: linear-gradient(140deg, var(--gris-fondo) 0%, var(--verde-claro) 45%, #e8f5f0 100%);
+      color: var(--texto);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 20px;
+    }
+
+    .login-wrapper {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 40px;
+      max-width: 980px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 28px;
+      padding: 54px;
+      box-shadow: 0 32px 68px var(--sombra-suave);
+      border: 1px solid var(--sombra-suave);
+    }
+
+    .login-showcase {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      padding-right: 20px;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(13, 79, 61, 0.1);
+      border-radius: 14px;
+      color: var(--verde-med);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 11px;
+      width: fit-content;
+    }
+
+    .login-showcase h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.3;
+      color: var(--verde-oscuro);
+      font-weight: 600;
+    }
+
+    .login-showcase p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--texto-suave);
+      max-width: 420px;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 16px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--verde-suave);
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--texto-suave);
+      border: 1px solid rgba(16, 66, 49, 0.08);
+    }
+
+    .feature-list i {
+      font-size: 18px;
+      color: var(--verde-med);
+      margin-top: 2px;
+    }
+
+    .login-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-card {
+      background: var(--verde-claro);
+      border-radius: 14px;
+      padding: 16px;
+      display: grid;
+      gap: 4px;
+      color: var(--texto);
+      border: 1px solid var(--sombra-suave);
+    }
+
+    .metric-card span.label {
+      font-size: 12px;
+      letter-spacing: 0.45px;
+      text-transform: uppercase;
+      color: var(--verde-med);
+      font-weight: 600;
+    }
+
+    .metric-card strong {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 24px;
+      padding: 36px 34px;
+      box-shadow: 0 26px 58px var(--sombra-media);
+      border: 1px solid var(--sombra-suave);
+      position: relative;
+      display: grid;
+      gap: 24px;
+    }
+
+    .login-card header {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 10px;
+    }
+
+    .login-card header h2 {
+      margin: 0;
+      font-size: 28px;
+      color: var(--verde-oscuro);
+    }
+
+    .login-card header span {
+      font-size: 14px;
+      color: var(--texto-suave);
+    }
+
+    .feedback {
+      position: relative;
+      z-index: 1;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+      animation: slideIn 0.4s ease;
+    }
+
+    .feedback.error {
+      background: rgba(242, 216, 214, 0.6);
+      color: #842029;
+      border: 1px solid rgba(132, 32, 41, 0.2);
+    }
+
+    .feedback.success {
+      background: rgba(223, 240, 216, 0.6);
+      color: #2f6f3c;
+      border: 1px solid rgba(47, 111, 60, 0.2);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    form {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 18px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--texto);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      font-size: 18px;
+      color: var(--texto-suave);
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      padding: 14px 16px 14px 46px;
+      border-radius: 14px;
+      border: 1px solid var(--gris-borde);
+      font-size: 15px;
+      background: var(--blanco);
+      color: var(--texto);
+      transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .input-wrapper input:focus {
+      outline: none;
+      border-color: var(--verde-acento);
+      box-shadow: 0 0 0 4px rgba(45, 134, 89, 0.12);
+    }
+
+    .input-wrapper input:focus + i {
+      color: var(--verde-med);
+      transform: translateX(2px);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      border: none;
+      background: transparent;
+      color: var(--texto-suave);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 50%;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .toggle-password:hover {
+      background: var(--verde-claro);
+      color: var(--verde-acento);
+    }
+
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--texto-suave);
+    }
+
+    .form-options label.remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .form-options a {
+      color: var(--verde-med);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .form-options a:hover {
+      color: var(--verde-oscuro);
+    }
+
+    .primary-button {
+      position: relative;
+      overflow: hidden;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 18px 34px var(--sombra-media);
+    }
+
+    .primary-button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 24px 38px rgba(13, 79, 61, 0.2);
+    }
+
+    .primary-button:hover::after {
+      width: 240px;
+      height: 240px;
+    }
+
+    .primary-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+      box-shadow: none;
+    }
+
+    .secondary-button {
+      border: 1px solid var(--gris-borde);
+      background: var(--blanco);
+      color: var(--verde-med);
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .secondary-button:hover {
+      background: var(--verde-claro);
+      transform: translateY(-1px);
+      border-color: var(--verde-acento);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--texto-suave);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gris-borde);
+    }
+
+    .login-footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--texto-suave);
+    }
+
+    .login-footer a {
+      color: var(--verde-med);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    @media (max-width: 960px) {
+      body {
+        padding: 36px 16px;
+      }
+      .login-wrapper {
+        padding: 40px 32px;
+        gap: 28px;
+      }
+      .login-showcase {
+        padding-right: 0;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .login-wrapper {
+        padding: 28px 24px;
+      }
+      .login-showcase {
+        order: 2;
+        text-align: center;
+        align-items: center;
+      }
+      .login-showcase p {
+        max-width: none;
+      }
+      .feature-list {
+        width: 100%;
+      }
+      .login-metrics {
+        justify-items: center;
+      }
+      .login-card {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="login-showcase">
+    <span class="brand-pill"><i class="ri-seedling-line"></i> AgroSoft</span>
+    <h1>Gestión integral para operaciones agrícolas</h1>
+    <p>Accede a tableros consolidados, reportes rigurosos y herramientas de coordinación diseñadas para equipos que requieren visibilidad y control en cada etapa del ciclo productivo.</p>
+    <ul class="feature-list">
+      <li><i class="ri-checkbox-circle-line"></i> Autenticación segura con auditoría de accesos.</li>
+      <li><i class="ri-checkbox-circle-line"></i> Indicadores clave actualizados en tiempo real.</li>
+      <li><i class="ri-checkbox-circle-line"></i> Flujos de trabajo alineados entre áreas y perfiles.</li>
+    </ul>
+    <div class="login-metrics">
+      <div class="metric-card">
+        <span class="label">Instalaciones</span>
+        <strong>32+</strong>
+        <span>Operaciones productivas respaldadas</span>
+      </div>
+      <div class="metric-card">
+        <span class="label">Actualizaciones</span>
+        <strong>En tiempo real</strong>
+        <span>Decisiones basadas en datos verificados</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <header>
+      <h2>Bienvenido de vuelta</h2>
+      <span>Ingresa tus credenciales para continuar</span>
+    </header>
+
+    <div th:if="${error}" class="feedback error">
+      <i class="ri-error-warning-line"></i>
+      <span th:text="${error}">Credenciales inválidas</span>
+    </div>
+    <div th:if="${param.logout}" class="feedback success">
+      <i class="ri-checkbox-circle-line"></i>
+      <span>Sesión cerrada correctamente, ¡hasta pronto!</span>
+    </div>
+
+    <form method="post" th:action="@{/login/auth}" id="loginForm">
+      <div>
+        <label for="username"><i class="ri-mail-line"></i> Correo electrónico</label>
+        <div class="input-wrapper">
+          <input type="email" id="username" name="username" placeholder="turegistro@agrosoft.com" autocomplete="email" required>
+          <i class="ri-mail-line"></i>
+        </div>
+      </div>
+
+      <div>
+        <label for="password"><i class="ri-lock-2-line"></i> Contraseña</label>
+        <div class="input-wrapper">
+          <input type="password" id="password" name="password" placeholder="Tu contraseña segura" autocomplete="current-password" required>
+          <i class="ri-lock-2-line"></i>
+          <button type="button" class="toggle-password" aria-label="Mostrar u ocultar contraseña">
+            <i class="ri-eye-off-line"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="remember">
+          <input type="checkbox" name="remember-me" value="true">
+          <span>Recordar sesión</span>
+        </label>
+        <a href="#" onclick="alert('Contacta al administrador para restablecer tu acceso.'); return false;">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="primary-button" id="loginButton">
+        <span class="button-label">Ingresar</span>
+        <i class="ri-login-circle-line"></i>
+      </button>
+    </form>
+
+    <div class="divider">o continúa</div>
+
+    <form method="get" th:action="@{/registrarse}">
+      <button type="submit" class="secondary-button">
+        <i class="ri-user-add-line"></i>
+        Crear cuenta nueva
+      </button>
+    </form>
+
+    <div class="login-footer">
+      ¿Necesitas ayuda? <a href="mailto:soporte@agrosoft.com">soporte@agrosoft.com</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const passwordInput = document.getElementById('password');
+  const togglePassword = document.querySelector('.toggle-password');
+  const loginForm = document.getElementById('loginForm');
+  const loginButton = document.getElementById('loginButton');
+  const buttonLabel = loginButton?.querySelector('.button-label');
+
+  if (passwordInput && togglePassword) {
+    togglePassword.addEventListener('click', () => {
+      const isHidden = passwordInput.type === 'password';
+      passwordInput.type = isHidden ? 'text' : 'password';
+      togglePassword.innerHTML = isHidden
+        ? '<i class="ri-eye-line"></i>'
+        : '<i class="ri-eye-off-line"></i>';
+    });
+  }
+
+  if (loginForm && loginButton && buttonLabel) {
+    loginForm.addEventListener('submit', () => {
+      loginButton.disabled = true;
+      buttonLabel.textContent = 'Validando...';
+      loginButton.insertAdjacentHTML('beforeend', '<i class="ri-loader-4-line spin"></i>');
+    });
+  }
+
+  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+  window.addEventListener('resize', () => {
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+  });
+</script>
+
+</body>
+</html>

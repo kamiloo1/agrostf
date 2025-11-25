@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Tratamientos</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      /* Paleta de colores unificada AgroSoft */
+      --verde-oscuro: #0d4f3d;
+      --verde-med: #1a7a5e;
+      --verde-acento: #2d8659;
+      --verde-claro: #e8f5f0;
+      --verde-suave: #d4edda;
+      --gris-fondo: #f5f7fa;
+      --blanco: #ffffff;
+      --texto: #1a1a1a;
+      --texto-suave: #495057;
+      --sombra: rgba(13, 79, 61, 0.15);
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      background: var(--gris-fondo);
+      color: var(--texto);
+    }
+    aside {
+      width: 250px;
+      background: var(--verde-oscuro);
+      color: white;
+      height: 100vh;
+      padding: 25px;
+      position: fixed;
+    }
+    aside h2 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    aside a {
+      display: block;
+      color: #d9ead3;
+      text-decoration: none;
+      margin: 12px 0;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    aside a:hover {
+      background: #4a7c59;
+      color: #fff;
+    }
+
+    main {
+      flex: 1;
+      padding: 30px;
+      margin-left: 250px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: var(--verde-oscuro);
+    }
+
+    .form-section {
+      background: #f1fdf2;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+    }
+
+    .form-section h3 {
+      margin-top: 0;
+      color: var(--verde-oscuro);
+    }
+
+    input, select, textarea {
+      padding: 10px;
+      margin: 8px;
+      width: calc(25% - 16px);
+      border: 1px solid #a8d5ba;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      width: calc(50% - 16px);
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .form-section button {
+      padding: 10px 20px;
+      background: var(--verde-acento);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .form-section button:hover {
+      background: #388e3c;
+    }
+
+    table {
+      width: 100%;
+      background: white;
+      border-collapse: collapse;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px;
+      border-bottom: 1px solid #e0f0e9;
+      text-align: center;
+    }
+
+    th {
+      background: var(--verde-oscuro);
+      color: white;
+    }
+
+    tr:hover {
+      background: #f1fdf2;
+    }
+
+    .actions button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .edit-btn { background: #3b82f6; color: white; }
+    .delete-btn { background: #ef4444; color: white; }
+
+    .edit-btn:hover { background: #2563eb; }
+    .delete-btn:hover { background: #dc2626; }
+  </style>
+
+  <script>
+    function mostrarFormularioEditar(id, ganadoId, tipo, fecha, obs, vet, costo) {
+      document.getElementById('form-editar').style.display = 'block';
+      document.getElementById('edit-id').value = id;
+      document.getElementById('edit-ganado').value = ganadoId || '';
+      document.getElementById('edit-tipo').value = tipo || '';
+      document.getElementById('edit-fecha').value = fecha || '';
+      document.getElementById('edit-obs').value = obs || '';
+      document.getElementById('edit-vet').value = vet || '';
+      document.getElementById('edit-costo').value = costo || '';
+    }
+
+    function eliminarTratamiento(id, fila) {
+      if (confirm('¿Eliminar este tratamiento?')) {
+        fetch('/vet/tratamientos/eliminar/' + id, { method: 'DELETE' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'ok') fila.remove();
+            else alert('Error al eliminar');
+          });
+      }
+    }
+  </script>
+</head>
+<body>
+
+<aside>
+  <h2>💊 Tratamientos</h2>
+  <p>👤 Veterinario</p>
+  <hr>
+  <a th:href="@{/dashboard/veterinario}">🏠 Panel Principal</a>
+  <a th:href="@{/vet/tratamientos}">💊 Tratamientos</a>
+  <a th:href="@{/admin/ganado}">🐄 Ganado</a>
+  <a th:href="@{/logout}">🔒 Cerrar sesión</a>
+</aside>
+
+<main>
+  <h1>Gestión de Tratamientos Veterinarios</h1>
+
+  <div class="form-section">
+    <h3>Registrar nuevo tratamiento</h3>
+    <form method="post" th:action="@{/vet/tratamientos/guardar}">
+      <select name="idGanado" required>
+        <option value="">-- Seleccione Ganado --</option>
+        <option th:each="g : ${ganado}" 
+                th:value="${g.idGanado}" 
+                th:text="${g.tipo + ' - ' + (g.raza ?: 'Sin raza') + ' (ID: ' + g.idGanado + ')'}">
+        </option>
+      </select>
+      <input type="text" name="tipoTratamiento" placeholder="Tipo de tratamiento" required>
+      <input type="date" name="fechaTratamiento" required>
+      <input type="text" name="veterinarioResponsable" placeholder="Veterinario responsable">
+      <br>
+      <textarea name="observaciones" placeholder="Observaciones"></textarea>
+      <input type="number" name="costo" placeholder="Costo" step="0.01" min="0">
+      <br>
+      <button type="submit">Registrar</button>
+    </form>
+  </div>
+
+  <div id="form-editar" class="form-section" style="display:none;">
+    <h3>Editar tratamiento</h3>
+    <form method="post" th:action="@{/vet/tratamientos/actualizar}">
+      <input type="hidden" name="idTratamiento" id="edit-id">
+      <select name="idGanado" id="edit-ganado" required>
+        <option th:each="g : ${ganado}" 
+                th:value="${g.idGanado}" 
+                th:text="${g.tipo + ' - ' + (g.raza ?: 'Sin raza')}">
+        </option>
+      </select>
+      <input type="text" name="tipoTratamiento" id="edit-tipo" required>
+      <input type="date" name="fechaTratamiento" id="edit-fecha" required>
+      <input type="text" name="veterinarioResponsable" id="edit-vet">
+      <br>
+      <textarea name="observaciones" id="edit-obs" placeholder="Observaciones"></textarea>
+      <input type="number" name="costo" id="edit-costo" step="0.01" min="0">
+      <br>
+      <button type="submit">Actualizar</button>
+      <button type="button" onclick="document.getElementById('form-editar').style.display='none'">Cancelar</button>
+    </form>
+  </div>
+
+  <table>
+    <tr>
+      <th>ID</th><th>Ganado</th><th>Tipo</th><th>Fecha</th><th>Veterinario</th><th>Observaciones</th><th>Costo</th><th>Acciones</th>
+    </tr>
+    <tr th:each="t : ${tratamientos}">
+      <td th:text="${t.idTratamiento}"></td>
+      <td th:text="${t.ganado?.tipo + ' (ID: ' + t.ganado?.idGanado + ')'}"></td>
+      <td th:text="${t.tipoTratamiento}"></td>
+      <td th:text="${t.fechaTratamiento}"></td>
+      <td th:text="${t.veterinarioResponsable}"></td>
+      <td th:text="${t.observaciones}"></td>
+      <td th:text="${t.costo != null ? '$' + t.costo : 'N/A'}"></td>
+      <td class="actions">
+        <button class="edit-btn"
+                th:onclick="'mostrarFormularioEditar(' + ${t.idTratamiento} + ', ' + (${t.ganado?.idGanado} ?: 0) + ', \'' + (${t.tipoTratamiento} ?: '') + '\', \'' + (${t.fechaTratamiento} ?: '') + '\', \'' + (${t.observaciones} ?: '') + '\', \'' + (${t.veterinarioResponsable} ?: '') + '\', ' + (${t.costo} ?: 0) + ')'">
+          Editar
+        </button>
+        <button class="delete-btn" th:onclick="'eliminarTratamiento(' + ${t.idTratamiento} + ', this.closest(\\'tr\\'))'">
+          Eliminar
+        </button>
+      </td>
+    </tr>
+  </table>
+</main>
+</body>
+</html>

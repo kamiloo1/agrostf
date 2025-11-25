@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - AgroSoft</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Paleta de colores unificada AgroSoft */
+            --verde-oscuro: #0d4f3d;
+            --verde-med: #1a7a5e;
+            --verde-acento: #2d8659;
+            --verde-claro: #e8f5f0;
+            --verde-suave: #d4edda;
+            --gris-fondo: #f5f7fa;
+            --gris-borde: #e9ecef;
+            --blanco: #ffffff;
+            --texto: #1a1a1a;
+            --texto-suave: #495057;
+            --sombra: rgba(13, 79, 61, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--gris-fondo) 0%, var(--verde-claro) 50%, #e8f5f0 100%);
+            background-image: url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'), linear-gradient(135deg, var(--gris-fondo) 0%, var(--verde-claro) 50%, #e8f5f0 100%);
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(245, 247, 250, 0.85);
+            z-index: 0;
+        }
+
+        /* Decoraciones de fondo animadas */
+        .bg-decoration {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(13, 79, 61, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .bg-decoration:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .bg-decoration:nth-child(2) {
+            bottom: 10%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .bg-decoration:nth-child(3) {
+            top: 50%;
+            right: 5%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* Manejo de errores en imágenes */
+        .icon-container img,
+        .field-icon-image {
+            background: linear-gradient(135deg, var(--verde-claro), var(--verde-suave));
+        }
+
+        .register-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 450px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .register-box {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%);
+            padding: 50px 40px;
+            border-radius: 25px;
+            box-shadow: 0 15px 50px var(--sombra);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--gris-borde);
+        }
+
+        .register-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--verde-claro), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .logo-section {
+            margin-bottom: 30px;
+        }
+
+        .logo-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 2.5rem;
+            color: var(--verde-med);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px var(--sombra);
+            animation: scaleIn 0.6s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .logo-section p {
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+
+        .icon-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px var(--sombra);
+            animation: pulse 2s ease-in-out infinite;
+            overflow: hidden;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .icon-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 20px var(--sombra); }
+            50% { transform: scale(1.05); box-shadow: 0 12px 30px rgba(13, 79, 61, 0.25); }
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            animation: slideDown 0.5s ease-out;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            color: #c62828;
+            border-color: #ef5350;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            color: var(--verde-med);
+            border-color: var(--verde-acento);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--verde-med);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group label .icon {
+            font-size: 1.1rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--verde-acento);
+            font-size: 1.2rem;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid #c8e6c9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            color: #333;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--verde-acento);
+            box-shadow: 0 0 0 4px rgba(45, 134, 89, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .input-wrapper input:focus + .icon,
+        .input-wrapper input:not(:placeholder-shown) + .icon {
+            color: var(--verde-med);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #999;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background: #ef5350;
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background: #ff9800;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: var(--verde-acento);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--verde-med) 0%, var(--verde-acento) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px var(--sombra);
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(13, 79, 61, 0.25);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Imágenes pequeñas decorativas en campos */
+        .field-icon-image {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            object-fit: cover;
+            border-radius: 6px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .form-group:hover .field-icon-image {
+            opacity: 1;
+        }
+
+        .info-text {
+            margin-top: 25px;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--verde-claro) 0%, var(--verde-suave) 100%);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: var(--verde-med);
+            border-left: 4px solid var(--verde-acento);
+            line-height: 1.6;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-text::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80') no-repeat center;
+            background-size: contain;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .info-text .icon {
+            margin-right: 5px;
+            font-size: 1rem;
+        }
+
+        .login-link {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .login-link a {
+            color: var(--verde-med);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .login-link a:hover {
+            color: var(--verde-acento);
+            text-decoration: underline;
+        }
+
+        .link-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--verde-med);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .link-back:hover {
+            color: var(--verde-acento);
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background-image: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 50%, #c8e6c9 100%);
+            }
+
+            .register-box {
+                padding: 40px 30px;
+            }
+
+            .logo-section h2 {
+                font-size: 2rem;
+            }
+
+            .register-container {
+                max-width: 100%;
+            }
+
+            .link-back {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-bottom: 20px;
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration"></div>
+    <div class="bg-decoration"></div>
+    <div class="bg-decoration"></div>
+
+    <a href="/" class="link-back">
+        <span>←</span> Volver al inicio
+    </a>
+
+    <div class="register-container">
+        <div class="register-box">
+            <div class="logo-section">
+                <div class="icon-container">
+                    <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="AgroSoft" />
+                </div>
+                <h2>Crear Cuenta</h2>
+                <p>Únete a AgroSoft y gestiona tu campo</p>
+            </div>
+            
+            <form method="post" th:action="@{/registro/guardar}" id="registroForm">
+                <div class="form-group">
+                    <label>
+                        <span class="icon"></span>
+                        Correo electrónico
+                    </label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="email"
+                            placeholder="tu@correo.com" 
+                            required 
+                            pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" 
+                            title="Ingrese un correo electrónico válido"
+                            autocomplete="email">
+                        <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="" class="field-icon-image">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="icon"></span>
+                        Número de documento
+                    </label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            name="numeroDocumento" 
+                            id="numeroDocumento"
+                            placeholder="1234567890" 
+                            required 
+                            pattern="[0-9]+" 
+                            title="Solo números, sin espacios ni caracteres especiales"
+                            maxlength="20"
+                            autocomplete="off">
+                        <img src="https://images.unsplash.com/photo-1573164713714-d95e436e8e8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="" class="field-icon-image">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="icon"></span>
+                        Contraseña
+                    </label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            name="contrasena" 
+                            id="password"
+                            placeholder="Mínimo 6 caracteres" 
+                            required 
+                            minlength="6" 
+                            title="La contraseña debe tener al menos 6 caracteres"
+                            autocomplete="new-password">
+                        <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="" class="field-icon-image">
+                    </div>
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="passwordStrength"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span>Crear Cuenta</span>
+                </button>
+            </form>
+
+            <div class="info-text">
+                <span class="icon">ℹ️</span>
+                <strong>Nota:</strong> El rol será asignado posteriormente por el administrador. 
+                Recibirás notificación cuando tu cuenta esté activa.
+            </div>
+
+            <div class="login-link">
+                ¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Validación de fuerza de contraseña en tiempo real
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.getElementById('passwordStrength');
+
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+
+            if (password.length >= 6) strength++;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            strengthBar.className = 'password-strength-bar';
+            
+            if (password.length === 0) {
+                strengthBar.style.width = '0%';
+            } else if (strength <= 2) {
+                strengthBar.classList.add('weak');
+            } else if (strength <= 3) {
+                strengthBar.classList.add('medium');
+            } else {
+                strengthBar.classList.add('strong');
+            }
+        });
+
+        // Validación del formulario antes de enviar
+        document.getElementById('registroForm').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value;
+            const numeroDocumento = document.getElementById('numeroDocumento').value;
+            const password = document.getElementById('password').value;
+
+            // Validar email
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                e.preventDefault();
+                alert('Por favor ingresa un correo electrónico válido');
+                return false;
+            }
+
+            // Validar número de documento (solo números)
+            if (!/^\d+$/.test(numeroDocumento)) {
+                e.preventDefault();
+                alert('El número de documento solo debe contener números');
+                return false;
+            }
+
+            // Validar contraseña
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('La contraseña debe tener al menos 6 caracteres');
+                return false;
+            }
+
+            // Mostrar loading en el botón
+            const submitBtn = this.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>⏳ Procesando...</span>';
+        });
+
+        // Agregar efecto de focus mejorado
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

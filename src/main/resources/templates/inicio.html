@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agrosoft - Tecnología para el Campo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Paleta de colores unificada AgroSoft */
+      --verde-oscuro: #0d4f3d;
+      --verde-med: #1a7a5e;
+      --verde-acento: #2d8659;
+      --verde-claro: #e8f5f0;
+      --verde-suave: #d4edda;
+      --gris-fondo: #f5f7fa;
+      --gris-borde: #e9ecef;
+      --blanco: #ffffff;
+      --texto: #1a1a1a;
+      --texto-suave: #495057;
+      --sombra: rgba(13, 79, 61, 0.15);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+    body { 
+      background: linear-gradient(135deg, var(--gris-fondo) 0%, var(--verde-claro) 50%, #e8f5f0 100%);
+      color: var(--verde-oscuro); 
+      overflow-x: hidden;
+    }
+    .elegante { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700; }
+    
+    /* Header mejorado */
+    header {
+      background: linear-gradient(135deg, var(--verde-oscuro) 0%, var(--verde-med) 50%, var(--verde-acento) 100%);
+      color: white;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky; 
+      top: 0; 
+      z-index: 1000;
+      box-shadow: 0 4px 20px var(--sombra);
+      backdrop-filter: blur(10px);
+      animation: slideDown 0.6s ease-out;
+    }
+    
+    .logo { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 2.5rem; 
+      font-style: italic; 
+      font-weight: 700; 
+      letter-spacing: 2px;
+      background: linear-gradient(45deg, #ffffff, #e8f5e9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes glow {
+      from { filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+      to { filter: drop-shadow(0 0 15px rgba(255,255,255,0.8)); }
+    }
+    
+    nav a {
+      color: white; 
+      text-decoration: none; 
+      margin: 0 1.5rem;
+      font-weight: 500; 
+      font-size: 1.1rem; 
+      transition: all 0.3s ease; 
+      position: relative;
+      padding: 0.5rem 0;
+    }
+    
+    nav a::before {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 3px;
+      bottom: 0;
+      left: 50%;
+      background: linear-gradient(90deg, #ffff00, #c6ff00);
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+    
+    nav a:hover::before { 
+      width: 100%; 
+    }
+    
+    nav a:hover {
+      transform: translateY(-2px);
+      text-shadow: 0 2px 10px rgba(255,255,255,0.5);
+    }
+    
+    /* Hero mejorado con efectos */
+    .hero {
+      background-image: linear-gradient(rgba(46, 125, 50, 0.5), rgba(66, 165, 245, 0.3)), url("/images/25.jpg");
+      background-size: cover; 
+      background-position: center;
+      background-attachment: fixed;
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      text-align: center;
+      color: white; 
+      padding: 2rem; 
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(13, 79, 61, 0.3) 0%, rgba(45, 134, 89, 0.2) 100%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.8; }
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      animation: fadeInUp 1s ease-out;
+    }
+    
+    .hero h1 { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 4rem; 
+      font-style: italic; 
+      font-weight: 700; 
+      text-shadow: 3px 3px 10px rgba(0,0,0,0.7), 0 0 30px rgba(76, 175, 80, 0.5); 
+      margin-bottom: 1.5rem;
+      animation: scaleIn 1.2s ease-out;
+    }
+    
+    .hero .hero-text { 
+      background: linear-gradient(135deg, rgba(13, 79, 61, 0.85) 0%, rgba(26, 122, 94, 0.85) 100%);
+      backdrop-filter: blur(10px);
+      padding: 2rem 3rem; 
+      border-radius: 20px; 
+      max-width: 1000px; 
+      font-size: 1.4rem; 
+      line-height: 1.8; 
+      margin-top: 1rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      border: 2px solid rgba(255,255,255,0.2);
+      animation: fadeIn 1.5s ease-out 0.3s both;
+    }
+    
+    /* Estadísticas destacadas */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin-top: 3rem;
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      padding: 1.5rem 2rem;
+      border-radius: 15px;
+      border: 2px solid rgba(255,255,255,0.3);
+      min-width: 150px;
+      transition: all 0.3s ease;
+      animation: fadeInUp 1s ease-out 0.6s both;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-10px) scale(1.05);
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #c6ff00;
+      text-shadow: 0 0 20px rgba(198, 255, 0, 0.8);
+      display: block;
+    }
+    
+    .stat-number[data-target="5000"]::after {
+      content: '+';
+    }
+    
+    .stat-number[data-target="98"]::after {
+      content: '%';
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      opacity: 0.9;
+    }
+    
+    /* Secciones mejoradas */
+    .section { 
+      padding: 5rem 2rem; 
+      max-width: 1200px; 
+      margin: auto;
+      position: relative;
+    }
+    
+    .section h3 { 
+      text-align: center; 
+      margin-bottom: 3rem; 
+      color: var(--verde-oscuro); 
+      font-size: 2.5rem;
+      position: relative;
+      padding-bottom: 1rem;
+    }
+    
+    .section h3::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--verde-med), var(--verde-acento));
+      border-radius: 2px;
+    }
+    
+    /* Tarjetas mejoradas */
+    .cards { 
+      display: flex; 
+      gap: 2.5rem; 
+      flex-wrap: wrap; 
+      justify-content: center; 
+    }
+    
+    .card { 
+      background: linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%);
+      border-radius: 20px; 
+      box-shadow: 0 8px 25px var(--sombra); 
+      width: 300px; 
+      padding: 2rem; 
+      text-align: center; 
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.1), transparent);
+      transition: left 0.5s;
+    }
+    
+    .card:hover::before {
+      left: 100%;
+    }
+    
+    .card:hover { 
+      transform: translateY(-15px) scale(1.03); 
+      box-shadow: 0 15px 40px rgba(46, 125, 50, 0.4);
+      border-color: var(--verde-acento);
+    }
+    
+    .card img { 
+      width: 100%; 
+      height: 180px; 
+      object-fit: cover; 
+      border-radius: 15px; 
+      margin-bottom: 1.5rem;
+      transition: transform 0.4s ease;
+      filter: brightness(1.1) saturate(1.2);
+    }
+    
+    .card:hover img {
+      transform: scale(1.1) rotate(2deg);
+    }
+    
+    .card h4 { 
+      margin-bottom: 1rem; 
+      font-size: 1.4rem;
+      color: var(--verde-med);
+    }
+    
+    .card p {
+      color: #424242;
+      line-height: 1.6;
+    }
+    
+    /* Badge destacado */
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    /* Testimonios mejorados */
+    .testimonios { 
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      border-radius: 25px; 
+      padding: 3rem; 
+      margin-top: 3rem;
+      box-shadow: 0 10px 30px rgba(46, 125, 50, 0.2);
+      border: 2px solid rgba(76, 175, 80, 0.3);
+    }
+    
+    .testimonio { 
+      margin-bottom: 2rem; 
+      font-style: italic;
+      padding: 1.5rem;
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      border-left: 4px solid #4caf50;
+      transition: all 0.3s ease;
+    }
+    
+    .testimonio:hover {
+      transform: translateX(10px);
+      box-shadow: 0 5px 15px rgba(46, 125, 50, 0.2);
+    }
+    
+    .testimonio strong {
+      color: var(--verde-med);
+      display: block;
+      margin-top: 0.5rem;
+      font-style: normal;
+    }
+    
+    /* Formulario mejorado */
+    .formulario { 
+      background: linear-gradient(135deg, var(--verde-claro) 0%, var(--gris-fondo) 100%);
+      padding: 3rem; 
+      border-radius: 25px; 
+      margin-top: 3rem;
+      box-shadow: 0 10px 30px var(--sombra);
+      border: 2px solid var(--gris-borde);
+    }
+    
+    .formulario input, .formulario textarea { 
+      width: 100%; 
+      padding: 1rem; 
+      margin-bottom: 1.5rem; 
+      border-radius: 12px; 
+      border: 2px solid var(--gris-borde); 
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: white;
+    }
+    
+    .formulario input:focus, .formulario textarea:focus {
+      outline: none;
+      border-color: var(--verde-acento);
+      box-shadow: 0 0 0 3px rgba(45, 134, 89, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    .formulario button { 
+      background: linear-gradient(135deg, var(--verde-med) 0%, var(--verde-acento) 100%);
+      color: white; 
+      padding: 1rem 3rem; 
+      border: none; 
+      border-radius: 30px; 
+      cursor: pointer; 
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+      font-weight: 600;
+      box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .formulario button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .formulario button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .formulario button:hover { 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(46, 125, 50, 0.5);
+    }
+    
+    .formulario button:active {
+      transform: translateY(-1px);
+    }
+    
+    /* Footer mejorado */
+    footer { 
+      background: linear-gradient(135deg, var(--verde-oscuro) 0%, var(--verde-med) 100%);
+      color: white; 
+      text-align: center; 
+      padding: 2rem; 
+      margin-top: 4rem;
+      box-shadow: 0 -5px 20px var(--sombra);
+    }
+    
+    footer p {
+      font-size: 1.1rem;
+    }
+    
+    /* Animaciones */
+    @keyframes fadeIn { 
+      from { opacity: 0; } 
+      to { opacity: 1; } 
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Scroll suave */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Decoración de fondo */
+    .green-accent {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(45, 134, 89, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(120deg); }
+      66% { transform: translate(-20px, 20px) rotate(240deg); }
+    }
+    
+    /* Botón CTA principal */
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      color: var(--verde-oscuro);
+      padding: 1.2rem 3rem;
+      border-radius: 35px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-decoration: none;
+      margin-top: 2rem;
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.5);
+      transition: all 0.3s ease;
+      border: 3px solid rgba(255,255,255,0.3);
+      animation: pulse-glow 2s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cta-button::before {
+      content: '🚀';
+      margin-right: 0.5rem;
+    }
+    
+    .cta-button:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 12px 35px rgba(255, 215, 0, 0.7);
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 8px 25px rgba(255, 215, 0, 0.5); }
+      50% { box-shadow: 0 8px 35px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4); }
+    }
+    
+    /* Botón flotante de WhatsApp */
+    .whatsapp-float {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      bottom: 30px;
+      right: 30px;
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      font-size: 2rem;
+      box-shadow: 0 8px 25px rgba(37, 211, 102, 0.5);
+      z-index: 999;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      animation: whatsapp-pulse 2s ease-in-out infinite;
+    }
+    
+    .whatsapp-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 35px rgba(37, 211, 102, 0.7);
+    }
+    
+    @keyframes whatsapp-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    /* Botón scroll to top */
+    .scroll-to-top {
+      position: fixed;
+      width: 50px;
+      height: 50px;
+      bottom: 100px;
+      right: 30px;
+      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+      z-index: 998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .scroll-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .scroll-to-top:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.6);
+    }
+    
+    /* Sección de características */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    
+    .feature-item {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      box-shadow: 0 5px 15px rgba(46, 125, 50, 0.1);
+    }
+    
+    .feature-item:hover {
+      transform: translateY(-10px);
+      border-color: var(--verde-acento);
+      box-shadow: 0 10px 30px rgba(46, 125, 50, 0.3);
+    }
+    
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+      animation: rotate-icon 3s ease-in-out infinite;
+    }
+    
+    @keyframes rotate-icon {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(10deg) scale(1.1); }
+    }
+    
+    .feature-item h4 {
+      color: var(--verde-med);
+      margin-bottom: 0.5rem;
+      font-size: 1.3rem;
+    }
+    
+    .feature-item p {
+      color: #666;
+      line-height: 1.6;
+    }
+    
+    /* Redes sociales mejoradas */
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      color: white;
+      font-size: 1.5rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    
+    .social-link:hover {
+      background: rgba(255,255,255,0.4);
+      transform: translateY(-5px) scale(1.1);
+      box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+    }
+    
+    .social-link.facebook:hover { background: #1877f2; }
+    .social-link.instagram:hover { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+    
+    /* Sección de beneficios */
+    .benefits-section {
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      border-radius: 25px;
+      padding: 3rem;
+      margin-top: 3rem;
+    }
+    
+    @media (max-width: 768px) {
+      .cards { flex-direction: column; align-items: center; }
+      header { flex-direction: column; align-items: flex-start; }
+      nav { margin-top: 0.5rem; }
+      nav a { display: block; margin: 0.5rem 0; }
+      .hero h1 { font-size: 2.5rem; }
+      .hero .hero-text { font-size: 1.1rem; padding: 1.5rem; }
+      .stats { gap: 1.5rem; }
+      .stat-item { min-width: 120px; padding: 1rem; }
+      .whatsapp-float { bottom: 20px; right: 20px; width: 55px; height: 55px; font-size: 1.8rem; }
+      .scroll-to-top { bottom: 90px; right: 20px; width: 45px; height: 45px; }
+      .features { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Agrosoft</div>
+  <nav>
+    <a href="#" class="elegante">Inicio</a>
+    <a href="#servicios" class="elegante">Servicios</a>
+    <a href="#contacto" class="elegante">Contacto</a>
+    <a th:href="@{/login}" class="elegante">Iniciar Sesión</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="green-accent" style="top: 10%; left: 5%;"></div>
+  <div class="green-accent" style="bottom: 20%; right: 8%; animation-delay: 2s;"></div>
+  <div class="hero-content">
+    <span class="badge">✨ Líder en Tecnología Agrícola</span>
+    <h1>🌱 ¡Bienvenido a Agrosoft!</h1>
+    <div class="hero-text">
+      <p>Tu aliado digital en el campo.<br><br>
+         En Agrosoft entendemos los desafíos diarios del trabajo agrícola. Por eso, hemos creado una plataforma pensada especialmente para agricultores y empresas del sector agropecuario que buscan mejorar su productividad, llevar un mejor control y tomar decisiones con respaldo tecnológico.</p>
+      <p>🚜 Ya sea que trabajes la tierra o dirijas una empresa del agro, aquí encontrarás herramientas que se adaptan a tus necesidades, con soluciones prácticas, seguras y fáciles de usar.</p>
+      <p>Gracias por confiar en nosotros.<br> ¡Juntos cultivamos un futuro más eficiente y sostenible!</p>
+    </div>
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-number" data-target="5000">0</span>
+        <span class="stat-label">Agricultores Activos</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" data-target="98">0</span>
+        <span class="stat-label">Satisfacción</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">24/7</span>
+        <span class="stat-label">Soporte Técnico</span>
+      </div>
+    </div>
+    <a href="#contacto" class="cta-button">Comenzar Ahora</a>
+  </div>
+</div>
+
+<section class="section" id="servicios">
+  <h3 class="elegante">Servicios principales</h3>
+  <div class="cards">
+    <div class="card">
+      <span class="badge" style="font-size: 0.75rem; padding: 0.4rem 1rem; margin-bottom: 0.5rem;">⭐ Más Popular</span>
+      <img src="/images/cultivos.png" alt="Gestión de cultivos" />
+      <h4 class="elegante">Gestión de cultivos</h4>
+      <p>Optimiza siembra, fertilización y cosecha con herramientas digitales.</p>
+    </div>
+    <div class="card">
+      <span class="badge" style="font-size: 0.75rem; padding: 0.4rem 1rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #66bb6a, #81c784);">🐄 Nuevo</span>
+      <img src="/images/ganado.png" alt="Bienestar animal" />
+      <h4 class="elegante">Bienestar animal</h4>
+      <p>Monitorea la salud de tu ganado y organiza tratamientos fácilmente.</p>
+    </div>
+    <div class="card">
+      <span class="badge" style="font-size: 0.75rem; padding: 0.4rem 1rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #81c784, #a5d6a7);">📊 Premium</span>
+      <img src="/images/reportes.png" alt="Datos y análisis" />
+      <h4 class="elegante">Datos y análisis</h4>
+      <p>Recoge y analiza datos del clima, terreno y producción en tiempo real.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section benefits-section">
+  <h3 class="elegante">¿Por qué elegir Agrosoft?</h3>
+  <div class="features">
+    <div class="feature-item">
+      <span class="feature-icon">🌐</span>
+      <h4>Acceso desde cualquier lugar</h4>
+      <p>Accede a tu información desde cualquier dispositivo, en cualquier momento.</p>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon">🔒</span>
+      <h4>Datos seguros</h4>
+      <p>Tu información está protegida con los más altos estándares de seguridad.</p>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon">📱</span>
+      <h4>Fácil de usar</h4>
+      <p>Interfaz intuitiva diseñada para agricultores de todos los niveles tecnológicos.</p>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon">📈</span>
+      <h4>Aumenta tu productividad</h4>
+      <p>Optimiza tus procesos y aumenta significativamente tu rentabilidad.</p>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon">💡</span>
+      <h4>Decisiones inteligentes</h4>
+      <p>Analiza datos en tiempo real para tomar mejores decisiones.</p>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon">🤝</span>
+      <h4>Soporte personalizado</h4>
+      <p>Equipo de expertos disponible para ayudarte cuando lo necesites.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section testimonios">
+  <h3 class="elegante">Testimonios</h3>
+  <p class="testimonio">“Gracias a Agrosoft mejoré mis cultivos y reduje costos en fertilización. ¡Muy recomendado!” — <strong>Juan Pérez</strong></p>
+  <p class="testimonio">“El módulo veterinario me ayuda a controlar la salud de mi ganado sin complicaciones.” — <strong>María Gómez</strong></p>
+</section>
+
+<section class="section formulario" id="contacto">
+  <h3 class="elegante">Contáctanos</h3>
+  <form>
+    <input type="text" placeholder="Nombre completo" required />
+    <input type="email" placeholder="Correo electrónico" required />
+    <textarea placeholder="Escribe tu mensaje aquí..." rows="5" required></textarea>
+    <button type="submit" class="elegante">Enviar mensaje</button>
+  </form>
+</section>
+
+<footer>
+  <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">&copy; 2025 Agrosoft - Tecnología para el Campo</p>
+  <div class="social-links">
+    <a href="#" class="social-link facebook" title="Facebook">📘</a>
+    <a href="#" class="social-link instagram" title="Instagram">📷</a>
+  </div>
+  <p style="opacity: 0.9; margin-top: 1rem;">Síguenos en nuestras redes sociales</p>
+  <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">🌱 Cultivando el futuro con tecnología sostenible</p>
+</footer>
+
+<!-- Botones flotantes -->
+<a href="https://wa.me/1234567890" class="whatsapp-float" target="_blank" title="Contáctanos por WhatsApp">💬</a>
+<button class="scroll-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Volver arriba">↑</button>
+
+<script>
+  // Animación de contador para estadísticas
+  function animateCounter(element) {
+    const target = parseInt(element.getAttribute('data-target'));
+    const duration = 2000;
+    const increment = target / (duration / 16);
+    let current = 0;
+    
+    const updateCounter = () => {
+      current += increment;
+      if (current < target) {
+        element.textContent = Math.floor(current);
+        requestAnimationFrame(updateCounter);
+      } else {
+        element.textContent = target;
+      }
+    };
+    
+    updateCounter();
+  }
+  
+  // Observador para activar contador cuando es visible
+  const observerOptions = {
+    threshold: 0.5,
+    rootMargin: '0px'
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const counter = entry.target.querySelector('.stat-number');
+        if (counter && counter.getAttribute('data-target') && counter.textContent === '0') {
+          animateCounter(counter);
+        }
+      }
+    });
+  }, observerOptions);
+  
+  // Observar elementos de estadísticas
+  document.querySelectorAll('.stat-item').forEach(item => {
+    observer.observe(item);
+  });
+  
+  // Botón scroll to top
+  const scrollToTopBtn = document.querySelector('.scroll-to-top');
+  window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 300) {
+      scrollToTopBtn.classList.add('visible');
+    } else {
+      scrollToTopBtn.classList.remove('visible');
+    }
+  });
+  
+  // Animación suave al hacer scroll a las secciones
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+  
+  // Efecto parallax en el hero
+  window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const hero = document.querySelector('.hero');
+    if (hero) {
+      hero.style.backgroundPositionY = scrolled * 0.5 + 'px';
+    }
+  });
+  
+  // Animación de entrada para las tarjetas
+  const cardObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }, index * 100);
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  document.querySelectorAll('.card').forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = 'all 0.6s ease-out';
+    cardObserver.observe(card);
+  });
+</script>
+
+</body>
+</html>
