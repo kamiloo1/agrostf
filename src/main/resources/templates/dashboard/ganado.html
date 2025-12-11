@@ -347,15 +347,6 @@
       gap: 10px;
     }
 
-    .progress-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 90% -10%, rgba(45, 134, 89, 0.16), transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
     /* Imágenes de fondo decorativas para progress-card con overlay oscuro */
     .progress-card::before {
       content: '';
@@ -370,6 +361,15 @@
       opacity: 0.65;
       z-index: 0;
       pointer-events: none;
+    }
+
+    .progress-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 90% -10%, rgba(45, 134, 89, 0.16), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .progress-card:nth-child(1)::before {
@@ -1929,135 +1929,147 @@
   </section>
 </main>
 <script>
-  const tableBody = document.getElementById('ganadoTableBody');
-  const tableView = document.getElementById('tableView');
-  const cardContainer = document.getElementById('cardView');
-  const searchInput = document.getElementById('searchInput');
-  const filterTipo = document.getElementById('filterTipo');
-  const filterEstado = document.getElementById('filterEstado');
-  const filterActivo = document.getElementById('filterActivo');
-  const filterPeso = document.getElementById('filterPeso');
-  const filterPesoValue = document.getElementById('filterPesoValue');
-  const applyButton = document.getElementById('applyFilters');
-  const clearButton = document.getElementById('clearFilters');
-  const quickFilterButtons = Array.from(document.querySelectorAll('.quick-filters button'));
-  const viewButtons = document.querySelectorAll('[data-view]');
-  const counterElements = {};
-  const highlightActive = document.querySelector('[data-highlight-active]');
-  const highlightWeight = document.querySelector('[data-highlight-weight]');
-  const highlightHealth = document.querySelector('[data-highlight-health]');
-  const progressBars = {
-    healthy: document.querySelector('[data-progress="healthy"]'),
-    observe: document.querySelector('[data-progress="observe"]'),
-    active: document.querySelector('[data-progress="active"]')
-  };
-  const progressLabels = {
-    healthy: document.querySelector('[data-progress-label="healthy"]'),
-    observe: document.querySelector('[data-progress-label="observe"]'),
-    active: document.querySelector('[data-progress-label="active"]')
-  };
-  const funMessageText = document.getElementById('funMessageText');
-  const funMessageButton = document.getElementById('refreshMessage');
-  const funMessages = [
-    stats => `Hoy ${stats.activeCount} animales están activos y listos para brillar.`,
-    stats => `🥛 Peso promedio de ${stats.averageWeight.toFixed(1)} kg. ¡Rutina equilibrada!`,
-    stats => `🌱 ${stats.distinctTypes} tipos diferentes: diversidad que inspira.`,
-    stats => stats.healthyShare >= 75
-      ? `💚 Salud a tope: ${stats.healthyShare.toFixed(0)}% del lote se ve genial.`
-      : `👀 Mantente alerta: ${stats.observationShare.toFixed(0)}% requieren cariño extra.`,
-    stats => stats.activeCount > stats.inactiveCount
-      ? `⚡ Energía positiva: más animales activos que inactivos.`
-      : `🌬️ Tiempo de reactivar: dale seguimiento a los inactivos.`
-  ];
-  let funMessageIndex = 0;
-
-  document.querySelectorAll('[data-counter-key]').forEach(element => {
-    const key = element.dataset.counterKey;
-    counterElements[key] = element;
-    element.dataset.currentValue = parseNumber(element.textContent);
-  });
-
-  const cardMap = new Map();
-  Array.from(cardContainer.querySelectorAll('.animal-card')).forEach(card => {
-    const key = card.dataset.id || card.dataset.cardId;
-    if (key) {
-      cardMap.set(String(key), card);
-    }
-  });
-
-  let activeQuickFilter = null;
-  let healthChart;
-  let typeChart;
-
-  const healthPalette = ['#2d8659', '#ffc107', '#dc3545', '#6c757d'];
-  const typePalette = ['#1a7a5e', '#2d8659', '#3fa06f', '#45b87a', '#51c97f', '#5dd68a', '#63e395', '#6ef0a0'];
-
-  function rows() {
-    return Array.from(tableBody.querySelectorAll('tr'));
+  // Verificar que el DOM esté cargado antes de ejecutar
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGanadoPage);
+  } else {
+    initGanadoPage();
   }
 
-  function parseNumber(value) {
-    if (typeof value === 'number') return value;
-    if (!value) return 0;
-    const normalized = value.toString().replace(/[^\d,.-]/g, '').replace(',', '.');
-    const numeric = parseFloat(normalized);
-    return Number.isNaN(numeric) ? 0 : numeric;
-  }
+  function initGanadoPage() {
+    try {
+      const tableBody = document.getElementById('ganadoTableBody');
+      const tableView = document.getElementById('tableView');
+      const cardContainer = document.getElementById('cardView');
+      const searchInput = document.getElementById('searchInput');
+      const filterTipo = document.getElementById('filterTipo');
+      const filterEstado = document.getElementById('filterEstado');
+      const filterActivo = document.getElementById('filterActivo');
+      const filterPeso = document.getElementById('filterPeso');
+      const filterPesoValue = document.getElementById('filterPesoValue');
+      const applyButton = document.getElementById('applyFilters');
+      const clearButton = document.getElementById('clearFilters');
+      const quickFilterButtons = Array.from(document.querySelectorAll('.quick-filters button'));
+      const viewButtons = document.querySelectorAll('[data-view]');
+      const counterElements = {};
+      const highlightActive = document.querySelector('[data-highlight-active]');
+      const highlightWeight = document.querySelector('[data-highlight-weight]');
+      const highlightHealth = document.querySelector('[data-highlight-health]');
+      const progressBars = {
+        healthy: document.querySelector('[data-progress="healthy"]'),
+        observe: document.querySelector('[data-progress="observe"]'),
+        active: document.querySelector('[data-progress="active"]')
+      };
+      const progressLabels = {
+        healthy: document.querySelector('[data-progress-label="healthy"]'),
+        observe: document.querySelector('[data-progress-label="observe"]'),
+        active: document.querySelector('[data-progress-label="active"]')
+      };
+      const funMessageText = document.getElementById('funMessageText');
+      const funMessageButton = document.getElementById('refreshMessage');
+      const funMessages = [
+        stats => `Hoy ${stats.activeCount} animales están activos y listos para brillar.`,
+        stats => `🥛 Peso promedio de ${stats.averageWeight.toFixed(1)} kg. ¡Rutina equilibrada!`,
+        stats => `🌱 ${stats.distinctTypes} tipos diferentes: diversidad que inspira.`,
+        stats => stats.healthyShare >= 75
+          ? `💚 Salud a tope: ${stats.healthyShare.toFixed(0)}% del lote se ve genial.`
+          : `👀 Mantente alerta: ${stats.observationShare.toFixed(0)}% requieren cariño extra.`,
+        stats => stats.activeCount > stats.inactiveCount
+          ? `⚡ Energía positiva: más animales activos que inactivos.`
+          : `🌬️ Tiempo de reactivar: dale seguimiento a los inactivos.`
+      ];
+      let funMessageIndex = 0;
 
-  function parseDatasetNumber(value) {
-    if (!value || value === 'null') return null;
-    const numeric = parseFloat(value.toString().replace(',', '.'));
-    return Number.isNaN(numeric) ? null : numeric;
-  }
+      document.querySelectorAll('[data-counter-key]').forEach(element => {
+        const key = element.dataset.counterKey;
+        counterElements[key] = element;
+        element.dataset.currentValue = parseNumber(element.textContent);
+      });
 
-  function parseDatasetInt(value) {
-    if (!value || value === 'null') return null;
-    const numeric = parseInt(value, 10);
-    return Number.isNaN(numeric) ? null : numeric;
-  }
-
-  function normalize(text) {
-    return text ? text.toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
-  }
-
-  function animateValue(element, from, to, decimals, suffix) {
-    const duration = 680;
-    const startTime = performance.now();
-    function frame(currentTime) {
-      const progress = Math.min((currentTime - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const value = from + (to - from) * eased;
-      element.textContent = value.toLocaleString('es-ES', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-      }) + suffix;
-      if (progress < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        element.dataset.currentValue = to;
+      const cardMap = new Map();
+      if (cardContainer) {
+        Array.from(cardContainer.querySelectorAll('.animal-card')).forEach(card => {
+          const key = card.dataset.id || card.dataset.cardId;
+          if (key) {
+            cardMap.set(String(key), card);
+          }
+        });
       }
-    }
-    requestAnimationFrame(frame);
-  }
 
-  function updateCounter(key, value) {
-    const element = counterElements[key];
-    if (!element) return;
-    const decimals = parseInt(element.dataset.counterDecimals || '0', 10);
-    const suffix = element.dataset.counterSuffix || '';
-    const current = Number(element.dataset.currentValue ?? 0);
-    if (Math.abs(current - value) < (1 / Math.pow(10, decimals + 1))) {
-      element.textContent = value.toLocaleString('es-ES', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-      }) + suffix;
-      element.dataset.currentValue = value;
-      return;
-    }
-    animateValue(element, current, value, decimals, suffix);
-  }
+      let activeQuickFilter = null;
+      let healthChart;
+      let typeChart;
 
-  function gatherStats() {
+      const healthPalette = ['#2d8659', '#ffc107', '#dc3545', '#6c757d'];
+      const typePalette = ['#1a7a5e', '#2d8659', '#3fa06f', '#45b87a', '#51c97f', '#5dd68a', '#63e395', '#6ef0a0'];
+
+      function rows() {
+        if (!tableBody) return [];
+        return Array.from(tableBody.querySelectorAll('tr'));
+      }
+
+      function parseNumber(value) {
+        if (typeof value === 'number') return value;
+        if (!value) return 0;
+        const normalized = value.toString().replace(/[^\d,.-]/g, '').replace(',', '.');
+        const numeric = parseFloat(normalized);
+        return Number.isNaN(numeric) ? 0 : numeric;
+      }
+
+      function parseDatasetNumber(value) {
+        if (!value || value === 'null') return null;
+        const numeric = parseFloat(value.toString().replace(',', '.'));
+        return Number.isNaN(numeric) ? null : numeric;
+      }
+
+      function parseDatasetInt(value) {
+        if (!value || value === 'null') return null;
+        const numeric = parseInt(value, 10);
+        return Number.isNaN(numeric) ? null : numeric;
+      }
+
+      function normalize(text) {
+        return text ? text.toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
+      }
+
+      function animateValue(element, from, to, decimals, suffix) {
+        const duration = 680;
+        const startTime = performance.now();
+        function frame(currentTime) {
+          const progress = Math.min((currentTime - startTime) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const value = from + (to - from) * eased;
+          element.textContent = value.toLocaleString('es-ES', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+          }) + suffix;
+          if (progress < 1) {
+            requestAnimationFrame(frame);
+          } else {
+            element.dataset.currentValue = to;
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+
+      function updateCounter(key, value) {
+        const element = counterElements[key];
+        if (!element) return;
+        const decimals = parseInt(element.dataset.counterDecimals || '0', 10);
+        const suffix = element.dataset.counterSuffix || '';
+        const current = Number(element.dataset.currentValue ?? 0);
+        if (Math.abs(current - value) < (1 / Math.pow(10, decimals + 1))) {
+          element.textContent = value.toLocaleString('es-ES', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+          }) + suffix;
+          element.dataset.currentValue = value;
+          return;
+        }
+        animateValue(element, current, value, decimals, suffix);
+      }
+
+      function gatherStats() {
     const dataRows = rows();
     const stats = {
       total: dataRows.length,
@@ -2118,12 +2130,13 @@
     stats.observationShare = stats.total ? (stats.observationCount / stats.total) * 100 : 0;
     stats.activeShare = stats.total ? (stats.activeCount / stats.total) * 100 : 0;
 
-    return stats;
-  }
+        return stats;
+      }
 
-  function populateFilters(stats) {
-    const previousTipo = filterTipo.value;
-    filterTipo.innerHTML = '<option value="all">Todos</option>';
+      function populateFilters(stats) {
+        if (!filterTipo) return;
+        const previousTipo = filterTipo.value;
+        filterTipo.innerHTML = '<option value="all">Todos</option>';
 
     Object.keys(stats.typeDistribution).sort().forEach(tipo => {
       const option = document.createElement('option');
@@ -2145,10 +2158,10 @@
         filterPeso.value = sliderMax;
       }
       filterPesoValue.textContent = `${filterPeso.value} kg`;
-    }
-  }
+        }
+      }
 
-  function updateCharts(stats) {
+      function updateCharts(stats) {
     const healthCanvas = document.getElementById('healthChart');
     const typeCanvas = document.getElementById('typeChart');
 
@@ -2244,11 +2257,11 @@
       }
     } else if (typeChart) {
       typeChart.destroy();
-      typeChart = null;
-    }
-  }
+          typeChart = null;
+        }
+      }
 
-  function updateHighlights(stats) {
+      function updateHighlights(stats) {
     if (highlightActive) {
       highlightActive.textContent = stats.activeCount.toLocaleString('es-ES');
     }
@@ -2257,10 +2270,10 @@
     }
     if (highlightHealth) {
       highlightHealth.textContent = `${Math.round(stats.healthyShare)}%`;
-    }
-  }
+        }
+      }
 
-  function updateProgressBars(stats) {
+      function updateProgressBars(stats) {
     const clamp = value => Math.max(0, Math.min(100, value));
     const updateBar = (key, value) => {
       const bar = progressBars[key];
@@ -2273,16 +2286,16 @@
 
     updateBar('healthy', stats.healthyShare);
     updateBar('observe', stats.observationShare);
-    updateBar('active', stats.activeShare);
-  }
+        updateBar('active', stats.activeShare);
+      }
 
-  function renderFunMessage(index, stats) {
-    if (!funMessageText || !funMessages.length) return;
-    const messageFn = funMessages[index % funMessages.length] || funMessages[0];
-    funMessageText.textContent = messageFn(stats);
-  }
+      function renderFunMessage(index, stats) {
+        if (!funMessageText || !funMessages.length) return;
+        const messageFn = funMessages[index % funMessages.length] || funMessages[0];
+        funMessageText.textContent = messageFn(stats);
+      }
 
-  function updateStatistics() {
+      function updateStatistics() {
     const stats = gatherStats();
     updateCounter('activos', stats.activeCount);
     updateCounter('inactivos', stats.inactiveCount);
@@ -2293,16 +2306,16 @@
     updateHighlights(stats);
     updateProgressBars(stats);
     renderFunMessage(funMessageIndex, stats);
-    populateFilters(stats);
-    updateCharts(stats);
-  }
+        populateFilters(stats);
+        updateCharts(stats);
+      }
 
-  function resetQuickFilters() {
-    activeQuickFilter = null;
-    quickFilterButtons.forEach(btn => btn.classList.remove('active'));
-  }
+      function resetQuickFilters() {
+        activeQuickFilter = null;
+        quickFilterButtons.forEach(btn => btn.classList.remove('active'));
+      }
 
-  function handleQuickFilter(chip) {
+      function handleQuickFilter(chip) {
     if (activeQuickFilter === chip) {
       resetQuickFilters();
       if (chip === 'activos') {
@@ -2331,11 +2344,11 @@
           }
         }
       }
-    }
-    applyFilters();
-  }
+        }
+        applyFilters();
+      }
 
-  function syncQuickFilterState() {
+      function syncQuickFilterState() {
     if (!activeQuickFilter) return;
     if (activeQuickFilter === 'activos' && filterActivo.value !== 'true') {
       resetQuickFilters();
@@ -2344,19 +2357,20 @@
     } else if (activeQuickFilter === 'observe' && filterEstado.value !== 'En observación') {
       resetQuickFilters();
     } else if (activeQuickFilter === 'criticos' && filterEstado.value !== 'Enfermo') {
-      resetQuickFilters();
-    }
-  }
+          resetQuickFilters();
+        }
+      }
 
-  function applyFilters() {
-    const searchValue = normalize(searchInput.value.trim());
-    const tipoValue = filterTipo.value;
-    const estadoValue = normalize(filterEstado.value);
-    const activoValue = filterActivo.value;
-    const pesoMin = filterPeso ? Number(filterPeso.value) : 0;
-    const requiresJuveniles = activeQuickFilter === 'juveniles';
+      function applyFilters() {
+        if (!searchInput || !filterTipo || !filterEstado || !filterActivo || !tableBody) return;
+        const searchValue = normalize(searchInput.value.trim());
+        const tipoValue = filterTipo.value;
+        const estadoValue = normalize(filterEstado.value);
+        const activoValue = filterActivo.value;
+        const pesoMin = filterPeso ? Number(filterPeso.value) : 0;
+        const requiresJuveniles = activeQuickFilter === 'juveniles';
 
-    rows().forEach(row => {
+        rows().forEach(row => {
       const dataset = row.dataset;
       const tipoDataset = dataset.tipo && dataset.tipo.trim() ? dataset.tipo : 'Sin clasificar';
       const searchTarget = normalize(`${tipoDataset} ${dataset.raza || ''} ${dataset.id || ''}`);
@@ -2375,32 +2389,44 @@
       const card = cardMap.get(String(dataset.id));
       if (card) {
         card.classList.toggle('hidden', !matches);
+          }
+        });
       }
-    });
-  }
 
-  function openEditForm(data) {
-    const formSection = document.getElementById('form-editar');
-    formSection.style.display = 'block';
-    const safe = value => (value && value !== 'null') ? value : '';
-    document.getElementById('edit-id').value = safe(data.id);
-    document.getElementById('edit-tipo').value = safe(data.tipo);
-    document.getElementById('edit-raza').value = safe(data.raza);
-    document.getElementById('edit-edad').value = safe(data.edad);
-    document.getElementById('edit-peso').value = safe(data.peso);
-    document.getElementById('edit-estado').value = safe(data.estado) || 'Saludable';
-    document.getElementById('edit-fechaNac').value = safe(data.fecha);
-    document.getElementById('edit-activo').value = data.activo === 'false' ? 'false' : 'true';
-    formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+      function openEditForm(data) {
+        const formSection = document.getElementById('form-editar');
+        if (!formSection) return;
+        formSection.style.display = 'block';
+        const safe = value => (value && value !== 'null') ? value : '';
+        const editId = document.getElementById('edit-id');
+        const editTipo = document.getElementById('edit-tipo');
+        const editRaza = document.getElementById('edit-raza');
+        const editEdad = document.getElementById('edit-edad');
+        const editPeso = document.getElementById('edit-peso');
+        const editEstado = document.getElementById('edit-estado');
+        const editFechaNac = document.getElementById('edit-fechaNac');
+        const editActivo = document.getElementById('edit-activo');
+        
+        if (editId) editId.value = safe(data.id);
+        if (editTipo) editTipo.value = safe(data.tipo);
+        if (editRaza) editRaza.value = safe(data.raza);
+        if (editEdad) editEdad.value = safe(data.edad);
+        if (editPeso) editPeso.value = safe(data.peso);
+        if (editEstado) editEstado.value = safe(data.estado) || 'Saludable';
+        if (editFechaNac) editFechaNac.value = safe(data.fecha);
+        if (editActivo) editActivo.value = data.activo === 'false' ? 'false' : 'true';
+        formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
 
-  function closeEditForm() {
-    const formSection = document.getElementById('form-editar');
-    formSection.style.display = 'none';
-    formSection.querySelector('form').reset();
-  }
+      function closeEditForm() {
+        const formSection = document.getElementById('form-editar');
+        if (!formSection) return;
+        formSection.style.display = 'none';
+        const form = formSection.querySelector('form');
+        if (form) form.reset();
+      }
 
-  function updateRowVisualState(rowElement, isActive) {
+      function updateRowVisualState(rowElement, isActive) {
     if (!rowElement) return;
     rowElement.dataset.activo = String(isActive);
     const availabilityBadge = rowElement.querySelector('td:nth-child(7) .badge');
@@ -2415,11 +2441,11 @@
     if (toggleButton && toggleText) {
       toggleButton.classList.toggle('inactive', !isActive);
       toggleButton.disabled = false;
-      toggleText.textContent = isActive ? 'Desactivar' : 'Activar';
-    }
-  }
+          toggleText.textContent = isActive ? 'Desactivar' : 'Activar';
+        }
+      }
 
-  function updateCardVisualState(cardElement, isActive) {
+      function updateCardVisualState(cardElement, isActive) {
     if (!cardElement) return;
     cardElement.dataset.activo = String(isActive);
     const badge = cardElement.querySelector('.badge');
@@ -2434,14 +2460,14 @@
     if (toggleButton && toggleText) {
       toggleButton.classList.toggle('inactive', !isActive);
       toggleButton.disabled = false;
-      toggleText.textContent = isActive ? 'Desactivar' : 'Activar';
-    }
-  }
+          toggleText.textContent = isActive ? 'Desactivar' : 'Activar';
+        }
+      }
 
-  function handleToggle(id, triggerButton) {
-    if (!id) return;
-    const rowElement = tableBody.querySelector(`tr[data-id="${id}"]`);
-    const cardElement = cardMap.get(String(id));
+      function handleToggle(id, triggerButton) {
+        if (!id || !tableBody) return;
+        const rowElement = tableBody.querySelector(`tr[data-id="${id}"]`);
+        const cardElement = cardMap.get(String(id));
     const isActive = rowElement ? rowElement.dataset.activo !== 'false' : (cardElement ? cardElement.dataset.activo !== 'false' : true);
     const nextState = !isActive;
     const toggleLabel = triggerButton ? triggerButton.querySelector('span') : null;
@@ -2481,107 +2507,137 @@
         alert('No se pudo actualizar el estado. Intente nuevamente.');
         if (triggerButton) {
           triggerButton.disabled = false;
-          if (toggleLabel) toggleLabel.textContent = originalText || (isActive ? 'Desactivar' : 'Activar');
-        }
+            if (toggleLabel) toggleLabel.textContent = originalText || (isActive ? 'Desactivar' : 'Activar');
+          }
+        });
+      }
+
+      if (tableBody) {
+        tableBody.addEventListener('click', event => {
+          const button = event.target.closest('button');
+          if (!button) return;
+          const row = event.target.closest('tr');
+          if (!row) return;
+          if (button.classList.contains('edit')) {
+            openEditForm(row.dataset);
+          } else if (button.classList.contains('toggle')) {
+            handleToggle(row.dataset.id, button);
+          }
+        });
+      }
+
+      if (cardContainer) {
+        cardContainer.addEventListener('click', event => {
+          const button = event.target.closest('button');
+          if (!button) return;
+          const card = event.target.closest('.animal-card');
+          if (!card) return;
+          if (button.classList.contains('edit')) {
+            openEditForm(card.dataset);
+          } else if (button.classList.contains('toggle')) {
+            handleToggle(card.dataset.id, button);
+          }
+        });
+      }
+
+      quickFilterButtons.forEach(btn => {
+        btn.addEventListener('click', () => handleQuickFilter(btn.dataset.chip));
       });
-  }
 
-  tableBody.addEventListener('click', event => {
-    const button = event.target.closest('button');
-    if (!button) return;
-    const row = event.target.closest('tr');
-    if (!row) return;
-    if (button.classList.contains('edit')) {
-      openEditForm(row.dataset);
-    } else if (button.classList.contains('toggle')) {
-      handleToggle(row.dataset.id, button);
-    }
-  });
+      viewButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.classList.contains('active')) return;
+          viewButtons.forEach(button => button.classList.remove('active'));
+          btn.classList.add('active');
+          if (btn.dataset.view === 'cards') {
+            if (tableView) tableView.classList.add('hidden');
+            if (cardContainer) cardContainer.classList.remove('hidden');
+          } else {
+            if (cardContainer) cardContainer.classList.add('hidden');
+            if (tableView) tableView.classList.remove('hidden');
+          }
+        });
+      });
 
-  cardContainer.addEventListener('click', event => {
-    const button = event.target.closest('button');
-    if (!button) return;
-    const card = event.target.closest('.animal-card');
-    if (!card) return;
-    if (button.classList.contains('edit')) {
-      openEditForm(card.dataset);
-    } else if (button.classList.contains('toggle')) {
-      handleToggle(card.dataset.id, button);
-    }
-  });
-
-  quickFilterButtons.forEach(btn => {
-    btn.addEventListener('click', () => handleQuickFilter(btn.dataset.chip));
-  });
-
-  viewButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.classList.contains('active')) return;
-      viewButtons.forEach(button => button.classList.remove('active'));
-      btn.classList.add('active');
-      if (btn.dataset.view === 'cards') {
-        tableView.classList.add('hidden');
-        cardContainer.classList.remove('hidden');
-      } else {
-        cardContainer.classList.add('hidden');
-        tableView.classList.remove('hidden');
+      if (filterPeso) {
+        filterPeso.addEventListener('input', () => {
+          if (filterPesoValue) {
+            filterPesoValue.textContent = `${filterPeso.value} kg`;
+          }
+        });
+        filterPeso.addEventListener('change', applyFilters);
       }
-    });
-  });
 
-  if (filterPeso) {
-    filterPeso.addEventListener('input', () => {
-      if (filterPesoValue) {
-        filterPesoValue.textContent = `${filterPeso.value} kg`;
+      if (applyButton) {
+        applyButton.addEventListener('click', () => {
+          applyFilters();
+        });
       }
-    });
-    filterPeso.addEventListener('change', applyFilters);
-  }
 
-  applyButton.addEventListener('click', () => {
-    applyFilters();
-  });
-
-  clearButton.addEventListener('click', () => {
-    searchInput.value = '';
-    filterTipo.value = 'all';
-    filterEstado.value = 'all';
-    filterActivo.value = 'all';
-    if (filterPeso) {
-      filterPeso.value = filterPeso.min || 0;
-      if (filterPesoValue) {
-        filterPesoValue.textContent = `${filterPeso.value} kg`;
+      if (clearButton) {
+        clearButton.addEventListener('click', () => {
+          if (searchInput) searchInput.value = '';
+          if (filterTipo) filterTipo.value = 'all';
+          if (filterEstado) filterEstado.value = 'all';
+          if (filterActivo) filterActivo.value = 'all';
+          if (filterPeso) {
+            filterPeso.value = filterPeso.min || 0;
+            if (filterPesoValue) {
+              filterPesoValue.textContent = `${filterPeso.value} kg`;
+            }
+          }
+          resetQuickFilters();
+          applyFilters();
+        });
       }
+
+      if (searchInput) {
+        searchInput.addEventListener('input', () => applyFilters());
+      }
+      if (filterTipo) {
+        filterTipo.addEventListener('change', () => applyFilters());
+      }
+      if (filterEstado) {
+        filterEstado.addEventListener('change', () => {
+          syncQuickFilterState();
+          applyFilters();
+        });
+      }
+      if (filterActivo) {
+        filterActivo.addEventListener('change', () => {
+          syncQuickFilterState();
+          applyFilters();
+        });
+      }
+
+      if (funMessageButton) {
+        funMessageButton.addEventListener('click', () => {
+          funMessageIndex = (funMessageIndex + 1) % funMessages.length;
+          renderFunMessage(funMessageIndex, gatherStats());
+        });
+      }
+
+      const cancelEditBtn = document.getElementById('cancelEdit');
+      if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', closeEditForm);
+      }
+
+      const scrollToFormBtn = document.getElementById('scrollToForm');
+      if (scrollToFormBtn) {
+        scrollToFormBtn.addEventListener('click', () => {
+          const registroSection = document.getElementById('registroGanadoSection');
+          if (registroSection) {
+            registroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      }
+
+      updateStatistics();
+      applyFilters();
+    } catch (error) {
+      console.error('Error al inicializar la página de ganado:', error);
     }
-    resetQuickFilters();
-    applyFilters();
-  });
-
-  searchInput.addEventListener('input', () => applyFilters());
-  filterTipo.addEventListener('change', () => applyFilters());
-  filterEstado.addEventListener('change', () => {
-    syncQuickFilterState();
-    applyFilters();
-  });
-  filterActivo.addEventListener('change', () => {
-    syncQuickFilterState();
-    applyFilters();
-  });
-
-  if (funMessageButton) {
-    funMessageButton.addEventListener('click', () => {
-      funMessageIndex = (funMessageIndex + 1) % funMessages.length;
-      renderFunMessage(funMessageIndex, gatherStats());
-    });
   }
-
-  document.getElementById('cancelEdit').addEventListener('click', closeEditForm);
-  document.getElementById('scrollToForm').addEventListener('click', () => {
-    document.getElementById('registroGanadoSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-
-  updateStatistics();
-  applyFilters();
 </script>
 </body>
 </html>

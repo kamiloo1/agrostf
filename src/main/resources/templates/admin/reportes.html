@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes Estadísticos - AgroSoft</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
     <style>
         :root {
@@ -11,142 +12,533 @@
             --verde-med: #1a7a5e;
             --verde-acento: #2d8659;
             --verde-claro: #e8f5f0;
+            --verde-suave: #d4edda;
             --blanco: #ffffff;
             --texto: #1a1a1a;
+            --texto-secundario: #6F6F6F;
+            --bordes: #E8E8E8;
+            --sombra: rgba(13, 79, 61, 0.15);
         }
-        body {
-            font-family: 'Segoe UI', sans-serif;
+        
+        * {
             margin: 0;
-            padding: 20px;
-            background: var(--verde-claro);
+            padding: 0;
+            box-sizing: border-box;
         }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e8f5f0 0%, #d4edda 50%, #c8e6c9 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(45, 134, 89, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(26, 122, 94, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: var(--blanco);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
         }
-        h1 {
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
             color: var(--verde-oscuro);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .header h1 i {
+            font-size: 48px;
+            background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--texto-secundario);
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(209, 236, 241, 0.9), rgba(200, 230, 201, 0.9));
+            border-left: 4px solid var(--verde-acento);
+            color: #0c5460;
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: slideInLeft 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(45, 134, 89, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .info-box i {
+            font-size: 24px;
+            color: var(--verde-acento);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 15px;
+            color: var(--verde-oscuro);
+        }
+
+        .info-box code {
+            background: rgba(255,255,255,0.6);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
             margin-bottom: 30px;
         }
-        .report-section {
-            background: var(--verde-claro);
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+
+        .report-card {
+            background: var(--blanco);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--bordes);
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
         }
-        .report-section h3 {
-            color: var(--verde-oscuro);
-            margin-top: 0;
+
+        .report-card:nth-child(1) { animation-delay: 0.1s; }
+        .report-card:nth-child(2) { animation-delay: 0.2s; }
+        .report-card:nth-child(3) { animation-delay: 0.3s; }
+        .report-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .report-section p {
-            color: #495057;
-            line-height: 1.6;
+
+        /* Imágenes de fondo decorativas para las tarjetas */
+        .report-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover, cover;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            opacity: 0.65;
+            z-index: 0;
+            pointer-events: none;
         }
-        .btn-generar {
-            display: inline-block;
-            padding: 15px 30px;
-            background: var(--verde-acento);
+
+        .report-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Imágenes específicas por tipo de reporte */
+        .report-card.cultivos::before {
+            background-image: 
+                linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
+                url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&q=80');
+        }
+
+        .report-card.ganado::before {
+            background-image: 
+                linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
+                url('https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400&q=80');
+        }
+
+        .report-card.general::before {
+            background-image: 
+                linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
+                url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80');
+        }
+
+        .report-card.completo::before {
+            background-image: 
+                linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
+                url('https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&q=80');
+        }
+
+        .report-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(13, 79, 61, 0.2);
+        }
+
+        .report-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .report-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
             color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        .btn-generar:hover {
-            background: var(--verde-med);
-            transform: translateY(-2px);
+            background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
             box-shadow: 0 4px 12px rgba(45, 134, 89, 0.3);
+            flex-shrink: 0;
         }
-        .info-box {
-            background: #d1ecf1;
-            color: #0c5460;
-            padding: 15px;
-            border-radius: 8px;
+
+        .report-card h3 {
+            color: var(--verde-oscuro);
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .report-card p {
+            color: var(--texto-secundario);
+            line-height: 1.6;
             margin-bottom: 20px;
             font-size: 14px;
         }
-        ul {
-            margin: 10px 0;
-            padding-left: 20px;
+
+        .report-features {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0 20px 0;
         }
-        li {
-            margin: 8px 0;
+
+        .report-features li {
+            padding: 8px 0;
+            color: var(--texto-secundario);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            padding-left: 24px;
         }
-        a.back-link {
+
+        .report-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--verde-acento);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .report-features li strong {
+            color: var(--verde-oscuro);
+            font-weight: 600;
+        }
+
+        .report-features ul {
+            margin-top: 8px;
+            padding-left: 24px;
+        }
+
+        .report-features ul li {
+            font-size: 12px;
+            padding: 4px 0;
+        }
+
+        .btn-generar {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--verde-acento), var(--verde-med));
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(45, 134, 89, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-generar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-generar:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-generar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(45, 134, 89, 0.4);
+        }
+
+        .btn-generar i {
+            font-size: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-generar span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .badge {
             display: inline-block;
-            margin-top: 20px;
+            padding: 4px 12px;
+            background: rgba(45, 134, 89, 0.1);
+            color: var(--verde-acento);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 30px;
+            padding: 12px 24px;
             color: var(--verde-acento);
             text-decoration: none;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.9);
+            transform: translateX(-4px);
+            color: var(--verde-oscuro);
+        }
+
+        .back-link i {
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .report-card {
+                padding: 24px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><i class="ri-file-chart-line"></i> Reportes Estadísticos</h1>
+        <div class="header">
+            <h1>
+                <i class="ri-file-chart-line"></i>
+                Reportes Estadísticos
+            </h1>
+            <p>Genera reportes detallados y análisis estadísticos de tu sistema</p>
+        </div>
 
         <div class="info-box">
-            <strong><i class="ri-information-line"></i> Información:</strong><br>
-            Los reportes se generan en formato PDF y se descargan automáticamente.<br>
-            También se guardan en la carpeta <code>reportes/</code> del proyecto.
+            <i class="ri-information-line"></i>
+            <div>
+                <strong>Información importante</strong>
+                <div>
+                    Los reportes se generan en formato PDF y se descargan automáticamente.<br>
+                    También se guardan en la carpeta <code>reportes/</code> del proyecto.
+                </div>
+            </div>
         </div>
 
-        <!-- PATRÓN FACTORY: Mostrar diferentes tipos de reportes disponibles -->
-        <div class="report-section" th:if="${reporteCultivo}">
-            <h3><i class="ri-leaf-line"></i> <span th:text="${reporteCultivo.nombreReporte}">Reporte de Cultivos</span></h3>
-            <p th:text="${reporteCultivo.descripcion}">Reporte estadístico de cultivos del sistema</p>
-            <a th:href="@{/admin/reportes/generar(tipo='CULTIVO')}" class="btn-generar">
-                <i class="ri-file-chart-line"></i> Ver Reporte de Cultivos
-            </a>
-        </div>
+        <div class="reports-grid">
+            <!-- PATRÓN FACTORY: Mostrar diferentes tipos de reportes disponibles -->
+            <div class="report-card cultivos" th:if="${reporteCultivo}">
+                <div class="report-card-header">
+                    <div class="report-icon">
+                        <i class="ri-leaf-line"></i>
+                    </div>
+                    <h3>
+                        <span th:text="${reporteCultivo.nombreReporte}">Reporte de Cultivos</span>
+                    </h3>
+                </div>
+                <p th:text="${reporteCultivo.descripcion}">Reporte estadístico completo de cultivos del sistema con análisis detallado.</p>
+                <a th:href="@{/admin/reportes/generar(tipo='CULTIVO')}" class="btn-generar">
+                    <i class="ri-file-chart-line"></i>
+                    <span>Ver Reporte de Cultivos</span>
+                </a>
+            </div>
 
-        <div class="report-section" th:if="${reporteGanado}">
-            <h3><i class="ri-cow-line"></i> <span th:text="${reporteGanado.nombreReporte}">Reporte de Ganado</span></h3>
-            <p th:text="${reporteGanado.descripcion}">Reporte estadístico de ganado del sistema</p>
-            <a th:href="@{/admin/reportes/generar(tipo='GANADO')}" class="btn-generar">
-                <i class="ri-file-chart-line"></i> Ver Reporte de Ganado
-            </a>
-        </div>
+            <div class="report-card ganado" th:if="${reporteGanado}">
+                <div class="report-card-header">
+                    <div class="report-icon">
+                        <i class="ri-cow-line"></i>
+                    </div>
+                    <h3>
+                        <span th:text="${reporteGanado.nombreReporte}">Reporte de Ganado</span>
+                    </h3>
+                </div>
+                <p th:text="${reporteGanado.descripcion}">Reporte estadístico completo de ganado del sistema con análisis detallado.</p>
+                <a th:href="@{/admin/reportes/generar(tipo='GANADO')}" class="btn-generar">
+                    <i class="ri-file-chart-line"></i>
+                    <span>Ver Reporte de Ganado</span>
+                </a>
+            </div>
 
-        <div class="report-section" th:if="${reporteGeneral}">
-            <h3><i class="ri-dashboard-line"></i> <span th:text="${reporteGeneral.nombreReporte}">Reporte General</span></h3>
-            <p th:text="${reporteGeneral.descripcion}">Reporte estadístico general que incluye usuarios, cultivos y ganado</p>
-            <a th:href="@{/admin/reportes/generar(tipo='GENERAL')}" class="btn-generar">
-                <i class="ri-file-chart-line"></i> Ver Reporte General
-            </a>
-        </div>
+            <div class="report-card general" th:if="${reporteGeneral}">
+                <div class="report-card-header">
+                    <div class="report-icon">
+                        <i class="ri-dashboard-line"></i>
+                    </div>
+                    <h3>
+                        <span th:text="${reporteGeneral.nombreReporte}">Reporte General</span>
+                        <span class="badge">Completo</span>
+                    </h3>
+                </div>
+                <p th:text="${reporteGeneral.descripcion}">Reporte estadístico general que incluye usuarios, cultivos y ganado.</p>
+                <a th:href="@{/admin/reportes/generar(tipo='GENERAL')}" class="btn-generar">
+                    <i class="ri-file-chart-line"></i>
+                    <span>Ver Reporte General</span>
+                </a>
+            </div>
 
-        <div class="report-section">
-            <h3><i class="ri-bar-chart-line"></i> Reporte Estadístico Completo (PDF con Gráficas)</h3>
-            <p>Este reporte incluye:</p>
-            <ul>
-                <li>Total de pacientes (ganado) registrados</li>
-                <li>Total de tratamientos realizados</li>
-                <li>Tratamientos activos (últimos 30 días)</li>
-                <li>Tratamientos inactivos</li>
-                <li>Distribución de pacientes por tipo</li>
-                <li>Distribución de tratamientos por tipo</li>
-                <li><strong>Gráficas estadísticas visuales:</strong>
-                    <ul style="margin-top: 5px;">
-                        <li>Gráfica de pastel: Tratamientos Activos vs Inactivos</li>
-                        <li>Gráfica de pastel: Distribución de Pacientes por Tipo</li>
-                        <li>Gráfica de barras: Tratamientos por Tipo</li>
-                    </ul>
-                </li>
-                <li>Tablas estadísticas organizadas</li>
-            </ul>
-            <a th:href="@{/admin/reportes/generar-pdf}" class="btn-generar" download>
-                <i class="ri-download-line"></i> Generar y Descargar PDF
-            </a>
+            <div class="report-card completo">
+                <div class="report-card-header">
+                    <div class="report-icon">
+                        <i class="ri-bar-chart-box-line"></i>
+                    </div>
+                    <h3>
+                        Reporte Estadístico Completo
+                        <span class="badge">PDF + Gráficas</span>
+                    </h3>
+                </div>
+                <p>Reporte completo con análisis estadísticos y visualizaciones gráficas detalladas.</p>
+                <ul class="report-features">
+                    <li>Total de pacientes (ganado) registrados</li>
+                    <li>Total de tratamientos realizados</li>
+                    <li>Tratamientos activos (últimos 30 días)</li>
+                    <li>Tratamientos inactivos</li>
+                    <li>Distribución de pacientes por tipo</li>
+                    <li>Distribución de tratamientos por tipo</li>
+                    <li>
+                        <strong>Gráficas estadísticas visuales:</strong>
+                        <ul>
+                            <li>Gráfica de pastel: Tratamientos Activos vs Inactivos</li>
+                            <li>Gráfica de pastel: Distribución de Pacientes por Tipo</li>
+                            <li>Gráfica de barras: Tratamientos por Tipo</li>
+                        </ul>
+                    </li>
+                    <li>Tablas estadísticas organizadas</li>
+                </ul>
+                <a th:href="@{/admin/reportes/generar-pdf}" class="btn-generar" download>
+                    <i class="ri-download-line"></i>
+                    <span>Generar y Descargar PDF</span>
+                </a>
+            </div>
         </div>
 
         <a th:href="@{/dashboard/administrador}" class="back-link">
-            <i class="ri-arrow-left-line"></i> Volver al Dashboard
+            <i class="ri-arrow-left-line"></i>
+            <span>Volver al Dashboard</span>
         </a>
     </div>
 </body>
 </html>
-
