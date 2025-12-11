@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima en Colombia - AgroSoft</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --verde-oscuro: #0d4f3d;
+            --verde-med: #1a7a5e;
+            --verde-acento: #2d8659;
+            --verde-claro: #e8f5f0;
+            --blanco: #ffffff;
+            --texto: #1a1a1a;
+            --texto-suave: #666;
+            --sombra: rgba(0,0,0,0.1);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #e8f5f0 0%, #c8e6c9 50%, #a8d5ba 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(45, 134, 89, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(26, 122, 94, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            background: var(--blanco);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.8);
+            animation: slideDown 0.6s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        h1 {
+            color: var(--verde-oscuro);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 32px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        h1 i {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .search-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .search-section input {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 18px;
+            border: 2px solid #a8d5ba;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: var(--blanco);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .search-section input:focus {
+            outline: none;
+            border-color: var(--verde-acento);
+            box-shadow: 0 4px 12px rgba(45, 134, 89, 0.2);
+            transform: translateY(-1px);
+        }
+        .search-section button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--verde-acento) 0%, var(--verde-med) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(45, 134, 89, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .search-section button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .search-section button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .search-section button:hover {
+            background: linear-gradient(135deg, var(--verde-med) 0%, var(--verde-oscuro) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(45, 134, 89, 0.4);
+        }
+        .search-section button:active {
+            transform: translateY(0);
+        }
+        .search-section button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .ciudades-favoritas {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .ciudad-favorita {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--verde-claro) 0%, #d4edda 100%);
+            border: 2px solid var(--verde-acento);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            z-index: 1;
+        }
+        .ciudad-favorita::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: var(--verde-acento);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+            z-index: 0;
+        }
+        .ciudad-favorita:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+        .ciudad-favorita:hover {
+            background: var(--verde-acento);
+            color: white;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(45, 134, 89, 0.3);
+            border-color: var(--verde-med);
+        }
+        .ciudad-favorita:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        .clima-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .clima-card {
+            background: linear-gradient(135deg, var(--verde-acento) 0%, var(--verde-med) 50%, var(--verde-oscuro) 100%);
+            background-size: 200% 200%;
+            animation: gradientMove 8s ease infinite;
+            color: white;
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            animation: cardAppear 0.8s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .clima-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+        }
+        .clima-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            pointer-events: none;
+            animation: rotate 20s linear infinite;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .clima-card::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -30%;
+            width: 150%;
+            height: 150%;
+            background: 
+                radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%),
+                linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
+                url('https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=400&q=80');
+            background-size: cover, cover, cover;
+            background-position: center, center, center;
+            opacity: 0.65;
+            pointer-events: none;
+            animation: rotateReverse 15s linear infinite;
+            z-index: 0;
+        }
+        @keyframes rotateReverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        .clima-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .ciudad-info h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            animation: slideInLeft 0.6s ease-out;
+        }
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .ciudad-info .pais {
+            font-size: 16px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+        .icono-clima {
+            font-size: 80px;
+            opacity: 0.95;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            animation: float 3s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .icono-clima img {
+            animation: float 3s ease-in-out infinite;
+        }
+        .temperatura-principal {
+            font-size: 84px;
+            font-weight: 700;
+            margin: 25px 0;
+            text-align: center;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+            animation: scaleIn 0.8s ease-out;
+        }
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .detalles-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .detalle-item {
+            background: rgba(255,255,255,0.25);
+            padding: 18px;
+            border-radius: 12px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        .detalle-item:nth-child(1) { animation-delay: 0.1s; }
+        .detalle-item:nth-child(2) { animation-delay: 0.2s; }
+        .detalle-item:nth-child(3) { animation-delay: 0.3s; }
+        .detalle-item:nth-child(4) { animation-delay: 0.4s; }
+        .detalle-item:nth-child(5) { animation-delay: 0.5s; }
+        .detalle-item:nth-child(6) { animation-delay: 0.6s; }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .detalle-item:hover {
+            background: rgba(255,255,255,0.35);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .detalle-item strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .detalle-item span {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .recomendacion-card {
+            background: var(--blanco);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            margin-top: 25px;
+            border-left: 5px solid var(--verde-acento);
+            animation: slideUp 0.8s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Imágenes de fondo decorativas para recomendacion-card con overlay oscuro */
+        .recomendacion-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
+                url('https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=400&q=80');
+            background-size: cover, cover;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            opacity: 0.65;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .recomendacion-card > * {
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .recomendacion-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        .recomendacion-card h3 {
+            color: var(--verde-oscuro);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .recomendacion-card p {
+            color: var(--texto-suave);
+            line-height: 1.6;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--texto-suave);
+            animation: fadeIn 0.5s ease-out;
+        }
+        .loading i {
+            font-size: 56px;
+            color: var(--verde-acento);
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .loading p {
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 15px;
+            animation: pulseText 1.5s ease-in-out infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c33;
+        }
+        .info-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            color: #0c5460;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            border-left: 4px solid #17a2b8;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            animation: slideInRight 0.6s ease-out;
+        }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        #authStatus {
+            animation: fadeIn 0.6s ease-out;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        #authStatus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 25px;
+            padding: 12px 24px;
+            color: var(--verde-acento);
+            text-decoration: none;
+            font-weight: 600;
+            background: var(--blanco);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .back-link:hover {
+            color: var(--verde-med);
+            transform: translateX(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            border-color: var(--verde-acento);
+        }
+        .back-link i {
+            transition: transform 0.3s ease;
+        }
+        .back-link:hover i {
+            transform: translateX(-3px);
+        }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .header {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .search-section {
+                flex-direction: column;
+            }
+            .search-section input {
+                width: 100%;
+            }
+            .temperatura-principal {
+                font-size: 64px;
+            }
+            .clima-card {
+                padding: 25px;
+            }
+            .detalles-grid {
+                grid-template-columns: 1fr;
+            }
+            .ciudades-favoritas {
+                gap: 8px;
+            }
+            .ciudad-favorita {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+        /* Efectos adicionales */
+        .clima-card * {
+            position: relative;
+            z-index: 1;
+        }
+        .temp-range {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 15px;
+            font-size: 20px;
+            opacity: 0.95;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+        .temp-range span {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .temp-range span:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        .descripcion-clima {
+            text-align: center;
+            font-size: 22px;
+            text-transform: capitalize;
+            margin-bottom: 30px;
+            opacity: 0.95;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+    <script th:src="@{/js/proteccion-vista.js}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="ri-sun-line"></i> Clima en Colombia</h1>
+            
+            <!-- Indicador de autenticación -->
+            <div id="authStatus" style="background: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px;">
+                <i class="ri-user-line"></i> <strong>Estado de sesión:</strong> <span id="authStatusText">Verificando...</span>
+            </div>
+            
+            <div class="info-box" id="infoBox">
+                <strong><i class="ri-information-line"></i> Nota:</strong><br>
+                Esta información se obtiene de la API de OpenWeatherMap en tiempo real.
+                Puedes buscar cualquier ciudad de <strong>Colombia</strong> sin recargar la página. Los datos se actualizan automáticamente.
+            </div>
+
+            <div class="search-section">
+                <input type="text" id="ciudadInput" placeholder="Buscar ciudad de Colombia (ej: Bogotá, Medellín, Cali, Barranquilla)" value="Bogotá" style="flex: 1; min-width: 300px;">
+                <button id="buscarBtn" onclick="buscarClima(); return false;" type="button">
+                    <i class="ri-search-line"></i> Buscar
+                </button>
+                <button id="limpiarCacheBtn" onclick="limpiarCache(); return false;" type="button" style="background: #6c757d; margin-left: 10px;" title="Limpiar cache del Web Service">
+                    <i class="ri-refresh-line"></i> Limpiar Cache
+                </button>
+            </div>
+            <!-- Campo de país oculto - siempre Colombia -->
+            <input type="hidden" id="paisInput" value="CO">
+
+            <div class="ciudades-favoritas">
+                <span style="color: var(--texto-suave); margin-right: 10px;">Ciudades de Colombia:</span>
+                <span class="ciudad-favorita" data-ciudad="Bogotá">Bogotá</span>
+                <span class="ciudad-favorita" data-ciudad="Medellín">Medellín</span>
+                <span class="ciudad-favorita" data-ciudad="Cali">Cali</span>
+                <span class="ciudad-favorita" data-ciudad="Barranquilla">Barranquilla</span>
+                <span class="ciudad-favorita" data-ciudad="Cartagena">Cartagena</span>
+                <span class="ciudad-favorita" data-ciudad="Bucaramanga">Bucaramanga</span>
+                <span class="ciudad-favorita" data-ciudad="Pereira">Pereira</span>
+                <span class="ciudad-favorita" data-ciudad="Santa Marta">Santa Marta</span>
+                <span class="ciudad-favorita" data-ciudad="Manizales">Manizales</span>
+                <span class="ciudad-favorita" data-ciudad="Armenia">Armenia</span>
+                <span class="ciudad-favorita" data-ciudad="Villavicencio">Villavicencio</span>
+                <span class="ciudad-favorita" data-ciudad="Ibagué">Ibagué</span>
+            </div>
+        </div>
+
+        <div id="climaContainer">
+            <div class="clima-grid">
+                <div class="clima-card" th:if="${clima}">
+                    <div class="clima-header">
+                        <div class="ciudad-info">
+                            <h2>
+                                <i class="ri-map-pin-line"></i>
+                                <span th:text="${clima.ciudad}">Bogotá</span>
+                            </h2>
+                            <div class="pais" th:text="${clima.pais}">CO</div>
+                        </div>
+                        <div class="icono-clima" th:if="${clima.icono}">
+                            <img th:src="@{'https://openweathermap.org/img/wn/' + ${clima.icono} + '@2x.png'}" 
+                                 alt="Clima" style="width: 80px; height: 80px;">
+                        </div>
+                    </div>
+                    
+                    <div class="temperatura-principal">
+                        <span th:text="${#numbers.formatDecimal(clima.temperatura, 1, 1)}">18.5</span>°C
+                    </div>
+                    
+                    <div class="temp-range" th:if="${clima.temperaturaMinima != null and clima.temperaturaMaxima != null}">
+                        <span><i class="ri-arrow-down-line"></i> <span th:text="${#numbers.formatDecimal(clima.temperaturaMinima, 1, 1)}">15</span>°</span>
+                        <span><i class="ri-arrow-up-line"></i> <span th:text="${#numbers.formatDecimal(clima.temperaturaMaxima, 1, 1)}">22</span>°</span>
+                    </div>
+                    
+                    <div class="descripcion-clima">
+                        <i class="ri-cloud-line"></i>
+                        <span th:text="${clima.descripcion}">Parcialmente nublado</span>
+                    </div>
+                    
+                    <div class="detalles-grid">
+                        <div class="detalle-item">
+                            <strong><i class="ri-drop-line"></i> Humedad</strong>
+                            <span th:text="${#numbers.formatDecimal(clima.humedad, 1, 1)}">65.0</span>%
+                        </div>
+                        <div class="detalle-item">
+                            <strong><i class="ri-windy-line"></i> Viento</strong>
+                            <span th:text="${#numbers.formatDecimal(clima.velocidadViento, 1, 1)}">2.5</span> m/s
+                        </div>
+                        <div class="detalle-item" th:if="${clima.sensacionTermica != null}">
+                            <strong><i class="ri-temp-cold-line"></i> Sensación</strong>
+                            <span th:text="${#numbers.formatDecimal(clima.sensacionTermica, 1, 1)}">18.0</span>°C
+                        </div>
+                        <div class="detalle-item" th:if="${clima.presion != null}">
+                            <strong><i class="ri-bar-chart-line"></i> Presión</strong>
+                            <span th:text="${#numbers.formatDecimal(clima.presion, 0, 0)}">1013</span> hPa
+                        </div>
+                        <div class="detalle-item" th:if="${clima.visibilidad != null}">
+                            <strong><i class="ri-eye-line"></i> Visibilidad</strong>
+                            <span th:text="${#numbers.formatDecimal(clima.visibilidad, 1, 1)}">10</span> km
+                        </div>
+                        <div class="detalle-item" th:if="${clima.direccionViento != null}">
+                            <strong><i class="ri-compass-line"></i> Dirección</strong>
+                            <span th:text="${#numbers.formatDecimal(clima.direccionViento, 0, 0)}">180</span>°
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recomendacion-card" th:if="${clima != null and clima.recomendacionAgricola != null and !clima.recomendacionAgricola.isEmpty()}">
+                <h3><i class="ri-lightbulb-line"></i> Recomendaciones Agrícolas</h3>
+                <p th:text="${clima.recomendacionAgricola}">
+                    Condiciones normales para actividades agrícolas.
+                </p>
+            </div>
+        </div>
+
+        <a th:href="@{/dashboard/administrador}" class="back-link">
+            <i class="ri-arrow-left-line"></i> Volver al Dashboard
+        </a>
+    </div>
+
+    <script>
+        // Función para verificar el estado de autenticación
+        function verificarAutenticacion() {
+            const authStatus = document.getElementById('authStatus');
+            const authStatusText = document.getElementById('authStatusText');
+            
+            // Intentar hacer una petición simple para verificar autenticación
+            fetch('/clima/api?ciudad=Bogotá&pais=CO', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    authStatus.style.background = '#d4edda';
+                    authStatus.style.color = '#155724';
+                    authStatusText.innerHTML = '<i class="ri-checkbox-circle-line"></i> Autenticado correctamente';
+                    return true;
+                } else {
+                    authStatus.style.background = '#f8d7da';
+                    authStatus.style.color = '#721c24';
+                    authStatusText.innerHTML = '<i class="ri-error-warning-line"></i> Sesión expirada - <a href="/login" style="color: #721c24; text-decoration: underline;">Iniciar sesión</a>';
+                    return false;
+                }
+            })
+            .catch(error => {
+                console.error('Error al verificar autenticación:', error);
+                authStatus.style.background = '#fff3cd';
+                authStatus.style.color = '#856404';
+                authStatusText.innerHTML = '<i class="ri-alert-line"></i> No se pudo verificar el estado de sesión';
+                return false;
+            });
+        }
+        
+            // Verificar autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            verificarAutenticacion();
+            // Establecer país como Colombia por defecto
+            document.getElementById('paisInput').value = 'CO';
+        });
+        
+        // Función para buscar clima con AJAX
+        function buscarClima() {
+            console.log('=== INICIANDO BÚSQUEDA DE CLIMA ===');
+            const ciudad = document.getElementById('ciudadInput').value.trim();
+            // Siempre usar Colombia como país
+            const pais = 'CO';
+            
+            console.log('Ciudad ingresada:', ciudad);
+            console.log('País: Colombia (CO)');
+            
+            if (!ciudad) {
+                alert('Por favor ingresa el nombre de una ciudad de Colombia');
+                console.warn('Búsqueda cancelada: ciudad vacía');
+                return;
+            }
+            
+            const container = document.getElementById('climaContainer');
+            const buscarBtn = document.getElementById('buscarBtn');
+            
+            // Mostrar loading con animación
+            container.style.opacity = '0';
+            container.innerHTML = `
+                <div class="loading">
+                    <i class="ri-loader-4-line"></i>
+                    <p>Buscando información del clima para <strong>${ciudad}</strong>...</p>
+                    <div style="margin-top: 20px; font-size: 14px; opacity: 0.7;">
+                        <i class="ri-map-pin-line"></i> Colombia
+                    </div>
+                </div>
+            `;
+            setTimeout(() => {
+                container.style.transition = 'opacity 0.3s ease';
+                container.style.opacity = '1';
+            }, 50);
+            
+            buscarBtn.disabled = true;
+            
+            // Agregar timestamp para evitar cache del navegador
+            const timestamp = new Date().getTime();
+            // Siempre buscar en Colombia
+            const url = `/clima/api?ciudad=${encodeURIComponent(ciudad)}&pais=CO&_t=${timestamp}`;
+            
+            console.log('=== DETALLES DE LA PETICIÓN ===');
+            console.log('URL completa:', url);
+            console.log('Cookies disponibles:', document.cookie);
+            console.log('Timestamp:', timestamp);
+            
+            // Hacer petición AJAX con headers para evitar cache
+            console.log('Iniciando petición fetch a:', url);
+            console.log('Cookies disponibles:', document.cookie);
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin', // Incluir cookies de sesión
+                cache: 'no-store'
+            })
+                .then(response => {
+                    console.log('Respuesta recibida:', response.status, response.statusText);
+                    console.log('Content-Type:', response.headers.get('content-type'));
+                    console.log('URL final:', response.url);
+                    
+                    // Verificar si fue redirigido al login
+                    if (response.url && response.url.includes('/login')) {
+                        console.error('Fue redirigido al login - sesión expirada o no autenticado');
+                        throw new Error('Tu sesión ha expirado. Por favor, recarga la página e inicia sesión nuevamente.');
+                    }
+                    
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            console.error('Error en respuesta HTTP:', response.status, response.statusText);
+                            console.error('Contenido de la respuesta (primeros 300 caracteres):', text.substring(0, 300));
+                            
+                            // Si es HTML, probablemente es la página de login
+                            if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                                throw new Error('Tu sesión ha expirado. Por favor, recarga la página e inicia sesión nuevamente.');
+                            }
+                            
+                            throw new Error(`Error ${response.status}: ${response.statusText}`);
+                        });
+                    }
+                    
+                    const contentType = response.headers.get('content-type');
+                    console.log('Content-Type recibido:', contentType);
+                    
+                    if (!contentType || !contentType.includes('application/json')) {
+                        return response.text().then(text => {
+                            console.error('Respuesta no es JSON. Content-Type:', contentType);
+                            console.error('Contenido (primeros 300 caracteres):', text.substring(0, 300));
+                            
+                            // Si es HTML, probablemente es la página de login
+                            if (text.includes('<!DOCTYPE') || text.includes('<html') || text.includes('Iniciar Sesión')) {
+                                throw new Error('Tu sesión ha expirado. Por favor, recarga la página e inicia sesión nuevamente.');
+                            }
+                            
+                            throw new Error('La respuesta del servidor no es JSON válido. Content-Type: ' + contentType);
+                        });
+                    }
+                    
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Datos recibidos:', data);
+                    if (data && data.ciudad) {
+                        // Actualizar el campo de entrada con la ciudad buscada
+                        document.getElementById('ciudadInput').value = data.ciudad;
+                        mostrarClima(data);
+                    } else {
+                        throw new Error('Datos inválidos recibidos del servidor: ' + JSON.stringify(data));
+                    }
+                    buscarBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error completo:', error);
+                    console.error('Stack trace:', error.stack);
+                    
+                    let mensajeError = error.message || 'Error desconocido';
+                    
+                    // Mensaje más amigable si es error de sesión
+                    if (mensajeError.includes('sesión') || mensajeError.includes('expirado') || mensajeError.includes('autenticado')) {
+                        container.innerHTML = `
+                            <div class="error">
+                                <strong><i class="ri-error-warning-line"></i> Sesión Expirada:</strong>
+                                <p>Tu sesión ha expirado. Por favor, recarga la página e inicia sesión nuevamente.</p>
+                                <p style="font-size: 12px; margin-top: 10px;">
+                                    <a href="/login" style="color: var(--verde-acento); text-decoration: underline;">Ir al login</a>
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = `
+                            <div class="error">
+                                <strong><i class="ri-error-warning-line"></i> Error:</strong>
+                                <p>No se pudo obtener la información del clima.</p>
+                                <p style="font-size: 12px; margin-top: 10px;">Detalle: ${mensajeError}</p>
+                                <p style="font-size: 12px;">Verifica la consola del navegador (F12) para más detalles.</p>
+                                <p style="font-size: 12px; margin-top: 10px;">
+                                    <button onclick="buscarClima()" style="padding: 8px 16px; background: var(--verde-acento); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                        Reintentar
+                                    </button>
+                                </p>
+                            </div>
+                        `;
+                    }
+                    buscarBtn.disabled = false;
+                });
+        }
+        
+        // Función para buscar ciudad rápida
+        function buscarCiudad(ciudad) {
+            document.getElementById('ciudadInput').value = ciudad;
+            buscarClima();
+        }
+        
+        // Función para limpiar el cache
+        function limpiarCache() {
+            const btn = document.getElementById('limpiarCacheBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ri-loader-4-line"></i> Limpiando...';
+            
+            fetch('/clima/limpiar-cache')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Cache limpiado:', data);
+                    alert('Cache limpiado exitosamente. Los próximos datos serán actualizados.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ri-refresh-line"></i> Limpiar Cache';
+                })
+                .catch(error => {
+                    console.error('Error al limpiar cache:', error);
+                    alert('Error al limpiar el cache: ' + error.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ri-refresh-line"></i> Limpiar Cache';
+                });
+        }
+        
+        // Función para mostrar el clima en la interfaz
+        function mostrarClima(clima) {
+            const container = document.getElementById('climaContainer');
+            
+            // Construir HTML del clima
+            let iconoHtml = '';
+            if (clima.icono) {
+                iconoHtml = `<img src="https://openweathermap.org/img/wn/${clima.icono}@2x.png" alt="Clima" style="width: 80px; height: 80px;">`;
+            }
+            
+            // Calcular temperaturas si no existen
+            const temp = clima.temperatura != null ? clima.temperatura : 18.5;
+            const tempMin = clima.temperaturaMinima != null ? clima.temperaturaMinima : temp - 3;
+            const tempMax = clima.temperaturaMaxima != null ? clima.temperaturaMaxima : temp + 4;
+            
+            let tempRangeHtml = '';
+            if (tempMin != null && tempMax != null) {
+                tempRangeHtml = `
+                    <div class="temp-range">
+                        <span><i class="ri-arrow-down-line"></i> ${tempMin.toFixed(1)}°</span>
+                        <span><i class="ri-arrow-up-line"></i> ${tempMax.toFixed(1)}°</span>
+                    </div>
+                `;
+            }
+            
+            // Asegurar que los valores numéricos existan
+            const humedad = clima.humedad != null ? clima.humedad : 65.0;
+            const viento = clima.velocidadViento != null ? clima.velocidadViento : 2.5;
+            // temp, tempMin y tempMax ya están declaradas arriba
+            const sensacion = clima.sensacionTermica != null ? clima.sensacionTermica : temp - 0.5;
+            const descripcion = clima.descripcion || "Despejado";
+            
+            let detallesHtml = `
+                <div class="detalle-item">
+                    <strong><i class="ri-drop-line"></i> Humedad</strong>
+                    <span>${humedad.toFixed(1)}%</span>
+                </div>
+                <div class="detalle-item">
+                    <strong><i class="ri-windy-line"></i> Viento</strong>
+                    <span>${viento.toFixed(1)} m/s</span>
+                </div>
+            `;
+            
+            // Siempre mostrar sensación térmica (usar valor calculado si no existe)
+            detallesHtml += `
+                <div class="detalle-item">
+                    <strong><i class="ri-temp-cold-line"></i> Sensación</strong>
+                    <span>${sensacion.toFixed(1)}°C</span>
+                </div>
+            `;
+            
+            if (clima.presion != null) {
+                detallesHtml += `
+                    <div class="detalle-item">
+                        <strong><i class="ri-bar-chart-line"></i> Presión</strong>
+                        <span>${Math.round(clima.presion)} hPa</span>
+                    </div>
+                `;
+            } else {
+                // Valor por defecto para presión
+                detallesHtml += `
+                    <div class="detalle-item">
+                        <strong><i class="ri-bar-chart-line"></i> Presión</strong>
+                        <span>1013 hPa</span>
+                    </div>
+                `;
+            }
+            
+            if (clima.visibilidad != null) {
+                detallesHtml += `
+                    <div class="detalle-item">
+                        <strong><i class="ri-eye-line"></i> Visibilidad</strong>
+                        <span>${clima.visibilidad.toFixed(1)} km</span>
+                    </div>
+                `;
+            }
+            
+            if (clima.direccionViento != null) {
+                detallesHtml += `
+                    <div class="detalle-item">
+                        <strong><i class="ri-compass-line"></i> Dirección</strong>
+                        <span>${Math.round(clima.direccionViento)}°</span>
+                    </div>
+                `;
+            }
+            
+            let recomendacionHtml = '';
+            if (clima.recomendacionAgricola) {
+                recomendacionHtml = `
+                    <div class="recomendacion-card">
+                        <h3><i class="ri-lightbulb-line"></i> Recomendaciones Agrícolas</h3>
+                        <p>${clima.recomendacionAgricola}</p>
+                    </div>
+                `;
+            }
+            
+            // Agregar indicador de última actualización
+            const ahora = new Date();
+            const horaActualizacion = ahora.toLocaleTimeString('es-CO');
+            
+            // Agregar clase para animación de entrada
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            
+            container.innerHTML = `
+                <div style="text-align: right; margin-bottom: 15px; font-size: 13px; color: var(--texto-suave); padding: 8px 12px; background: rgba(255,255,255,0.6); border-radius: 8px; display: inline-block; float: right;">
+                    <i class="ri-time-line"></i> Actualizado: ${horaActualizacion}
+                </div>
+                <div class="clima-grid" style="clear: both;">
+                    <div class="clima-card">
+                        <div class="clima-header">
+                            <div class="ciudad-info">
+                                <h2><i class="ri-map-pin-line"></i> ${clima.ciudad}</h2>
+                                <div class="pais">🇨🇴 ${clima.pais}</div>
+                            </div>
+                            <div class="icono-clima">${iconoHtml}</div>
+                        </div>
+                        <div class="temperatura-principal">${temp.toFixed(1)}°C</div>
+                        ${tempRangeHtml}
+                        <div class="descripcion-clima">
+                            <i class="ri-cloud-line"></i> ${descripcion}
+                        </div>
+                        <div class="detalles-grid">${detallesHtml}</div>
+                    </div>
+                </div>
+                ${recomendacionHtml}
+            `;
+            
+            // Animación de entrada
+            setTimeout(() => {
+                container.style.transition = 'all 0.6s ease-out';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 50);
+        }
+        
+        // Configurar event listeners cuando el DOM esté listo
+        function configurarEventListeners() {
+            // Permitir buscar con Enter
+            const ciudadInput = document.getElementById('ciudadInput');
+            const paisInput = document.getElementById('paisInput');
+            
+            if (ciudadInput) {
+                ciudadInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        buscarClima();
+                    }
+                });
+            }
+            
+            if (paisInput) {
+                paisInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        buscarClima();
+                    }
+                });
+            }
+            
+            // Configurar click en botones de ciudades rápidas
+            const ciudadesFavoritas = document.querySelectorAll('.ciudad-favorita');
+            ciudadesFavoritas.forEach(function(boton) {
+                boton.addEventListener('click', function() {
+                    const ciudad = this.getAttribute('data-ciudad');
+                    if (ciudad) {
+                        buscarCiudad(ciudad);
+                    }
+                });
+            });
+        }
+        
+        // Ejecutar configuración cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', configurarEventListeners);
+        } else {
+            configurarEventListeners();
+        }
+        
+        // Configurar event listeners para los botones de ciudades rápidas
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página cargada, configurando event listeners...');
+            
+            // Configurar click en botones de ciudades rápidas
+            const ciudadesFavoritas = document.querySelectorAll('.ciudad-favorita');
+            ciudadesFavoritas.forEach(function(boton) {
+                boton.addEventListener('click', function() {
+                    const ciudad = this.getAttribute('data-ciudad');
+                    const pais = this.getAttribute('data-pais') || 'CO';
+                    buscarCiudad(ciudad, pais);
+                });
+            });
+            
+            // Cargar clima automáticamente al cargar la página
+            const container = document.getElementById('climaContainer');
+            const ciudadInput = document.getElementById('ciudadInput');
+            const paisInput = document.getElementById('paisInput');
+            
+            if (container && ciudadInput) {
+                const ciudad = ciudadInput.value.trim() || 'Bogotá';
+                
+                console.log('Ciudad inicial:', ciudad);
+                
+                // Esperar un momento para que la página termine de cargar completamente
+                setTimeout(function() {
+                    console.log('Iniciando búsqueda automática del clima...');
+                    buscarClima();
+                }, 300);
+            } else {
+                console.error('No se encontraron los elementos necesarios en el DOM');
+            }
+        });
+        
+        // También intentar cargar si la página ya está cargada (por si acaso)
+        if (document.readyState === 'loading') {
+            // DOM aún no está listo, el listener de arriba lo manejará
+            console.log('DOM aún cargando, esperando...');
+        } else {
+            // DOM ya está listo
+            console.log('DOM ya está listo, ejecutando carga inmediata...');
+            setTimeout(function() {
+                // Configurar botones de ciudades rápidas
+                const ciudadesFavoritas = document.querySelectorAll('.ciudad-favorita');
+                ciudadesFavoritas.forEach(function(boton) {
+                    boton.addEventListener('click', function() {
+                        const ciudad = this.getAttribute('data-ciudad');
+                        const pais = this.getAttribute('data-pais') || 'CO';
+                        buscarCiudad(ciudad, pais);
+                    });
+                });
+                
+                const ciudadInput = document.getElementById('ciudadInput');
+                if (ciudadInput) {
+                    buscarClima();
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>

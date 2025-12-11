@@ -1,0 +1,168 @@
+================================================================================
+AGROSOFT - CARGA INICIAL DE DATOS
+================================================================================
+Este documento describe los datos que se cargan automáticamente al iniciar
+la aplicación mediante el componente DataInitializer.java
+
+ARCHIVOS RELACIONADOS:
+- carga_inicial_datos.sql (Script SQL para ejecutar manualmente)
+- src/main/java/com/example/agrosoft1/crud/config/DataInitializer.java (Código Java)
+
+================================================================================
+1. ROLES DEL SISTEMA
+================================================================================
+Se crean 3 roles básicos:
+
+┌──────────────┬────────────────────────────────────────────┐
+│ Nombre       │ Descripción                                │
+├──────────────┼────────────────────────────────────────────┤
+│ ADMIN        │ Administrador con todos los permisos       │
+│ VETERINARIO  │ Usuario con permisos veterinarios         │
+│ TRABAJADOR   │ Trabajador agrícola                        │
+└──────────────┴────────────────────────────────────────────┘
+
+================================================================================
+2. USUARIOS INICIALES
+================================================================================
+Se crean 3 usuarios de prueba con diferentes roles:
+
+┌─────────────────────┬──────────────────────────┬──────────────┬──────────┐
+│ Nombre              │ Correo                   │ Contraseña   │ Rol      │
+├─────────────────────┼──────────────────────────┼──────────────┼──────────┤
+│ Administrador       │ admin@agrosoft.local     │ admin123     │ ADMIN    │
+│ Principal           │                          │              │          │
+├─────────────────────┼──────────────────────────┼──────────────┼──────────┤
+│ Dr. Carlos          │ veterinario@agrosoft.local│ vet123       │ VETERINARIO│
+│ Veterinario         │                          │              │          │
+├─────────────────────┼──────────────────────────┼──────────────┼──────────┤
+│ Juan Trabajador     │ trabajador@agrosoft.local│ trab123      │ TRABAJADOR│
+└─────────────────────┴──────────────────────────┴──────────────┴──────────┘
+
+DATOS ADICIONALES:
+- Teléfonos: +57-3000000000, +57-3111111111, +57-3222222222
+- Documentos: 1234567890, 2345678901, 3456789012
+- Todos los usuarios están activos (activo = 1)
+
+NOTA: Las contraseñas están encriptadas con BCrypt en la base de datos.
+
+================================================================================
+3. PACIENTES (GANADO) DE EJEMPLO
+================================================================================
+Se crean 3 pacientes de ejemplo:
+
+┌──────┬───────────┬──────┬───────┬──────────────┬──────────────┐
+│ Tipo │ Raza      │ Edad │ Peso  │ Estado Salud │ Fecha Nac.   │
+├──────┼───────────┼──────┼───────┼──────────────┼──────────────┤
+│ Vaca │ Holstein  │ 5    │ 450kg │ Saludable    │ 2019-03-15   │
+├──────┼───────────┼──────┼───────┼──────────────┼──────────────┤
+│ Cerdo│ Yorkshire │ 2    │ 120kg │ En Tratamiento│ 2022-06-20 │
+├──────┼───────────┼──────┼───────┼──────────────┼──────────────┤
+│ Vaca │ Jersey    │ 3    │ 380kg │ Saludable    │ 2021-01-10   │
+└──────┴───────────┴──────┴───────┴──────────────┴──────────────┘
+
+Todos los pacientes están marcados como activos.
+
+================================================================================
+4. TRATAMIENTOS DE EJEMPLO
+================================================================================
+Se crean 3 tratamientos asociados a los pacientes:
+
+┌─────────────────┬──────────────────┬──────────────┬─────────────┬──────────┐
+│ Animal          │ Tipo Tratamiento │ Fecha        │ Observaciones│ Costo   │
+├─────────────────┼──────────────────┼──────────────┼─────────────┼──────────┤
+│ Vaca Holstein   │ Vacunación       │ Hace 10 días │ Vacunación  │ $50,000  │
+│                 │                  │              │ anual contra│          │
+│                 │                  │              │ fiebre aftosa│         │
+├─────────────────┼──────────────────┼──────────────┼─────────────┼──────────┤
+│ Cerdo Yorkshire │ Desparasitación  │ Hace 5 días │ Tratamiento │ $35,000  │
+│                 │                  │              │ antiparasitario│       │
+│                 │                  │              │ completo    │          │
+├─────────────────┼──────────────────┼──────────────┼─────────────┼──────────┤
+│ Cerdo Yorkshire │ Antibiótico      │ Hoy (activo) │ Tratamiento │ $75,000  │
+│                 │                  │              │ por infección│         │
+│                 │                  │              │ respiratoria│          │
+└─────────────────┴──────────────────┴──────────────┴─────────────┴──────────┘
+
+Veterinario responsable: Dr. Carlos Veterinario
+
+================================================================================
+CÓMO FUNCIONA LA CARGA AUTOMÁTICA
+================================================================================
+
+1. AL INICIAR LA APLICACIÓN:
+   - Spring Boot detecta el componente @Component DataInitializer
+   - Se ejecuta automáticamente el método run() al iniciar
+
+2. VERIFICACIÓN DE DATOS:
+   - Verifica si ya existen usuarios en la base de datos
+   - Si hay usuarios, NO ejecuta la carga (evita duplicados)
+   - Si NO hay usuarios, procede a crear todos los datos
+
+3. ORDEN DE CREACIÓN:
+   1. Roles (ADMIN, VETERINARIO, TRABAJADOR)
+   2. Usuarios (admin, veterinario, trabajador)
+   3. Pacientes/Ganado (3 ejemplos)
+   4. Tratamientos (3 ejemplos asociados)
+
+4. TRANSACCIONAL:
+   - Si algo falla, revierte todos los cambios
+   - Garantiza integridad de datos
+
+================================================================================
+EJECUTAR MANUALMENTE (OPCIONAL)
+================================================================================
+
+Si quieres cargar los datos manualmente sin ejecutar la aplicación:
+
+1. Desde línea de comandos MySQL:
+   mysql -u root -p agrosft < carga_inicial_datos.sql
+
+2. Desde MySQL Workbench:
+   - File > Run SQL Script
+   - Selecciona el archivo carga_inicial_datos.sql
+   - Ejecuta
+
+3. Desde consola MySQL:
+   source /ruta/completa/carga_inicial_datos.sql;
+
+NOTA: El script usa INSERT IGNORE para evitar duplicados si ya existen datos.
+
+================================================================================
+VERIFICAR DATOS CARGADOS
+================================================================================
+
+Ejecuta estas consultas SQL para verificar:
+
+-- Ver roles
+SELECT * FROM roles;
+
+-- Ver usuarios con sus roles
+SELECT u.id, u.nombre, u.correo, r.nombre AS rol, u.activo 
+FROM usuarios u 
+LEFT JOIN roles r ON u.role_id = r.id;
+
+-- Ver ganado
+SELECT id_ganado, tipo, raza, edad, peso, estado_salud, activo 
+FROM ganado;
+
+-- Ver tratamientos
+SELECT t.id_tratamiento, g.tipo AS animal, t.tipo_tratamiento, 
+       t.fecha_tratamiento, t.costo
+FROM tratamientos t
+LEFT JOIN ganado g ON t.id_ganado = g.id_ganado;
+
+================================================================================
+RESUMEN DE DATOS
+================================================================================
+
+✓ 3 Roles creados
+✓ 3 Usuarios creados
+✓ 3 Pacientes/Ganado creados
+✓ 3 Tratamientos creados
+
+Total: 12 registros iniciales
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================
+

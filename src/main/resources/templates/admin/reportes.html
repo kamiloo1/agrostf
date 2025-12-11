@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes Estadísticos - AgroSoft</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --verde-oscuro: #0d4f3d;
+            --verde-med: #1a7a5e;
+            --verde-acento: #2d8659;
+            --verde-claro: #e8f5f0;
+            --blanco: #ffffff;
+            --texto: #1a1a1a;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--verde-claro);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--blanco);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: var(--verde-oscuro);
+            margin-bottom: 30px;
+        }
+        .report-section {
+            background: var(--verde-claro);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .report-section h3 {
+            color: var(--verde-oscuro);
+            margin-top: 0;
+        }
+        .report-section p {
+            color: #495057;
+            line-height: 1.6;
+        }
+        .btn-generar {
+            display: inline-block;
+            padding: 15px 30px;
+            background: var(--verde-acento);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-generar:hover {
+            background: var(--verde-med);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 134, 89, 0.3);
+        }
+        .info-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        a.back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--verde-acento);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="ri-file-chart-line"></i> Reportes Estadísticos</h1>
+
+        <div class="info-box">
+            <strong><i class="ri-information-line"></i> Información:</strong><br>
+            Los reportes se generan en formato PDF y se descargan automáticamente.<br>
+            También se guardan en la carpeta <code>reportes/</code> del proyecto.
+        </div>
+
+        <!-- PATRÓN FACTORY: Mostrar diferentes tipos de reportes disponibles -->
+        <div class="report-section" th:if="${reporteCultivo}">
+            <h3><i class="ri-leaf-line"></i> <span th:text="${reporteCultivo.nombreReporte}">Reporte de Cultivos</span></h3>
+            <p th:text="${reporteCultivo.descripcion}">Reporte estadístico de cultivos del sistema</p>
+            <a th:href="@{/admin/reportes/generar(tipo='CULTIVO')}" class="btn-generar">
+                <i class="ri-file-chart-line"></i> Ver Reporte de Cultivos
+            </a>
+        </div>
+
+        <div class="report-section" th:if="${reporteGanado}">
+            <h3><i class="ri-cow-line"></i> <span th:text="${reporteGanado.nombreReporte}">Reporte de Ganado</span></h3>
+            <p th:text="${reporteGanado.descripcion}">Reporte estadístico de ganado del sistema</p>
+            <a th:href="@{/admin/reportes/generar(tipo='GANADO')}" class="btn-generar">
+                <i class="ri-file-chart-line"></i> Ver Reporte de Ganado
+            </a>
+        </div>
+
+        <div class="report-section" th:if="${reporteGeneral}">
+            <h3><i class="ri-dashboard-line"></i> <span th:text="${reporteGeneral.nombreReporte}">Reporte General</span></h3>
+            <p th:text="${reporteGeneral.descripcion}">Reporte estadístico general que incluye usuarios, cultivos y ganado</p>
+            <a th:href="@{/admin/reportes/generar(tipo='GENERAL')}" class="btn-generar">
+                <i class="ri-file-chart-line"></i> Ver Reporte General
+            </a>
+        </div>
+
+        <div class="report-section">
+            <h3><i class="ri-bar-chart-line"></i> Reporte Estadístico Completo (PDF con Gráficas)</h3>
+            <p>Este reporte incluye:</p>
+            <ul>
+                <li>Total de pacientes (ganado) registrados</li>
+                <li>Total de tratamientos realizados</li>
+                <li>Tratamientos activos (últimos 30 días)</li>
+                <li>Tratamientos inactivos</li>
+                <li>Distribución de pacientes por tipo</li>
+                <li>Distribución de tratamientos por tipo</li>
+                <li><strong>Gráficas estadísticas visuales:</strong>
+                    <ul style="margin-top: 5px;">
+                        <li>Gráfica de pastel: Tratamientos Activos vs Inactivos</li>
+                        <li>Gráfica de pastel: Distribución de Pacientes por Tipo</li>
+                        <li>Gráfica de barras: Tratamientos por Tipo</li>
+                    </ul>
+                </li>
+                <li>Tablas estadísticas organizadas</li>
+            </ul>
+            <a th:href="@{/admin/reportes/generar-pdf}" class="btn-generar" download>
+                <i class="ri-download-line"></i> Generar y Descargar PDF
+            </a>
+        </div>
+
+        <a th:href="@{/dashboard/administrador}" class="back-link">
+            <i class="ri-arrow-left-line"></i> Volver al Dashboard
+        </a>
+    </div>
+</body>
+</html>
+
