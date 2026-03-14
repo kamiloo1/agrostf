@@ -3,15 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <title>Gestión de Cultivos | AgroSoft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; overflow-y: auto; background: var(--verde); color: white; padding: 30px 20px; border-radius: 0; box-shadow: none; z-index: 1000; }
+    .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+    .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+    .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+    .nav-menu { list-style: none; }
+    .nav-menu li { margin-bottom: 8px; }
+    .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+    .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+    .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+    .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+    .main-content { margin-left: 264px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; padding: 0; }
+    .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+    .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+    .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+    .top-header .notif-wrap { position: relative; }
+    .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+    .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+    .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+    .notif-dropdown.show { display: flex; }
+    .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+    .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+    .notif-list { overflow-y: auto; max-height: 320px; }
+    .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+    .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+    .notif-item.notif-no-leida { background: #f0f9f4; }
+    .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+    .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+    .main-content .content-wrap { flex: 1; padding: 24px 32px; overflow: visible; }
+    @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
   <style>
     :root {
       /* Paleta de colores unificada AgroSoft */
-      --verde-oscuro: #0d4f3d;
-      --verde-med: #1a7a5e;
-      --verde-acento: #2d8659;
+      --verde: #2F5D39;
+      --verde-oscuro: #1e4620;
       --verde-claro: #e8f5f0;
-      --verde-suave: #d4edda;
+      --verde-claro: #e8f5f0;
       --gris-fondo: #f5f7fa;
       --gris-borde: #e9ecef;
       --blanco: #ffffff;
@@ -34,17 +65,19 @@
     }
 
     aside {
-      width: 260px;
-      background: linear-gradient(160deg, var(--verde-oscuro), #0a3d2d);
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 240px;
+      height: 100vh;
+      background: var(--verde);
       color: var(--blanco);
       padding: 30px 24px;
       display: flex;
       flex-direction: column;
       gap: 24px;
-      box-shadow: 12px 0 30px var(--sombra);
-      position: sticky;
-      top: 0;
-      height: 100vh;
+      box-shadow: none;
+      z-index: 1000;
     }
 
     .branding h2 {
@@ -123,7 +156,7 @@
     .page-header h1 {
       font-family: 'Playfair Display', serif;
       font-size: 34px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       margin: 0;
     }
 
@@ -145,7 +178,7 @@
     .header-actions button {
       background: #fff;
       border: 1px solid rgba(46, 125, 50, 0.2);
-      color: var(--verde-med);
+      color: var(--verde);
       padding: 10px 18px;
       border-radius: 10px;
       cursor: pointer;
@@ -158,7 +191,7 @@
     }
 
     .header-actions button.primary {
-      background: linear-gradient(135deg, var(--verde-med), #66bb6a);
+      background: var(--verde);
       color: #fff;
       border: none;
     }
@@ -211,7 +244,7 @@
       margin: 0;
       font-family: 'Playfair Display', serif;
       font-size: 30px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       display: flex;
       align-items: center;
       gap: 12px;
@@ -238,7 +271,7 @@
       padding: 8px 14px;
       border-radius: 999px;
       background: rgba(255,255,255,0.85);
-      color: var(--verde-med);
+      color: var(--verde);
       font-weight: 600;
       font-size: 12px;
       letter-spacing: 0.6px;
@@ -261,7 +294,7 @@
       gap: 8px;
       font-weight: 600;
       background: rgba(255, 255, 255, 0.92);
-      color: var(--verde-med);
+      color: var(--verde);
       box-shadow: 0 14px 30px rgba(46, 125, 50, 0.14);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -347,18 +380,19 @@
       text-transform: uppercase;
       letter-spacing: 0.6px;
       color: rgba(41, 94, 60, 0.7);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .season-card strong {
       font-size: 26px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       font-weight: 700;
     }
 
     .season-card small {
       font-size: 12px;
       color: rgba(43, 78, 65, 0.7);
+      font-weight: 600;
     }
 
     .season-mood {
@@ -381,7 +415,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     #refreshSeasonMessage {
@@ -389,7 +423,7 @@
       border-radius: 12px;
       padding: 10px 16px;
       background: rgba(46,125,50,0.16);
-      color: var(--verde-med);
+      color: var(--verde);
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
@@ -477,7 +511,7 @@
 
     .stat-card header i {
       font-size: 28px;
-      color: var(--verde-med);
+      color: var(--verde);
       background: rgba(46, 125, 50, 0.12);
       padding: 10px;
       border-radius: 12px;
@@ -486,7 +520,7 @@
     .stat-card h3 {
       margin: 0;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 700;
       color: rgba(27, 94, 32, 0.7);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -495,15 +529,16 @@
     .stat-card strong {
       font-size: 30px;
       font-weight: 700;
-      color: var(--verde-oscuro);
+      color: var(--verde);
     }
 
     .stat-trend {
       font-size: 12px;
-      color: var(--verde-med);
+      color: var(--verde);
       display: flex;
       align-items: center;
       gap: 6px;
+      font-weight: 600;
     }
 
     .filters-panel {
@@ -524,7 +559,7 @@
       position: absolute;
       top: -12px;
       left: 24px;
-      background: var(--verde-med);
+      background: var(--verde);
       color: #fff;
       padding: 4px 12px;
       border-radius: 12px;
@@ -554,7 +589,7 @@
     .filters-panel input:focus,
     .filters-panel select:focus {
       outline: none;
-      border-color: var(--verde-med);
+      border-color: var(--verde);
       box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
     }
 
@@ -566,7 +601,7 @@
     }
 
     .filters-panel .filter-actions button {
-      background: var(--verde-med);
+      background: var(--verde);
       color: #fff;
       border: none;
       padding: 12px 18px;
@@ -580,7 +615,7 @@
 
     .filters-panel .filter-actions button.secondary {
       background: rgba(46, 125, 50, 0.12);
-      color: var(--verde-med);
+      color: var(--verde);
     }
 
     .quick-chips {
@@ -611,7 +646,7 @@
       font-weight: 600;
       cursor: pointer;
       background: rgba(46, 125, 50, 0.14);
-      color: var(--verde-med);
+      color: var(--verde);
       box-shadow: 0 10px 20px rgba(27, 94, 32, 0.12);
       transition: all 0.2s ease;
       display: inline-flex;
@@ -620,7 +655,7 @@
     }
 
     .quick-chips button.active {
-      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      background: var(--verde);
       color: #fff;
       box-shadow: 0 16px 28px rgba(27, 94, 32, 0.22);
     }
@@ -639,7 +674,7 @@
     }
 
     thead tr {
-      background: linear-gradient(135deg, var(--verde-oscuro), var(--verde-med));
+      background: var(--verde);
       color: #fff;
     }
 
@@ -676,7 +711,7 @@
       border-radius: 999px;
       font-size: 13px;
       background: rgba(76, 175, 80, 0.12);
-      color: var(--verde-med);
+      color: var(--verde);
       font-weight: 500;
     }
 
@@ -688,7 +723,7 @@
 
     .area-indicator span {
       font-weight: 600;
-      color: var(--verde-oscuro);
+      color: var(--verde);
     }
 
     .area-progress {
@@ -701,7 +736,7 @@
 
     .area-progress .fill {
       height: 100%;
-      background: linear-gradient(135deg, var(--verde-med), #81c784);
+      background: var(--verde);
       border-radius: 999px;
       width: 0;
       transition: width 0.6s ease;
@@ -764,7 +799,7 @@
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
-      color: var(--verde-med);
+      color: var(--verde);
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
@@ -772,7 +807,7 @@
     }
 
     .view-toggle .toggle-group button.active {
-      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      background: var(--verde);
       color: #fff;
       box-shadow: 0 18px 30px rgba(36, 90, 54, 0.18);
     }
@@ -827,7 +862,7 @@
     .cultivo-card header h4 {
       margin: 0;
       font-size: 18px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
     }
 
     .cultivo-card header span {
@@ -835,7 +870,7 @@
       align-items: center;
       gap: 6px;
       background: rgba(46, 125, 50, 0.14);
-      color: var(--verde-med);
+      color: var(--verde);
       padding: 6px 12px;
       border-radius: 999px;
       font-weight: 600;
@@ -866,7 +901,7 @@
       bottom: 0;
       width: 0;
       border-radius: 999px;
-      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      background: var(--verde);
       transition: width 0.6s ease;
     }
 
@@ -920,7 +955,7 @@
     .form-section h3 {
       margin-top: 0;
       font-size: 20px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       margin-bottom: 18px;
       display: flex;
       align-items: center;
@@ -962,7 +997,7 @@
     .form-group input:focus,
     .form-group textarea:focus {
       outline: none;
-      border-color: var(--verde-med);
+      border-color: var(--verde);
       box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
     }
 
@@ -984,13 +1019,13 @@
     }
 
     .form-actions button.submit {
-      background: var(--verde-med);
+      background: var(--verde);
       color: #fff;
     }
 
     .form-actions button.clear {
       background: rgba(46,125,50,0.12);
-      color: var(--verde-med);
+      color: var(--verde);
     }
 
     .edit-form {
@@ -1018,7 +1053,7 @@
     .secondary-card h4 {
       margin: 0;
       font-size: 18px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1045,12 +1080,12 @@
     .activity-item span:first-child,
     .task-item span:first-child {
       font-weight: 600;
-      color: var(--verde-med);
+      color: var(--verde);
     }
 
     .mini-badge {
       background: rgba(255,255,255,0.9);
-      color: var(--verde-med);
+      color: var(--verde);
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 12px;
@@ -1077,6 +1112,8 @@
     }
   </style>
   <script th:src="@{/js/proteccion-vista.js}"></script>
+  <script th:src="@{/js/notificaciones.js}"></script>
+  <script th:src="@{/js/toast.js}"></script>
 </head>
 <body>
 
@@ -1084,27 +1121,37 @@
 <div class="floating-leaf leaf-2"></div>
 <div class="floating-leaf leaf-3"></div>
 
-<aside>
-  <div class="branding">
-    <h2>AgroSoft</h2>
-    <span>Panel de Control de Cultivos</span>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>🌿 AgroSoft</h1>
+    <span class="role-badge" th:text="${isTrabajador} ? 'Trabajador' : 'Administrador'">Administrador</span>
   </div>
-
-  <div class="user-card">
-    <p><i class="ri-user-line"></i> <span th:text="${usuario}">Administrador</span></p>
-    <small>Coordinador de Producción</small>
-  </div>
-
-  <nav>
-    <a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i>Dashboard General</a>
-    <a><i class="ri-plant-line"></i>Siembras programadas</a>
-    <a th:href="@{/admin/cultivos}" class="active"><i class="ri-leaf-line"></i>Cultivos</a>
-    <a><i class="ri-bar-chart-2-line"></i>Análisis</a>
-    <a th:href="@{/logout}"><i class="ri-logout-circle-line"></i>Cerrar sesión</a>
-  </nav>
+  <ul class="nav-menu">
+    <th:block th:if="${isTrabajador}">
+      <li><a th:href="@{/dashboard/trabajador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+      <li><a th:href="@{/admin/cultivos}" class="active"><i class="ri-leaf-line"></i> Cultivos</a></li>
+      <li><a th:href="@{/trabajador/actividades}"><i class="ri-task-line"></i> Actividades</a></li>
+      <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+      <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+    </th:block>
+    <th:block th:unless="${isTrabajador}">
+      <li><a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+      <li><a th:href="@{/admin/usuarios}"><i class="ri-user-line"></i> Usuarios</a></li>
+      <li><a th:href="@{/admin/cultivos}" class="active"><i class="ri-leaf-line"></i> Cultivos</a></li>
+      <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
+      <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+      <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+      <li><a th:href="@{/admin/correos}"><i class="ri-mail-send-line"></i> Correos</a></li>
+      <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+    </th:block>
+    <li><a th:href="@{/cuenta/cambiar-password}"><i class="ri-lock-password-line"></i> Mi cuenta</a></li>
+    <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+  </ul>
 </aside>
 
-<main>
+<main class="main-content">
+  <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+  <div class="content-wrap">
   <header class="page-header">
     <div>
       <h1>
@@ -1113,15 +1160,9 @@
       </h1>
     </div>
     <div class="header-actions">
-      <a th:href="@{/admin/cultivos/exportar-pdf}" class="secondary" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 12px; background: var(--verde-med); color: #fff; font-weight: 600; transition: all 0.2s ease;" 
-         onmouseover="this.style.background='var(--verde-oscuro)'; this.style.transform='translateY(-1px)';" 
-         onmouseout="this.style.background='var(--verde-med)'; this.style.transform='translateY(0)';"
-         title="Generar reporte PDF estadístico">
-        <i class="ri-file-pdf-line"></i> Exportar PDF Estadístico
-      </a>
-      <a th:href="@{/admin/cultivos/exportar}" class="secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 12px; background: var(--verde-med); color: #fff; font-weight: 600; transition: all 0.2s ease;" 
-         onmouseover="this.style.background='var(--verde-oscuro)'; this.style.transform='translateY(-1px)';" 
-         onmouseout="this.style.background='var(--verde-med)'; this.style.transform='translateY(0)';"
+      <a th:href="@{/admin/cultivos/exportar}" class="secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 12px; background: var(--verde); color: #fff; font-weight: 600; transition: all 0.2s ease;" 
+         onmouseover="this.style.background='var(--verde)'; this.style.transform='translateY(-1px)';" 
+         onmouseout="this.style.background='var(--verde)'; this.style.transform='translateY(0)';"
          title="Exportar datos a Excel">
         <i class="ri-file-excel-2-line"></i> Exportar a Excel
       </a>
@@ -1477,6 +1518,7 @@
       </ul>
     </article>
   </section>
+  </div><!-- content-wrap -->
 </main>
 
 <script>
@@ -1727,12 +1769,12 @@
         if (data.status === 'ok') {
           location.reload(); // Recargar para reflejar cambios
         } else {
-          alert('No fue posible cambiar el estado del cultivo. Intente nuevamente.');
+          if (typeof showToast === 'function') showToast('No fue posible cambiar el estado del cultivo. Intente nuevamente.', 'error'); else alert('No fue posible cambiar el estado del cultivo. Intente nuevamente.');
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Error de comunicación con el servidor: ' + error.message);
+        if (typeof showToast === 'function') showToast('Error de comunicación con el servidor: ' + error.message, 'error'); else alert('Error de comunicación con el servidor: ' + error.message);
       });
   }
 
@@ -1753,10 +1795,10 @@
           updateSeasonUI();
           applyFilters();
         } else {
-          alert('No fue posible eliminar el cultivo. Intente nuevamente.');
+          if (typeof showToast === 'function') showToast('No fue posible eliminar el cultivo. Intente nuevamente.', 'error'); else alert('No fue posible eliminar el cultivo. Intente nuevamente.');
         }
       })
-      .catch(() => alert('Error de comunicación con el servidor.'));
+      .catch(() => { if (typeof showToast === 'function') showToast('Error de comunicación con el servidor.', 'error'); else alert('Error de comunicación con el servidor.'); });
   }
 
   function toggleChip(code) {

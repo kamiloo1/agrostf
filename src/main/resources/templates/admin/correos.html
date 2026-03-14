@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envío Masivo de Correos - AgroSoft</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --verde: #2F5D39;
+            --verde-oscuro: #1e4620;
+            --verde-claro: #e8f5f0;
+            --blanco: #ffffff;
+            --texto: #1a1a1a;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--verde-claro);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--blanco);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: var(--verde);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--verde);
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #a8d5ba;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        button {
+            padding: 12px 24px;
+            background: var(--verde);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        button:hover {
+            background: var(--verde);
+        }
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #a8d5ba;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: white;
+            cursor: pointer;
+        }
+        select:hover {
+            border-color: var(--verde);
+        }
+        .plantilla-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .plantilla-card:hover {
+            border-color: var(--verde);
+            background: #f0f7f4;
+        }
+        .plantilla-card.selected {
+            border-color: var(--verde);
+            background: var(--verde-claro);
+        }
+        .plantilla-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .plantilla-nombre {
+            font-weight: 600;
+            color: var(--verde);
+            font-size: 16px;
+        }
+        .plantilla-categoria {
+            background: var(--verde);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .plantilla-preview {
+            color: #666;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .btn-usar-plantilla {
+            background: var(--verde);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .btn-usar-plantilla:hover {
+            background: var(--verde);
+        }
+        .section-title {
+            color: var(--verde);
+            font-size: 18px;
+            font-weight: 600;
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--verde-claro);
+        }
+        .usuarios-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f8f9fa;
+            margin-bottom: 15px;
+        }
+        .usuario-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
+        }
+        .usuario-item:hover {
+            background: var(--verde-claro);
+            border-color: var(--verde);
+        }
+        .usuario-item input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .usuario-info {
+            flex: 1;
+        }
+        .usuario-nombre {
+            font-weight: 600;
+            color: var(--verde);
+            font-size: 14px;
+        }
+        .usuario-correo {
+            color: #666;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        .usuario-rol {
+            background: var(--verde);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+        .btn-rapido {
+            background: var(--verde);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .btn-rapido:hover {
+            background: var(--verde);
+        }
+        .btn-rapido.active {
+            background: var(--verde);
+        }
+        .botones-rapidos {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--verde);
+            text-decoration: none;
+        }
+    </style>
+<link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <style>
+      :root { --verde: #2F5D39; --verde-oscuro: #1e4620; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; }
+      .sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100vh; overflow-y: auto; background: var(--verde); color: white; padding: 30px 20px; border-radius: 0; box-shadow: none; z-index: 1000; }
+      .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+      .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+      .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+      .nav-menu { list-style: none; }
+      .nav-menu li { margin-bottom: 8px; }
+      .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+      .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+      .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+      .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+      .main-content { margin-left: 224px; flex: 1; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+      .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+      .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+      .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+      .top-header .notif-wrap { position: relative; }
+      .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+      .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+      .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+      .notif-dropdown.show { display: flex; }
+      .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+      .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+      .notif-list { overflow-y: auto; max-height: 320px; }
+      .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+      .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+      .notif-item.notif-no-leida { background: #f0f9f4; }
+      .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+      .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+      .main-content .content-wrap { flex: 1; padding: 20px; }
+      @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+    </style>
+    <script th:src="@{/js/proteccion-vista.js}"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>🌿 AgroSoft</h1>
+            <span class="role-badge">Administrador</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+            <li><a th:href="@{/admin/usuarios}"><i class="ri-user-line"></i> Usuarios</a></li>
+            <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
+            <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
+            <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+            <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+            <li><a th:href="@{/admin/correos}" class="active"><i class="ri-mail-send-line"></i> Correos</a></li>
+            <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+            <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+        </ul>
+    </aside>
+    <div class="main-content">
+    <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+    <div class="content-wrap">
+    <div class="container">
+        <h1><i class="ri-mail-send-line"></i> Envío Masivo de Correos</h1>
+        
+        <div th:if="${success}" class="alert alert-success">
+            <i class="ri-checkbox-circle-line"></i> <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+            <i class="ri-error-warning-line"></i> <span th:text="${error}"></span>
+        </div>
+
+        <div class="info">
+            <strong><i class="ri-information-line"></i> Instrucciones:</strong><br>
+            Puede usar una plantilla predeterminada o escribir un correo personalizado.<br>
+            Ingrese los correos electrónicos separados por comas, punto y coma o saltos de línea.<br>
+            Ejemplo: correo1@ejemplo.com, correo2@ejemplo.com; correo3@ejemplo.com
+        </div>
+
+        <!-- Sección de Plantillas Predeterminadas -->
+        <div th:if="${plantillas != null and !plantillas.isEmpty()}">
+            <h2 class="section-title">
+                <i class="ri-file-list-3-line"></i> Plantillas Predeterminadas
+            </h2>
+            <div id="plantillas-container">
+                <div th:each="plantilla : ${plantillas}" class="plantilla-card" 
+                     th:data-id="${plantilla.id}"
+                     th:data-asunto="${plantilla.asunto}"
+                     th:data-mensaje="${plantilla.mensaje}">
+                    <div class="plantilla-header">
+                        <span class="plantilla-nombre" th:text="${plantilla.nombre}"></span>
+                        <span class="plantilla-categoria" th:text="${plantilla.categoria}"></span>
+                    </div>
+                    <div class="plantilla-preview">
+                        <strong>Asunto:</strong> <span th:text="${plantilla.asunto}"></span>
+                    </div>
+                    <button type="button" class="btn-usar-plantilla" 
+                            th:onclick="'cargarPlantilla(' + ${plantilla.id} + ')'">
+                        <i class="ri-file-copy-line"></i> Usar esta plantilla
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Selección Rápida de Usuarios -->
+        <div th:if="${usuarios != null and !usuarios.isEmpty()}">
+            <h2 class="section-title">
+                <i class="ri-user-line"></i> Selección Rápida de Destinatarios
+            </h2>
+            
+            <div class="botones-rapidos">
+                <button type="button" class="btn-rapido" onclick="seleccionarTodos()">
+                    <i class="ri-checkbox-multiple-line"></i> Seleccionar Todos
+                </button>
+                <button type="button" class="btn-rapido" onclick="deseleccionarTodos()">
+                    <i class="ri-checkbox-blank-line"></i> Deseleccionar Todos
+                </button>
+                <button type="button" class="btn-rapido" onclick="seleccionarPorRol('ADMIN')">
+                    <i class="ri-admin-line"></i> Solo Administradores
+                </button>
+                <button type="button" class="btn-rapido" onclick="seleccionarPorRol('VETERINARIO')">
+                    <i class="ri-user-heart-line"></i> Solo Veterinarios
+                </button>
+                <button type="button" class="btn-rapido" onclick="seleccionarPorRol('TRABAJADOR')">
+                    <i class="ri-user-line"></i> Solo Trabajadores
+                </button>
+                <button type="button" class="btn-rapido" onclick="cargarCorreosSeleccionados()">
+                    <i class="ri-arrow-down-line"></i> Cargar Correos Seleccionados
+                </button>
+            </div>
+            
+            <div class="usuarios-container">
+                <div th:each="usuario : ${usuarios}" class="usuario-item">
+                    <input type="checkbox" 
+                           class="usuario-checkbox" 
+                           th:id="'usuario-' + ${usuario.id}"
+                           th:data-correo="${usuario.correo}"
+                           th:data-rol="${usuario.role != null ? usuario.role.nombre : ''}"
+                           onchange="actualizarContador()">
+                    <div class="usuario-info">
+                        <div class="usuario-nombre" th:text="${usuario.nombre != null ? usuario.nombre : 'Sin nombre'}"></div>
+                        <div class="usuario-correo" th:text="${usuario.correo}"></div>
+                    </div>
+                    <span class="usuario-rol" 
+                          th:text="${usuario.role != null ? usuario.role.nombre : 'Sin rol'}"
+                          th:if="${usuario.role != null}"></span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; color: #666; font-size: 13px;">
+                <i class="ri-information-line"></i> 
+                <span id="contador-seleccionados">0</span> usuario(s) seleccionado(s)
+            </div>
+        </div>
+
+        <!-- Formulario de Envío -->
+        <h2 class="section-title">
+            <i class="ri-mail-send-line"></i> Enviar Correo
+        </h2>
+
+        <form method="post" th:action="@{/admin/correos/enviar}">
+            <input type="hidden" name="plantillaId" id="plantillaId" value="">
+            
+            <div class="form-group">
+                <label for="correos">
+                    <i class="ri-mail-line"></i> Correos Destinatarios * 
+                    <span style="font-size: 12px; color: #666; font-weight: normal;">
+                        (Puede escribir manualmente o usar la selección rápida arriba)
+                    </span>
+                </label>
+                <textarea name="correos" id="correos" required 
+                    placeholder="correo1@ejemplo.com, correo2@ejemplo.com, correo3@ejemplo.com"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="asunto"><i class="ri-file-text-line"></i> Asunto *</label>
+                <input type="text" name="asunto" id="asunto" required 
+                    placeholder="Ej: Notificación importante del sistema">
+            </div>
+
+            <div class="form-group">
+                <label for="mensaje"><i class="ri-message-3-line"></i> Mensaje *</label>
+                <textarea name="mensaje" id="mensaje" required 
+                    placeholder="Escriba aquí el contenido del mensaje..."></textarea>
+            </div>
+
+            <button type="submit"><i class="ri-send-plane-line"></i> Enviar Correos Masivos</button>
+        </form>
+
+        <a th:href="@{/dashboard/administrador}"><i class="ri-arrow-left-line"></i> Volver al Dashboard</a>
+    </div>
+    </div><!-- content-wrap -->
+    </div><!-- main-content -->
+
+    <script>
+        function cargarPlantilla(plantillaId) {
+            // Buscar la plantilla en el DOM
+            const plantillaCard = document.querySelector(`[data-id="${plantillaId}"]`);
+            if (!plantillaCard) return;
+
+            // Obtener datos de la plantilla
+            const asunto = plantillaCard.getAttribute('data-asunto');
+            const mensaje = plantillaCard.getAttribute('data-mensaje');
+
+            // Llenar los campos del formulario
+            document.getElementById('asunto').value = asunto || '';
+            document.getElementById('mensaje').value = mensaje || '';
+            document.getElementById('plantillaId').value = plantillaId;
+
+            // Resaltar la plantilla seleccionada
+            document.querySelectorAll('.plantilla-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            plantillaCard.classList.add('selected');
+
+            // Scroll suave al formulario
+            document.querySelector('form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Funciones para selección rápida de usuarios
+        function seleccionarTodos() {
+            document.querySelectorAll('.usuario-checkbox').forEach(cb => {
+                cb.checked = true;
+            });
+            actualizarContador();
+        }
+        
+        function deseleccionarTodos() {
+            document.querySelectorAll('.usuario-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+            actualizarContador();
+        }
+        
+        function seleccionarPorRol(rol) {
+            document.querySelectorAll('.usuario-checkbox').forEach(cb => {
+                const rolUsuario = cb.getAttribute('data-rol');
+                cb.checked = (rolUsuario === rol);
+            });
+            actualizarContador();
+        }
+        
+        function cargarCorreosSeleccionados() {
+            const correos = [];
+            document.querySelectorAll('.usuario-checkbox:checked').forEach(cb => {
+                const correo = cb.getAttribute('data-correo');
+                if (correo && correo.trim() !== '') {
+                    correos.push(correo.trim());
+                }
+            });
+            
+            const textareaCorreos = document.getElementById('correos');
+            if (correos.length > 0) {
+                // Si ya hay correos, agregar los nuevos separados por comas
+                const correosExistentes = textareaCorreos.value.trim();
+                if (correosExistentes) {
+                    textareaCorreos.value = correosExistentes + ', ' + correos.join(', ');
+                } else {
+                    textareaCorreos.value = correos.join(', ');
+                }
+                
+                // Scroll al formulario
+                textareaCorreos.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                textareaCorreos.focus();
+            } else {
+                alert('Por favor, seleccione al menos un usuario');
+            }
+        }
+        
+        function actualizarContador() {
+            const seleccionados = document.querySelectorAll('.usuario-checkbox:checked').length;
+            const contador = document.getElementById('contador-seleccionados');
+            if (contador) {
+                contador.textContent = seleccionados;
+            }
+        }
+        
+        // Permitir cargar plantilla desde el selector (si se agrega uno)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Si hay un selector de plantillas, agregar funcionalidad
+            const selectorPlantilla = document.getElementById('selectorPlantilla');
+            if (selectorPlantilla) {
+                selectorPlantilla.addEventListener('change', function() {
+                    const plantillaId = this.value;
+                    if (plantillaId) {
+                        cargarPlantilla(parseInt(plantillaId));
+                    }
+                });
+            }
+            
+            // Inicializar contador
+            actualizarContador();
+        });
+    </script>
+</body>
+</html>
+

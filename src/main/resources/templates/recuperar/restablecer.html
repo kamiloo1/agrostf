@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/images/cultivos.png" type="image/png">
+  <title>Nueva contraseña - AgroSoft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root { --verde: #2F5D39; --verde-oscuro: #1e4620; --verde-claro: #e8f5f0; --gris-fondo: #f5f7fa; --gris-borde: #e9ecef; --texto: #1a1a1a; --texto-suave: #495057; --blanco: #fff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(140deg, var(--gris-fondo) 0%, var(--verde-claro) 100%); color: var(--texto); padding: 24px; }
+    .card { background: var(--blanco); border-radius: 20px; padding: 40px; max-width: 420px; width: 100%; box-shadow: 0 20px 50px rgba(47,93,57,0.12); }
+    .card h1 { color: var(--verde); font-size: 24px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .card p.sub { color: var(--texto-suave); font-size: 14px; margin-bottom: 24px; }
+    .feedback { padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
+    .feedback.error { background: #f8d7da; color: #721c24; }
+    .feedback.success { background: var(--verde-claro); color: var(--verde-oscuro); }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; color: var(--texto); }
+    .form-group input { width: 100%; padding: 12px 14px; border: 1px solid var(--gris-borde); border-radius: 10px; font-size: 15px; }
+    .form-group input:focus { outline: none; border-color: var(--verde); }
+    .btn { padding: 12px 20px; border: none; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; background: var(--verde); color: white; width: 100%; }
+    .btn:hover { background: var(--verde-oscuro); }
+    .link { display: block; text-align: center; margin-top: 20px; color: var(--verde); font-weight: 600; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1><i class="ri-lock-password-line"></i> Nueva contraseña</h1>
+    <p class="sub" th:if="${tokenInvalido}">Este enlace ha expirado o no es válido. <a th:href="@{/recuperar}">Solicita uno nuevo</a>.</p>
+    <p class="sub" th:unless="${tokenInvalido}">Elige una contraseña nueva (mínimo 6 caracteres).</p>
+    <div th:if="${error}" class="feedback error" th:text="${error}"></div>
+    <div th:if="${success}" class="feedback success" th:text="${success}"></div>
+    <form th:if="${!tokenInvalido}" th:action="@{/recuperar/restablecer}" method="post">
+      <input type="hidden" name="token" th:value="${token}">
+      <div class="form-group">
+        <label for="contrasenaNueva">Contraseña nueva *</label>
+        <input type="password" id="contrasenaNueva" name="contrasenaNueva" required minlength="6" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="form-group">
+        <label for="contrasenaConfirmar">Confirmar contraseña *</label>
+        <input type="password" id="contrasenaConfirmar" name="contrasenaConfirmar" required minlength="6" placeholder="Repite la contraseña">
+      </div>
+      <button type="submit" class="btn">Restablecer contraseña</button>
+    </form>
+    <a th:href="@{/login}" class="link">Volver al inicio de sesión</a>
+  </div>
+</body>
+</html>

@@ -1,20 +1,24 @@
 package com.example.agrosoft1.crud.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 /**
- * Configuración de propiedades personalizadas para el servicio de clima.
- * Elimina los warnings de propiedades desconocidas en application.properties.
+ * Configuración del servicio de clima (OpenWeatherMap).
+ * Las propiedades en application.properties con prefijo app.clima se enlazan aquí.
+ * Nombres en .properties: app.clima.api.key, app.clima.api.url, app.clima.timeout.seconds, app.clima.cache.enabled
  */
-@Configuration
+@Component
 @ConfigurationProperties(prefix = "app.clima")
-@SuppressWarnings("unused")
 public class ClimaProperties {
-    
+
+    /** API Key de OpenWeatherMap (demo_key = datos de ejemplo) */
     private String apiKey = "demo_key";
+    /** URL base de la API (ej. https://api.openweathermap.org/data/2.5) */
     private String apiUrl = "https://api.openweathermap.org/data/2.5";
+    /** Timeout en segundos para peticiones HTTP */
     private int timeoutSeconds = 5;
+    /** Habilitar cache de respuestas */
     private boolean cacheEnabled = true;
 
     public String getApiKey() {

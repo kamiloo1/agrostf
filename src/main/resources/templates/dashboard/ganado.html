@@ -3,13 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <title>Gestión de Ganado | AgroSoft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    .sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100vh; overflow-y: auto; background: var(--verde); color: white; padding: 30px 20px; border-radius: 0; box-shadow: none; z-index: 1000; }
+    .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+    .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+    .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+    .nav-menu { list-style: none; }
+    .nav-menu li { margin-bottom: 8px; }
+    .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+    .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+    .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+    .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+    .main-content { margin-left: 224px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; padding: 0; }
+    .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+    .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+    .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+    .top-header .notif-wrap { position: relative; }
+    .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+    .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+    .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+    .notif-dropdown.show { display: flex; }
+    .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+    .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+    .notif-list { overflow-y: auto; max-height: 320px; }
+    .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+    .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+    .notif-item.notif-no-leida { background: #f0f9f4; }
+    .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+    .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+    .main-content .content-wrap { flex: 1; padding: 24px 32px; overflow: visible; }
+    @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
   <style>
     :root {
       /* Paleta de colores unificada AgroSoft */
-      --verde-oscuro: #0d4f3d;
-      --verde-med: #1a7a5e;
-      --verde-acento: #2d8659;
+      --verde: #2F5D39;
+      --verde-oscuro: #1e4620;
       --verde-claro: #e8f5f0;
       --verde-suave: #d4edda;
       --gris-fondo: #f5f7fa;
@@ -41,17 +72,19 @@
     }
 
     aside {
-      width: 260px;
-      background: linear-gradient(162deg, var(--verde-oscuro), #0a3d2d);
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 240px;
+      height: 100vh;
+      background: var(--verde);
       color: #fff;
       padding: 34px 26px;
       display: flex;
       flex-direction: column;
       gap: 26px;
-      box-shadow: 18px 0 42px var(--sombra);
-      position: sticky;
-      top: 0;
-      height: 100vh;
+      box-shadow: none;
+      z-index: 1000;
     }
 
     .branding h2 {
@@ -132,7 +165,7 @@
       margin: 0;
       font-family: 'Playfair Display', serif;
       font-size: 34px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
     }
 
     .page-header h1 span {
@@ -140,7 +173,7 @@
       font-family: 'Roboto', sans-serif;
       font-size: 16px;
       font-weight: 400;
-      color: var(--verde-med);
+      color: var(--verde);
       margin-top: 4px;
     }
 
@@ -165,12 +198,12 @@
 
     .header-actions button.secondary {
       background: rgba(255,255,255,0.92);
-      color: var(--verde-med);
+      color: var(--verde);
       border: 1px solid var(--gris-borde);
     }
 
     .header-actions button.primary {
-      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      background: var(--verde);
       color: #fff;
     }
 
@@ -199,7 +232,7 @@
 
     .celebration-banner {
       position: relative;
-      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      background: var(--verde);
       border-radius: 28px;
       padding: 28px 32px;
       display: flex;
@@ -286,7 +319,7 @@
 
     .celebration-banner .banner-actions button.primary {
       background: white;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       box-shadow: 0 18px 32px var(--sombra);
     }
 
@@ -345,6 +378,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      min-height: 120px;
     }
 
     /* Imágenes de fondo decorativas para progress-card con overlay oscuro */
@@ -396,7 +430,7 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      color: var(--verde-oscuro);
+      color: #1a1a1a;
       position: relative;
       z-index: 1;
     }
@@ -409,9 +443,11 @@
     .progress-card p {
       margin: 0;
       font-size: 13px;
-      color: var(--texto-suave);
+      color: #1a1a1a;
       position: relative;
       z-index: 1;
+      word-wrap: break-word;
+      line-height: 1.4;
     }
 
     .progress-bar {
@@ -433,13 +469,13 @@
       bottom: 0;
       width: 0;
       border-radius: 999px;
-      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      background: var(--verde);
       transition: width 0.6s ease;
     }
 
     .progress-card small {
       font-size: 12px;
-      color: var(--texto-suave);
+      color: #1a1a1a;
       font-weight: 600;
       letter-spacing: 0.4px;
       position: relative;
@@ -475,7 +511,7 @@
       gap: 14px;
       position: relative;
       z-index: 1;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       font-weight: 600;
       font-size: 15px;
     }
@@ -487,7 +523,7 @@
     #refreshMessage {
       border: none;
       background: var(--verde-claro);
-      color: var(--verde-med);
+      color: var(--verde);
       border-radius: 14px;
       padding: 10px 16px;
       font-weight: 600;
@@ -546,6 +582,7 @@
       flex-direction: column;
       gap: 10px;
       isolation: isolate;
+      min-height: 140px;
     }
 
     .stat-card::before {
@@ -616,7 +653,7 @@
 
     .stat-card header i {
       font-size: 28px;
-      color: var(--verde-med);
+      color: var(--verde);
       background: rgba(101, 182, 122, 0.12);
       padding: 10px;
       border-radius: 14px;
@@ -625,24 +662,28 @@
     .stat-card h3 {
       margin: 0;
       font-size: 14px;
-      font-weight: 500;
-      color: var(--texto-suave);
+      font-weight: 600;
+      color: #1a1a1a;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .stat-card strong {
       font-size: 32px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       font-weight: 700;
     }
 
     .stat-trend {
       font-size: 12px;
-      color: var(--texto-suave);
+      color: #1a1a1a;
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
+      word-break: break-word;
+      min-height: 1.5em;
+      line-height: 1.4;
     }
 
     .analytics-section {
@@ -685,7 +726,7 @@
     .chart-card header h4 {
       margin: 0;
       font-size: 18px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -762,7 +803,7 @@
       font-weight: 600;
       cursor: pointer;
       background: var(--verde-claro);
-      color: var(--verde-acento);
+      color: var(--verde);
       box-shadow: var(--sombra-suave);
       display: inline-flex;
       align-items: center;
@@ -771,7 +812,7 @@
     }
 
     .quick-filters button.active {
-      background: var(--verde-acento);
+      background: var(--verde);
       color: #fff;
       box-shadow: 0 10px 24px var(--sombra);
     }
@@ -812,12 +853,12 @@
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
-      color: var(--verde-acento);
+      color: var(--verde);
       transition: all 0.2s ease;
     }
 
     .toggle-group button.active {
-      background: var(--verde-acento);
+      background: var(--verde);
       color: #fff;
       box-shadow: 0 10px 22px var(--sombra);
     }
@@ -864,12 +905,12 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
     }
 
     .animal-card header h5 i {
       font-size: 22px;
-      color: var(--verde-acento);
+      color: var(--verde);
       background: rgba(101, 182, 122, 0.16);
       padding: 8px;
       border-radius: 12px;
@@ -892,7 +933,7 @@
     }
 
     .animal-card .meta span i {
-      color: var(--verde-acento);
+      color: var(--verde);
     }
 
     .animal-card .footer {
@@ -922,7 +963,7 @@
 
     .range-wrapper input[type="range"] {
       flex: 1;
-      accent-color: var(--verde-acento);
+      accent-color: var(--verde);
     }
 
     .range-wrapper span {
@@ -954,7 +995,7 @@
     .timeline-section h3 {
       margin-top: 0;
       font-size: 20px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -983,7 +1024,7 @@
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: var(--verde-acento);
+      background: var(--verde);
       box-shadow: 0 0 0 4px rgba(101, 182, 122, 0.18);
     }
 
@@ -998,7 +1039,7 @@
     }
 
     .timeline-item strong {
-      color: var(--verde-oscuro);
+      color: var(--verde);
       font-size: 15px;
     }
 
@@ -1029,7 +1070,7 @@
       position: absolute;
       top: -14px;
       left: 24px;
-      background: var(--verde-med);
+      background: var(--verde);
       color: #fff;
       padding: 4px 12px;
       border-radius: 14px;
@@ -1060,7 +1101,7 @@
     .filters-panel input:focus,
     .filters-panel select:focus {
       outline: none;
-      border-color: var(--verde-med);
+      border-color: var(--verde);
       box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
     }
 
@@ -1083,13 +1124,13 @@
     }
 
     .filters-panel .filter-actions button.primary {
-      background: var(--verde-med);
+      background: var(--verde);
       color: #fff;
     }
 
     .filters-panel .filter-actions button.secondary {
       background: rgba(46,125,50,0.12);
-      color: var(--verde-med);
+      color: var(--verde);
     }
 
     .form-section {
@@ -1113,7 +1154,7 @@
 
     .form-section h3 {
       margin: 0 0 20px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1158,7 +1199,7 @@
     .form-group select:focus,
     .form-group textarea:focus {
       outline: none;
-      border-color: var(--verde-med);
+      border-color: var(--verde);
       box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
     }
 
@@ -1180,20 +1221,20 @@
     }
 
     .form-actions button.submit {
-      background: var(--verde-med);
+      background: var(--verde);
       color: #fff;
       transition: all 0.2s ease;
     }
 
     .form-actions button.submit:hover {
-      background: var(--verde-oscuro);
+      background: var(--verde);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(13, 79, 61, 0.3);
     }
 
     .form-actions button.clear {
       background: rgba(46,125,50,0.12);
-      color: var(--verde-med);
+      color: var(--verde);
       transition: all 0.2s ease;
     }
 
@@ -1224,7 +1265,7 @@
     }
 
     thead {
-      background: linear-gradient(135deg, var(--verde-oscuro), var(--verde-med));
+      background: var(--verde);
       color: #fff;
     }
 
@@ -1257,7 +1298,7 @@
       font-size: 13px;
       font-weight: 500;
       background: rgba(101, 182, 122, 0.18);
-      color: var(--verde-med);
+      color: var(--verde);
     }
 
     .badge.inactive {
@@ -1277,7 +1318,7 @@
 
     .health-tag.healthy {
       background: rgba(101, 182, 122, 0.18);
-      color: var(--verde-med);
+      color: var(--verde);
     }
 
     .health-tag.observe {
@@ -1314,12 +1355,24 @@
 
     .actions button.toggle {
       background: rgba(63, 124, 94, 0.16);
-      color: var(--verde-med);
+      color: var(--verde);
     }
 
     .actions button.toggle.inactive {
       background: rgba(209, 73, 91, 0.16);
       color: var(--rojo);
+    }
+
+    .actions button.delete {
+      background: rgba(244,67,54,0.1);
+      color: #f44336;
+      border: 1px solid rgba(244,67,54,0.3);
+    }
+
+    .actions button.delete:hover {
+      background: rgba(244,67,54,0.2);
+      border-color: rgba(244,67,54,0.5);
+      transform: translateY(-1px);
     }
 
     .actions button:hover {
@@ -1358,7 +1411,7 @@
     .secondary-card h4 {
       margin: 0;
       font-size: 18px;
-      color: var(--verde-oscuro);
+      color: var(--verde);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1382,12 +1435,12 @@
 
     .list-item span:first-child {
       font-weight: 600;
-      color: var(--verde-med);
+      color: var(--verde);
     }
 
     .mini-badge {
       background: rgba(255,255,255,0.9);
-      color: var(--verde-med);
+      color: var(--verde);
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 12px;
@@ -1410,8 +1463,9 @@
       }
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script th:src="@{/js/proteccion-vista.js}"></script>
+  <script th:src="@{/js/toast.js}"></script>
+  <script th:src="@{/js/notificaciones.js}"></script>
 </head>
 <body>
 
@@ -1419,27 +1473,37 @@
 <div class="floating-bubble bubble-2"></div>
 <div class="floating-bubble bubble-3"></div>
 
-<aside>
-  <div class="branding">
-    <h2>AgroSoft</h2>
-    <span>Gestión integral de animales</span>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>🌿 AgroSoft</h1>
+    <span class="role-badge" th:text="${isVeterinario} ? 'Veterinario' : 'Administrador'">Administrador</span>
   </div>
-
-  <div class="user-card">
-    <p><i class="ri-user-line"></i> <span th:text="${usuario ?: 'Administrador'}">Administrador</span></p>
-    <small>Coordinador veterinario</small>
-  </div>
-
-  <nav>
-    <a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i>Panel general</a>
-    <a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i>Cultivos</a>
-    <a th:href="@{/admin/ganado}" class="active"><i class="ri-cow-line"></i>Ganado</a>
-    <a><i class="ri-calendar-2-line"></i>Agenda sanitaria</a>
-    <a th:href="@{/logout}"><i class="ri-logout-circle-line"></i>Cerrar sesión</a>
-  </nav>
+  <ul class="nav-menu">
+    <th:block th:if="${isVeterinario}">
+      <li><a th:href="@{/dashboard/veterinario}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+      <li><a th:href="@{/admin/ganado}" class="active"><i class="ri-cow-line"></i><span class="nav-emoji">🐄</span> Ganado</a></li>
+      <li><a th:href="@{/vet/tratamientos}"><i class="ri-medicine-bottle-line"></i> Tratamientos</a></li>
+      <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+      <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+    </th:block>
+    <th:block th:unless="${isVeterinario}">
+      <li><a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+      <li><a th:href="@{/admin/usuarios}"><i class="ri-user-line"></i> Usuarios</a></li>
+      <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
+      <li><a th:href="@{/admin/ganado}" class="active"><i class="ri-cow-line"></i><span class="nav-emoji">🐄</span> Ganado</a></li>
+      <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+      <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+      <li><a th:href="@{/admin/correos}"><i class="ri-mail-send-line"></i> Correos</a></li>
+      <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+    </th:block>
+    <li><a th:href="@{/cuenta/cambiar-password}"><i class="ri-lock-password-line"></i> Mi cuenta</a></li>
+    <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+  </ul>
 </aside>
 
-<main>
+<main class="main-content">
+  <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+  <div class="content-wrap">
   <header class="page-header">
     <div>
       <h1>
@@ -1449,9 +1513,9 @@
     </div>
     <div class="header-actions">
       <button type="button" class="secondary"><i class="ri-qr-scan-line"></i> Registrar sensor</button>
-      <a th:href="@{/admin/ganado/exportar-pdf}" class="secondary" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 12px; background: var(--verde-med); color: #fff; font-weight: 600; transition: all 0.2s ease;" 
-         onmouseover="this.style.background='var(--verde-oscuro)'; this.style.transform='translateY(-1px)';" 
-         onmouseout="this.style.background='var(--verde-med)'; this.style.transform='translateY(0)';"
+      <a th:href="@{/admin/ganado/exportar-pdf}" class="secondary" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 12px; background: var(--verde); color: #fff; font-weight: 600; transition: all 0.2s ease;" 
+         onmouseover="this.style.background='var(--verde)'; this.style.transform='translateY(-1px)';" 
+         onmouseout="this.style.background='var(--verde)'; this.style.transform='translateY(0)';"
          title="Generar reporte PDF estadístico">
         <i class="ri-file-pdf-line"></i> Exportar PDF Estadístico
       </a>
@@ -1769,7 +1833,7 @@
       <button type="button" data-view="cards"><i class="ri-layout-grid-line"></i> Vista tarjetas</button>
     </div>
     <div class="view-meta">
-      <span><i class="ri-checkbox-circle-line" style="color: var(--verde-med);"></i> Controla la disponibilidad en tiempo real</span>
+      <span><i class="ri-checkbox-circle-line" style="color: var(--verde);"></i> Controla la disponibilidad en tiempo real</span>
     </div>
   </section>
 
@@ -1807,11 +1871,10 @@
           <td th:text="${g.tipo}">Tipo</td>
           <td th:text="${g.raza} ?: '—'">Raza</td>
           <td th:text="${g.edad} ?: '—'">0</td>
-          <td th:text="${g.peso != null} ? #numbers.formatDecimal(g.peso, 1, 'POINT', 2, 'COMMA') + ' kg' : '—'">0 kg</td>
+          <td th:text="${g.peso != null ? #numbers.formatDecimal(g.peso, 1, 'POINT', 2, 'COMMA') + ' kg' : '—'}">0 kg</td>
           <td>
             <span class="health-tag"
-                  th:classappend="${g.estadoSalud} == 'Saludable' ? ' healthy' :
-                                  (${g.estadoSalud} == 'En observación' ? ' observe' : ' sick')}"
+                  th:classappend="${g.estadoSalud == 'Saludable' ? ' healthy' : (g.estadoSalud == 'En observación' ? ' observe' : ' sick')}"
                   th:text="${g.estadoSalud} ?: 'No definido'">Saludable</span>
           </td>
           <td>
@@ -1824,6 +1887,9 @@
             <button type="button" class="toggle" th:classappend="${g.activo} ? '' : ' inactive'">
               <i class="ri-refresh-line"></i>
               <span th:text="${g.activo} ? 'Desactivar' : 'Activar'">Desactivar</span>
+            </button>
+            <button type="button" class="delete" th:data-id="${g.idGanado}">
+              <i class="ri-delete-bin-line"></i> Eliminar
             </button>
           </td>
         </tr>
@@ -1850,15 +1916,14 @@
       <div class="meta">
         <span><i class="ri-hashtag"></i>ID&nbsp;<strong th:text="${g.idGanado}">1</strong></span>
         <span><i class="ri-git-branch-line"></i><span th:text="${g.raza} ?: '—'">Raza</span></span>
-        <span><i class="ri-timer-line"></i><span th:text="${g.edad} != null ? g.edad + ' meses' : '—'">0 meses</span></span>
-        <span><i class="ri-scales-2-line"></i><span th:text="${g.peso != null} ? #numbers.formatDecimal(g.peso, 1, 'POINT', 2, 'COMMA') + ' kg' : '—'">0 kg</span></span>
+        <span><i class="ri-timer-line"></i><span th:text="${g.edad != null ? g.edad + ' meses' : '—'}">0 meses</span></span>
+        <span><i class="ri-scales-2-line"></i><span th:text="${g.peso != null ? #numbers.formatDecimal(g.peso, 1, 'POINT', 2, 'COMMA') + ' kg' : '—'}">0 kg</span></span>
         <span><i class="ri-calendar-line"></i><span th:text="${g.fechaNacimiento} ?: '—'">2025-01-01</span></span>
       </div>
       <div class="footer">
         <div class="state">
           <span class="health-tag"
-                th:classappend="${g.estadoSalud} == 'Saludable' ? ' healthy' :
-                                (${g.estadoSalud} == 'En observación' ? ' observe' : ' sick')"
+                th:classappend="${g.estadoSalud == 'Saludable' ? ' healthy' : (g.estadoSalud == 'En observación' ? ' observe' : ' sick')}"
                 th:text="${g.estadoSalud} ?: 'No definido'">Saludable</span>
         </div>
         <div class="actions">
@@ -1866,6 +1931,9 @@
           <button type="button" class="toggle" th:classappend="${g.activo} ? '' : ' inactive'">
             <i class="ri-refresh-line"></i>
             <span th:text="${g.activo} ? 'Desactivar' : 'Activar'">Desactivar</span>
+          </button>
+          <button type="button" class="delete" th:data-id="${g.idGanado}">
+            <i class="ri-delete-bin-line"></i> Eliminar
           </button>
         </div>
       </div>
@@ -1927,14 +1995,19 @@
       </div>
     </article>
   </section>
+  </div><!-- content-wrap -->
 </main>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-  // Verificar que el DOM esté cargado antes de ejecutar
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initGanadoPage);
-  } else {
-    initGanadoPage();
+  // Ejecutar init después de permitir que el navegador pinte el contenido (evita pantalla en blanco)
+  function runInit() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() { setTimeout(initGanadoPage, 0); });
+    } else {
+      setTimeout(initGanadoPage, 0);
+    }
   }
+  runInit();
 
   function initGanadoPage() {
     try {
@@ -1968,13 +2041,13 @@
       const funMessageText = document.getElementById('funMessageText');
       const funMessageButton = document.getElementById('refreshMessage');
       const funMessages = [
-        stats => `Hoy ${stats.activeCount} animales están activos y listos para brillar.`,
-        stats => `🥛 Peso promedio de ${stats.averageWeight.toFixed(1)} kg. ¡Rutina equilibrada!`,
-        stats => `🌱 ${stats.distinctTypes} tipos diferentes: diversidad que inspira.`,
-        stats => stats.healthyShare >= 75
-          ? `💚 Salud a tope: ${stats.healthyShare.toFixed(0)}% del lote se ve genial.`
-          : `👀 Mantente alerta: ${stats.observationShare.toFixed(0)}% requieren cariño extra.`,
-        stats => stats.activeCount > stats.inactiveCount
+        stats => `Hoy ${(stats && stats.activeCount) || 0} animales están activos y listos para brillar.`,
+        stats => `🥛 Peso promedio de ${(stats && typeof stats.averageWeight === 'number' ? stats.averageWeight.toFixed(1) : '0.0')} kg. ¡Rutina equilibrada!`,
+        stats => `🌱 ${(stats && stats.distinctTypes) || 0} tipos diferentes: diversidad que inspira.`,
+        stats => (stats && Number(stats.healthyShare) >= 75)
+          ? `💚 Salud a tope: ${(stats.healthyShare || 0).toFixed(0)}% del lote se ve genial.`
+          : `👀 Mantente alerta: ${(stats && stats.observationShare != null ? stats.observationShare : 0).toFixed(0)}% requieren cariño extra.`,
+        stats => (stats && stats.activeCount > stats.inactiveCount)
           ? `⚡ Energía positiva: más animales activos que inactivos.`
           : `🌬️ Tiempo de reactivar: dale seguimiento a los inactivos.`
       ];
@@ -2000,8 +2073,8 @@
       let healthChart;
       let typeChart;
 
-      const healthPalette = ['#2d8659', '#ffc107', '#dc3545', '#6c757d'];
-      const typePalette = ['#1a7a5e', '#2d8659', '#3fa06f', '#45b87a', '#51c97f', '#5dd68a', '#63e395', '#6ef0a0'];
+      const healthPalette = ['#2F5D39', '#ffc107', '#dc3545', '#6c757d'];
+      const typePalette = ['#2F5D39', '#3a6b42', '#457a4c', '#4d8a55', '#5a9a5e', '#65aa68', '#70ba72', '#7bca7c'];
 
       function rows() {
         if (!tableBody) return [];
@@ -2070,59 +2143,69 @@
       }
 
       function gatherStats() {
-    const dataRows = rows();
-    const stats = {
-      total: dataRows.length,
-      activeCount: 0,
-      inactiveCount: 0,
-      observationCount: 0,
-      sickCount: 0,
-      healthyCount: 0,
-      averageWeight: 0,
-      maxWeight: 0,
-      distinctTypes: 0,
-      typeDistribution: {},
-      healthDistribution: {
-        'Saludable': 0,
-        'En observación': 0,
-        'Enfermo': 0
-      }
-    };
+        const dataRows = rows();
+        const stats = {
+          total: dataRows.length,
+          activeCount: 0,
+          inactiveCount: 0,
+          observationCount: 0,
+          sickCount: 0,
+          healthyCount: 0,
+          averageWeight: 0,
+          maxWeight: 0,
+          distinctTypes: 0,
+          typeDistribution: {},
+          healthDistribution: {
+            'Saludable': 0,
+            'En observación': 0,
+            'Enfermo': 0
+          }
+        };
 
-    const weights = [];
+        const weights = [];
 
-    dataRows.forEach(row => {
-      const dataset = row.dataset;
-      const type = dataset.tipo && dataset.tipo.trim() ? dataset.tipo : 'Sin clasificar';
-      stats.typeDistribution[type] = (stats.typeDistribution[type] || 0) + 1;
+        dataRows.forEach((row) => {
+          const dataset = row.dataset;
+          const type = dataset.tipo && dataset.tipo.trim() ? dataset.tipo : 'Sin clasificar';
+          stats.typeDistribution[type] = (stats.typeDistribution[type] || 0) + 1;
 
-      const isActive = dataset.activo !== 'false';
-      if (isActive) {
-        stats.activeCount++;
-      } else {
-        stats.inactiveCount++;
-      }
+          // Leer activo correctamente (puede ser string "true"/"false" o boolean)
+          const activoStr = String(dataset.activo || 'true').toLowerCase();
+          const isActive = activoStr !== 'false' && activoStr !== '0';
+          
+          if (isActive) {
+            stats.activeCount++;
+          } else {
+            stats.inactiveCount++;
+          }
 
-      const estadoNormalized = normalize(dataset.estado);
-      if (estadoNormalized === 'saludable') {
-        stats.healthyCount++;
-        stats.healthDistribution['Saludable']++;
-      } else if (estadoNormalized === 'en observacion') {
-        stats.observationCount++;
-        stats.healthDistribution['En observación']++;
-      } else if (estadoNormalized === 'enfermo') {
-        stats.sickCount++;
-        stats.healthDistribution['Enfermo']++;
-      }
+          // Normalizar estado de salud - manejar diferentes formatos
+          const estadoRaw = dataset.estado || '';
+          const estadoNormalized = normalize(estadoRaw);
+          
+          if (estadoNormalized.includes('saludable') || estadoNormalized === 'saludable') {
+            stats.healthyCount++;
+            stats.healthDistribution['Saludable']++;
+          } else if (estadoNormalized.includes('observacion') || estadoNormalized.includes('observación')) {
+            stats.observationCount++;
+            stats.healthDistribution['En observación']++;
+          } else if (estadoNormalized.includes('tratamiento') || estadoNormalized.includes('enfermo')) {
+            stats.sickCount++;
+            stats.healthDistribution['Enfermo']++;
+          } else if (estadoRaw) {
+            // Si hay un estado pero no coincide, contarlo como observación
+            stats.observationCount++;
+            stats.healthDistribution['En observación']++;
+          }
 
-      const weight = parseDatasetNumber(dataset.peso);
-      if (weight !== null) {
-        weights.push(weight);
-        if (weight > stats.maxWeight) {
-          stats.maxWeight = weight;
-        }
-      }
-    });
+          const weight = parseDatasetNumber(dataset.peso);
+          if (weight !== null && weight > 0) {
+            weights.push(weight);
+            if (weight > stats.maxWeight) {
+              stats.maxWeight = weight;
+            }
+          }
+        });
 
     stats.distinctTypes = Object.keys(stats.typeDistribution).length;
     stats.averageWeight = weights.length ? weights.reduce((acc, value) => acc + value, 0) / weights.length : 0;
@@ -2162,6 +2245,7 @@
       }
 
       function updateCharts(stats) {
+    if (typeof Chart === 'undefined' || !stats) return;
     const healthCanvas = document.getElementById('healthChart');
     const typeCanvas = document.getElementById('typeChart');
 
@@ -2262,19 +2346,23 @@
       }
 
       function updateHighlights(stats) {
+    if (!stats) return;
     if (highlightActive) {
-      highlightActive.textContent = stats.activeCount.toLocaleString('es-ES');
+      highlightActive.textContent = (stats.activeCount != null ? stats.activeCount : 0).toLocaleString('es-ES');
     }
     if (highlightWeight) {
-      highlightWeight.textContent = `${stats.averageWeight.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`;
+      const w = typeof stats.averageWeight === 'number' && !Number.isNaN(stats.averageWeight) ? stats.averageWeight : 0;
+      highlightWeight.textContent = `${w.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`;
     }
     if (highlightHealth) {
-      highlightHealth.textContent = `${Math.round(stats.healthyShare)}%`;
+      const pct = typeof stats.healthyShare === 'number' && !Number.isNaN(stats.healthyShare) ? stats.healthyShare : 0;
+      highlightHealth.textContent = `${Math.round(pct)}%`;
         }
       }
 
       function updateProgressBars(stats) {
-    const clamp = value => Math.max(0, Math.min(100, value));
+    if (!stats) return;
+    const clamp = value => Math.max(0, Math.min(100, Number(value) || 0));
     const updateBar = (key, value) => {
       const bar = progressBars[key];
       const label = progressLabels[key];
@@ -2291,23 +2379,31 @@
 
       function renderFunMessage(index, stats) {
         if (!funMessageText || !funMessages.length) return;
-        const messageFn = funMessages[index % funMessages.length] || funMessages[0];
-        funMessageText.textContent = messageFn(stats);
+        try {
+          const messageFn = funMessages[index % funMessages.length] || funMessages[0];
+          funMessageText.textContent = messageFn(stats || {});
+        } catch (e) {
+          funMessageText.textContent = 'Hoy es un gran día para ver cómo crecen tus logros.';
+        }
       }
 
       function updateStatistics() {
     const stats = gatherStats();
+    if (!stats) return;
     updateCounter('activos', stats.activeCount);
     updateCounter('inactivos', stats.inactiveCount);
     updateCounter('observacion', stats.observationCount);
     updateCounter('criticos', stats.sickCount);
-    updateCounter('pesoPromedio', Number(stats.averageWeight.toFixed(1)));
+    const peso = typeof stats.averageWeight === 'number' && !Number.isNaN(stats.averageWeight) ? Number(stats.averageWeight.toFixed(1)) : 0;
+    updateCounter('pesoPromedio', peso);
     updateCounter('tipos', stats.distinctTypes);
     updateHighlights(stats);
     updateProgressBars(stats);
     renderFunMessage(funMessageIndex, stats);
         populateFilters(stats);
-        updateCharts(stats);
+        if (typeof Chart !== 'undefined') {
+          updateCharts(stats);
+        }
       }
 
       function resetQuickFilters() {
@@ -2318,31 +2414,19 @@
       function handleQuickFilter(chip) {
     if (activeQuickFilter === chip) {
       resetQuickFilters();
-      if (chip === 'activos') {
-        filterActivo.value = 'all';
-      }
-      if (chip === 'healthy' || chip === 'observe' || chip === 'criticos') {
-        filterEstado.value = 'all';
-      }
+      if (chip === 'activos' && filterActivo) filterActivo.value = 'all';
+      if ((chip === 'healthy' || chip === 'observe' || chip === 'criticos') && filterEstado) filterEstado.value = 'all';
     } else {
       resetQuickFilters();
       activeQuickFilter = chip;
       quickFilterButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.chip === chip));
-      if (chip === 'activos') {
-        filterActivo.value = 'true';
-      } else if (chip === 'healthy') {
-        filterEstado.value = 'Saludable';
-      } else if (chip === 'observe') {
-        filterEstado.value = 'En observación';
-      } else if (chip === 'criticos') {
-        filterEstado.value = 'Enfermo';
-      } else if (chip === 'juveniles') {
-        if (filterPeso) {
-          filterPeso.value = filterPeso.min || 0;
-          if (filterPesoValue) {
-            filterPesoValue.textContent = `${filterPeso.value} kg`;
-          }
-        }
+      if (chip === 'activos' && filterActivo) filterActivo.value = 'true';
+      else if (chip === 'healthy' && filterEstado) filterEstado.value = 'Saludable';
+      else if (chip === 'observe' && filterEstado) filterEstado.value = 'En observación';
+      else if (chip === 'criticos' && filterEstado) filterEstado.value = 'Enfermo';
+      else if (chip === 'juveniles' && filterPeso) {
+        filterPeso.value = filterPeso.min || 0;
+        if (filterPesoValue) filterPesoValue.textContent = `${filterPeso.value} kg`;
       }
         }
         applyFilters();
@@ -2350,15 +2434,10 @@
 
       function syncQuickFilterState() {
     if (!activeQuickFilter) return;
-    if (activeQuickFilter === 'activos' && filterActivo.value !== 'true') {
-      resetQuickFilters();
-    } else if (activeQuickFilter === 'healthy' && filterEstado.value !== 'Saludable') {
-      resetQuickFilters();
-    } else if (activeQuickFilter === 'observe' && filterEstado.value !== 'En observación') {
-      resetQuickFilters();
-    } else if (activeQuickFilter === 'criticos' && filterEstado.value !== 'Enfermo') {
-          resetQuickFilters();
-        }
+    if (activeQuickFilter === 'activos' && filterActivo && filterActivo.value !== 'true') resetQuickFilters();
+    else if (activeQuickFilter === 'healthy' && filterEstado && filterEstado.value !== 'Saludable') resetQuickFilters();
+    else if (activeQuickFilter === 'observe' && filterEstado && filterEstado.value !== 'En observación') resetQuickFilters();
+    else if (activeQuickFilter === 'criticos' && filterEstado && filterEstado.value !== 'Enfermo') resetQuickFilters();
       }
 
       function applyFilters() {
@@ -2464,6 +2543,79 @@
         }
       }
 
+      function handleDelete(id, element) {
+        if (!id) {
+          console.error('ID no válido para eliminar');
+          return;
+        }
+
+        const tipo = element.dataset.tipo || 'este registro';
+        const confirmMessage = `¿Estás seguro de que deseas eliminar ${tipo} (ID: ${id})?\n\nEsta acción no se puede deshacer.`;
+        
+        if (!confirm(confirmMessage)) {
+          return;
+        }
+
+        const deleteButton = element.querySelector('.delete') || event.target.closest('.delete');
+        const originalText = deleteButton ? deleteButton.innerHTML : '';
+        
+        if (deleteButton) {
+          deleteButton.disabled = true;
+          deleteButton.innerHTML = '<i class="ri-loader-4-line"></i> Eliminando...';
+        }
+
+        fetch(`/admin/ganado/eliminar/${id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+          .then(res => {
+            if (res.ok) {
+              return res.json();
+            }
+            throw new Error('Error en la respuesta del servidor');
+          })
+          .then(response => {
+            if (response.status === 'ok') {
+              // Remover el elemento del DOM
+              if (element && element.parentNode) {
+                element.remove();
+              }
+              
+              // Remover también de la otra vista si existe
+              if (tableBody && element.tagName === 'TR') {
+                const card = cardMap.get(String(id));
+                if (card && card.parentNode) {
+                  card.remove();
+                  cardMap.delete(String(id));
+                }
+              } else if (cardContainer && element.classList.contains('animal-card')) {
+                const row = tableBody ? tableBody.querySelector(`tr[data-id="${id}"]`) : null;
+                if (row && row.parentNode) {
+                  row.remove();
+                }
+                cardMap.delete(String(id));
+              }
+              
+              updateStatistics();
+              applyFilters();
+              
+              if (typeof showToast === 'function') showToast('Registro eliminado correctamente', 'success');
+            } else {
+              throw new Error(response.message || 'Error al eliminar');
+            }
+          })
+          .catch(error => {
+            console.error('Error al eliminar:', error);
+            if (typeof showToast === 'function') showToast('Error al eliminar: ' + error.message, 'error'); else alert('Error al eliminar: ' + error.message);
+            if (deleteButton) {
+              deleteButton.disabled = false;
+              deleteButton.innerHTML = originalText;
+            }
+          });
+      }
+
       function handleToggle(id, triggerButton) {
         if (!id || !tableBody) return;
         const rowElement = tableBody.querySelector(`tr[data-id="${id}"]`);
@@ -2504,7 +2656,7 @@
       })
       .catch((error) => {
         console.error('Error al cambiar estado:', error);
-        alert('No se pudo actualizar el estado. Intente nuevamente.');
+        if (typeof showToast === 'function') showToast('No se pudo actualizar el estado. Intente nuevamente.', 'error'); else alert('No se pudo actualizar el estado. Intente nuevamente.');
         if (triggerButton) {
           triggerButton.disabled = false;
             if (toggleLabel) toggleLabel.textContent = originalText || (isActive ? 'Desactivar' : 'Activar');
@@ -2522,6 +2674,8 @@
             openEditForm(row.dataset);
           } else if (button.classList.contains('toggle')) {
             handleToggle(row.dataset.id, button);
+          } else if (button.classList.contains('delete')) {
+            handleDelete(row.dataset.id, row);
           }
         });
       }
@@ -2536,6 +2690,8 @@
             openEditForm(card.dataset);
           } else if (button.classList.contains('toggle')) {
             handleToggle(card.dataset.id, button);
+          } else if (button.classList.contains('delete')) {
+            handleDelete(card.dataset.id, card);
           }
         });
       }
@@ -2632,10 +2788,15 @@
         });
       }
 
-      updateStatistics();
-      applyFilters();
+      // Esperar un momento para asegurar que Thymeleaf haya renderizado todo
+      setTimeout(() => {
+        updateStatistics();
+        applyFilters();
+      }, 200);
+      
     } catch (error) {
       console.error('Error al inicializar la página de ganado:', error);
+      console.error('Stack trace:', error.stack);
     }
   }
 </script>

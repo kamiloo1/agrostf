@@ -1,11 +1,11 @@
 package com.example.agrosoft1.crud.service;
 
+import com.example.agrosoft1.crud.config.ClimaProperties;
 import com.example.agrosoft1.crud.dto.ClimaDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -14,6 +14,7 @@ import reactor.util.retry.Retry;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -39,37 +40,30 @@ public class ClimaService {
     
     private WebClient webClient;
     private final ObjectMapper objectMapper;
-    
+    private final WebClient.Builder webClientBuilder;
+    private final ClimaProperties climaProperties;
+
     // Cache simple con expiración (10 minutos)
     private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
     private static final long CACHE_EXPIRATION_MINUTES = 10;
-    
-    @Value("${app.clima.api.key:demo_key}")
-    private String apiKey;
-    
-    @Value("${app.clima.api.url:https://api.openweathermap.org/data/2.5}")
-    private String apiBaseUrl;
-    
-    @Value("${app.clima.timeout.seconds:5}")
-    private int timeoutSeconds;
-    
-    @Value("${app.clima.cache.enabled:true}")
-    private boolean cacheEnabled;
-    
-    public ClimaService(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
+
+    public ClimaService(WebClient.Builder webClientBuilder, ObjectMapper objectMapper,
+                        ClimaProperties climaProperties) {
+        this.webClientBuilder = webClientBuilder;
         this.objectMapper = objectMapper;
-        // WebClient se inicializará en @PostConstruct
+        this.climaProperties = climaProperties;
     }
-    
+
     @jakarta.annotation.PostConstruct
+    @SuppressWarnings("null")
     public void init() {
-        // Configurar WebClient después de que se inyecten los valores
-        this.webClient = WebClient.builder()
-                .baseUrl(apiBaseUrl)
+        String baseUrl = Objects.requireNonNullElse(climaProperties.getApiUrl(), "https://api.openweathermap.org/data/2.5");
+        this.webClient = webClientBuilder
+                .baseUrl(baseUrl)
                 .build();
-        logger.info("WebClient configurado con URL base: {}", apiBaseUrl);
-        logger.info("API Key configurada: {} (demo_key = datos de ejemplo)", 
-            apiKey.equals("demo_key") ? "demo_key (datos de ejemplo)" : "***configurada***");
+        logger.info("WebClient configurado con URL base: {}", baseUrl);
+        logger.info("API Key configurada: {} (demo_key = datos de ejemplo)",
+            "demo_key".equals(climaProperties.getApiKey()) ? "demo_key (datos de ejemplo)" : "***configurada***");
     }
     
     /**
@@ -117,35 +111,41 @@ public class ClimaService {
      * @param forzarActualizacion Si es true, ignora el cache y consulta la API
      * @return ClimaDTO con la información del clima
      */
+    @SuppressWarnings("null")
     public ClimaDTO obtenerClimaActual(String ciudad, String codigoPais, boolean forzarActualizacion) {
+        // Declarar variables fuera del try para que estén disponibles en los catch
+        String ciudadFinal = ciudad;
+        String codigoPaisFinal = codigoPais;
+        String cacheKey = "";
+        
         try {
             // Validación de parámetros
-            if (ciudad == null || ciudad.trim().isEmpty()) {
+            if (ciudadFinal == null || ciudadFinal.trim().isEmpty()) {
                 logger.warn("Ciudad no especificada, usando Bogotá por defecto");
-                ciudad = "Bogotá";
+                ciudadFinal = "Bogotá";
             }
             
             // Normalizar ciudad (trim y capitalizar primera letra)
-            ciudad = ciudad.trim();
-            if (!ciudad.isEmpty()) {
-                ciudad = ciudad.substring(0, 1).toUpperCase() + ciudad.substring(1).toLowerCase();
+            ciudadFinal = ciudadFinal.trim();
+            if (!ciudadFinal.isEmpty()) {
+                ciudadFinal = ciudadFinal.substring(0, 1).toUpperCase() + ciudadFinal.substring(1).toLowerCase();
             }
             
-            // Construir query como final para uso en lambda
-            final String query = (codigoPais != null && !codigoPais.isEmpty()) 
-                    ? ciudad + "," + codigoPais 
-                    : ciudad;
+            // Construir query - siempre incluir Colombia para búsquedas más precisas
+            final String query = (codigoPaisFinal != null && !codigoPaisFinal.isEmpty()) 
+                    ? ciudadFinal + "," + codigoPaisFinal 
+                    : ciudadFinal + ",CO"; // Por defecto Colombia
             
-            final String cacheKey = query.toLowerCase();
+            cacheKey = query.toLowerCase();
             
             // SIEMPRE generar datos de ejemplo si la API key es demo_key
-            if ("demo_key".equals(apiKey) || apiKey == null || apiKey.isEmpty()) {
+            if ("demo_key".equals(climaProperties.getApiKey()) || climaProperties.getApiKey() == null || climaProperties.getApiKey().isEmpty()) {
                 logger.info("Usando datos de ejemplo para: {} (API key: demo_key)", query);
                 
                 // Si se fuerza actualización o no hay cache, generar nuevos datos
-                if (forzarActualizacion || !cacheEnabled) {
-                    ClimaDTO ejemplo = crearDatosEjemplo(ciudad, codigoPais);
-                    if (cacheEnabled) {
+                if (forzarActualizacion || !climaProperties.isCacheEnabled()) {
+                    ClimaDTO ejemplo = crearDatosEjemplo(ciudadFinal, codigoPaisFinal);
+                    if (climaProperties.isCacheEnabled()) {
                         cache.put(cacheKey, new CacheEntry(ejemplo));
                     }
                     return ejemplo;
@@ -158,8 +158,8 @@ public class ClimaService {
                     return cached.clima;
                 } else {
                     // Generar nuevos datos de ejemplo
-                    ClimaDTO ejemplo = crearDatosEjemplo(ciudad, codigoPais);
-                    if (cacheEnabled) {
+                    ClimaDTO ejemplo = crearDatosEjemplo(ciudadFinal, codigoPaisFinal);
+                    if (climaProperties.isCacheEnabled()) {
                         cache.put(cacheKey, new CacheEntry(ejemplo));
                     }
                     return ejemplo;
@@ -167,7 +167,7 @@ public class ClimaService {
             }
             
             // Verificar cache (solo si no se fuerza la actualización y hay API key real)
-            if (cacheEnabled && !forzarActualizacion) {
+            if (climaProperties.isCacheEnabled() && !forzarActualizacion) {
                 CacheEntry cached = cache.get(cacheKey);
                 if (cached != null && !cached.isExpired()) {
                     logger.info("Retornando clima desde cache para: {}", query);
@@ -181,31 +181,31 @@ public class ClimaService {
                 cache.remove(cacheKey);
             }
             
-            logger.info("Consultando clima para: {} (timeout: {}s)", query, timeoutSeconds);
+            logger.info("Consultando clima para: {} (timeout: {}s)", query, climaProperties.getTimeoutSeconds());
             
             // Validar que webClient esté inicializado
             if (webClient == null) {
                 logger.error("WebClient no inicializado. Inicializando ahora...");
-                this.webClient = WebClient.builder()
-                        .baseUrl(apiBaseUrl)
-                        .build();
+                String baseUrlFallback = Objects.requireNonNullElse(climaProperties.getApiUrl(), "https://api.openweathermap.org/data/2.5");
+                this.webClient = webClientBuilder.baseUrl(baseUrlFallback).build();
             }
             
-            logger.info("Consultando API del clima: {}/weather?q={}&appid={}...", 
-                apiBaseUrl, query, apiKey.equals("demo_key") ? "demo_key" : "***");
+            String apiUrlLog = Objects.requireNonNullElse(climaProperties.getApiUrl(), "https://api.openweathermap.org/data/2.5");
+            logger.info("Consultando API del clima: {}/weather?q={}&appid={}...",
+                apiUrlLog, query, "demo_key".equals(Objects.requireNonNullElse(climaProperties.getApiKey(), "")) ? "demo_key" : "***");
             
             // Petición con timeout y retry
             String response = webClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/weather")
                             .queryParam("q", query)
-                            .queryParam("appid", apiKey)
+                            .queryParam("appid", climaProperties.getApiKey())
                             .queryParam("units", "metric")
                             .queryParam("lang", "es")
                             .build())
                     .retrieve()
                     .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(timeoutSeconds))
+                    .timeout(Duration.ofSeconds(climaProperties.getTimeoutSeconds()))
                     .retryWhen(Retry.backoff(3, Duration.ofSeconds(1))
                             .filter(throwable -> throwable instanceof WebClientResponseException 
                                     && ((WebClientResponseException) throwable).getStatusCode().is5xxServerError())
@@ -221,10 +221,10 @@ public class ClimaService {
             logger.debug("Respuesta recibida de la API (primeros 200 caracteres): {}", 
                 response.length() > 200 ? response.substring(0, 200) + "..." : response);
             
-            ClimaDTO clima = parsearRespuesta(response, ciudad, codigoPais);
+            ClimaDTO clima = parsearRespuesta(response, ciudadFinal, codigoPaisFinal);
             
             // Guardar en cache
-            if (cacheEnabled && clima != null) {
+            if (climaProperties.isCacheEnabled() && clima != null) {
                 cache.put(cacheKey, new CacheEntry(clima));
                 logger.info("Clima obtenido y guardado en cache para: {}", query);
             }
@@ -234,8 +234,8 @@ public class ClimaService {
         } catch (WebClientResponseException e) {
             logger.warn("Error HTTP al consultar API del clima ({}): {}. Retornando datos de ejemplo.", 
                 e.getStatusCode(), e.getMessage());
-            ClimaDTO ejemplo = crearDatosEjemplo(ciudad, codigoPais);
-            if (cacheEnabled) {
+            ClimaDTO ejemplo = crearDatosEjemplo(ciudadFinal, codigoPaisFinal);
+            if (climaProperties.isCacheEnabled() && !cacheKey.isEmpty()) {
                 cache.put(cacheKey, new CacheEntry(ejemplo));
             }
             return ejemplo;
@@ -246,8 +246,8 @@ public class ClimaService {
             logger.warn("Error al consultar clima: {}. Retornando datos de ejemplo.", errorMsg);
             
             // SIEMPRE retornar datos de ejemplo en caso de error
-            ClimaDTO ejemplo = crearDatosEjemplo(ciudad, codigoPais);
-            if (cacheEnabled) {
+            ClimaDTO ejemplo = crearDatosEjemplo(ciudadFinal, codigoPaisFinal);
+            if (climaProperties.isCacheEnabled() && !cacheKey.isEmpty()) {
                 cache.put(cacheKey, new CacheEntry(ejemplo));
             }
             return ejemplo;

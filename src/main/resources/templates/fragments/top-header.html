@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"></head>
+<body>
+  <!-- Barra superior con saludo, avatar y campana de notificaciones -->
+  <header class="top-header" th:fragment="header">
+    <span class="greeting">Hola, <span th:text="${nombreUsuario}">Usuario</span></span>
+    <img class="user-avatar" th:src="'https://ui-avatars.com/api/?name=' + ${#strings.replace(nombreUsuario != null ? nombreUsuario : 'User', ' ', '+')} + '&background=2F5D39&color=fff&size=84'" src="https://ui-avatars.com/api/?name=User&background=2F5D39&color=fff&size=84" alt="Avatar">
+    <div class="notif-wrap">
+      <button type="button" class="notif-btn" id="btn-notif" aria-label="Notificaciones">
+        <i class="ri-notification-3-line"></i>
+      </button>
+      <span class="notif-badge" id="notif-badge">0</span>
+      <div class="notif-dropdown" id="notif-dropdown">
+        <div class="notif-dropdown-header">
+          <span>Notificaciones</span>
+          <button type="button" class="notif-leer-todas" id="notif-leer-todas">Marcar todas leídas</button>
+        </div>
+        <div class="notif-list" id="notif-list">
+          <div class="notif-loading" id="notif-loading">Cargando...</div>
+          <div class="notif-empty" id="notif-empty" style="display:none;">No hay notificaciones</div>
+        </div>
+      </div>
+    </div>
+  </header>
+</body>
+</html>

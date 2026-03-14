@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestión de Tratamientos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      --verde: #2F5D39;
+      --verde-oscuro: #1e4620;
+      --verde-claro: #e8f5f0;
+      --verde-acento: #4ade80;
+      --gris-fondo: #f5f7fa;
+      --blanco: #ffffff;
+      --texto: #1a1a1a;
+      --texto-suave: #495057;
+      --sombra: rgba(13, 79, 61, 0.15);
+      --font: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font);
+      min-height: 100vh;
+      background: var(--gris-fondo);
+      color: var(--texto);
+      overflow-x: hidden;
+    }
+    /* Sidebar predeterminado (igual que panel veterinario) */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 200px;
+      height: 100%;
+      min-height: 100vh;
+      overflow-y: auto;
+      background: var(--verde);
+      color: white;
+      padding: 30px 20px;
+      border-radius: 0;
+      box-shadow: none;
+      z-index: 1000;
+    }
+    .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+    .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+    .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+    .nav-menu { list-style: none; }
+    .nav-menu li { margin-bottom: 8px; }
+    .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+    .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+    .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+    .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+    .nav-menu .logout:hover { background: rgba(255,255,255,0.1); }
+
+    .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+    .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+    .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+    .top-header .notif-wrap { position: relative; }
+    .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+    .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+    .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+    .notif-dropdown.show { display: flex; }
+    .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+    .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+    .notif-list { overflow-y: auto; max-height: 320px; }
+    .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+    .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+    .notif-item.notif-no-leida { background: #f0f9f4; }
+    .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+    .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+    main .content-wrap { flex: 1; padding: 24px 32px 100px 32px; }
+
+    main {
+      margin-left: 224px;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: visible;
+      background: var(--gris-fondo);
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(47, 93, 57, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(74, 222, 128, 0.05) 0%, transparent 45%),
+        linear-gradient(180deg, #f0f7f2 0%, #f5f7fa 100%);
+    }
+
+    .page-banner {
+      position: relative;
+      background: linear-gradient(135deg, var(--verde) 0%, #234a2a 40%, var(--verde-oscuro) 100%);
+      color: white;
+      border-radius: 18px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 32px rgba(47, 93, 57, 0.25), 0 2px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .page-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(30%, -30%);
+    }
+    .page-banner::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: -20px;
+      width: 120px;
+      height: 120px;
+      background: rgba(74, 222, 128, 0.12);
+      border-radius: 50%;
+    }
+    .page-banner h1 {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 8px 0;
+      font-size: 1.55rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.02em;
+    }
+    .page-banner h1 i {
+      opacity: 0.95;
+      font-size: 1.5rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    .page-banner p {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      opacity: 0.92;
+      font-size: 0.95rem;
+      font-weight: 500;
+      max-width: 520px;
+    }
+    .page-banner .banner-badge {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      z-index: 1;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tabla-section {
+      margin-top: 20px;
+      padding-left: 0;
+    }
+    .tabla-section .section-title {
+      margin: 0 0 14px 0;
+      padding: 0;
+      color: var(--verde-oscuro);
+      font-size: 1.08rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-section {
+      position: relative;
+      background: var(--blanco);
+      padding: 28px 30px;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(47, 93, 57, 0.06), 0 1px 0 rgba(0,0,0,0.02);
+      border: 1px solid #e8ecef;
+      margin-bottom: 28px;
+      border-left: 4px solid var(--verde);
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    .form-section:hover {
+      box-shadow: 0 8px 28px rgba(47, 93, 57, 0.12), 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .form-section h3 {
+      margin: 0 0 20px 0;
+      color: var(--verde-oscuro);
+      font-size: 1.12rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.01em;
+    }
+    .form-section h3 i {
+      color: var(--verde);
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--verde-claro);
+      border-radius: 10px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: var(--verde-oscuro);
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      padding: 12px;
+      border: 2px solid #a8d5ba;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--verde);
+      box-shadow: 0 0 0 3px rgba(45, 134, 89, 0.1);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .form-section button {
+      padding: 12px 24px;
+      background: var(--verde);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-section button:hover {
+      background: #388e3c;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 134, 89, 0.3);
+    }
+
+    .form-section button[type="button"] {
+      background: #6c757d;
+    }
+
+    .form-section button[type="button"]:hover {
+      background: #5a6268;
+    }
+
+    .alert {
+      padding: 16px 22px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .alert i { font-size: 22px; }
+
+    .alert-success {
+      background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+
+    .alert-error {
+      background: linear-gradient(135deg, #ffebee 0%, #fff5f5 100%);
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+    }
+
+    .page-tip {
+      position: relative;
+      background: linear-gradient(145deg, #fffef7 0%, #f5f9e8 100%);
+      border: 1px solid #e8e4c9;
+      border-left: 4px solid #b8b54e;
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-top: 28px;
+      font-size: 13px;
+      color: #5c5a2e;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      box-shadow: 0 2px 12px rgba(92, 90, 46, 0.06);
+    }
+    .page-tip i {
+      font-size: 22px;
+      color: #9e9c5a;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Contenedor de la tabla */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: visible;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 24px;
+      border: 1px solid #e8ecef;
+      border-radius: 16px;
+      background: var(--blanco);
+      box-sizing: border-box;
+      box-shadow: 0 4px 24px rgba(47, 93, 57, 0.08), 0 0 0 1px rgba(47, 93, 57, 0.04);
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead {
+      background: linear-gradient(135deg, var(--verde) 0%, #264a2c 50%, var(--verde-oscuro) 100%);
+      color: white;
+    }
+    thead th {
+      padding: 14px 16px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: none;
+      white-space: nowrap;
+    }
+    thead th i {
+      margin-right: 6px;
+      font-size: 16px;
+      vertical-align: middle;
+    }
+    thead th:first-child { border-radius: 16px 0 0 0; }
+    thead th:last-child { border-radius: 0 16px 0 0; }
+
+    tbody tr {
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #eee;
+    }
+    tbody tr:nth-child(even) { background: #fafcfb; }
+    tbody tr:hover {
+      background: linear-gradient(90deg, rgba(47, 93, 57, 0.06) 0%, #f0f9f4 100%);
+      box-shadow: inset 3px 0 0 var(--verde);
+    }
+    tbody tr:last-child td:first-child { border-radius: 0 0 0 14px; }
+    tbody tr:last-child td:last-child { border-radius: 0 0 14px 0; }
+
+    td {
+      padding: 14px 18px;
+      text-align: center;
+      vertical-align: middle;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* ID como badge */
+    td.id-cell {
+      font-weight: 700;
+      color: var(--verde-oscuro);
+      font-size: 13px;
+    }
+    .id-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 28px;
+      padding: 0 10px;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      color: var(--verde-oscuro);
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow: 0 1px 3px rgba(47, 93, 57, 0.15);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    tbody tr:hover .id-badge {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(47, 93, 57, 0.2);
+    }
+
+    /* Tipo como pill de color */
+    .tipo-pill {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    tbody tr:hover .tipo-pill {
+      transform: scale(1.03);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .tipo-pill.vacunacion { background: #e3f2fd; color: #1565c0; }
+    .tipo-pill.desparasitacion { background: #fff3e0; color: #e65100; }
+    .tipo-pill.antibiotico { background: #fce4ec; color: #c2185b; }
+    .tipo-pill.cirugia { background: #f3e5f5; color: #7b1fa2; }
+    .tipo-pill.revision { background: #e8f5e9; color: #2e7d32; }
+    .tipo-pill.heridas { background: #ffebee; color: #c62828; }
+    .tipo-pill.reproductivo { background: #e1f5fe; color: #0277bd; }
+    .tipo-pill.otro { background: #f5f5f5; color: #616161; }
+    .tipo-pill[data-tipo="Vacunación"] { background: #e3f2fd; color: #1565c0; }
+    .tipo-pill[data-tipo="Desparasitación"] { background: #fff3e0; color: #e65100; }
+    .tipo-pill[data-tipo="Antibiótico"] { background: #fce4ec; color: #c2185b; }
+    .tipo-pill[data-tipo="Cirugía"] { background: #f3e5f5; color: #7b1fa2; }
+    .tipo-pill[data-tipo="Revisión General"] { background: #e8f5e9; color: #2e7d32; }
+    .tipo-pill[data-tipo="Tratamiento de Heridas"] { background: #ffebee; color: #c62828; }
+    .tipo-pill[data-tipo="Control Reproductivo"] { background: #e1f5fe; color: #0277bd; }
+
+    /* Fecha */
+    td.fecha-cell { color: #555; font-size: 13px; }
+
+    /* Costo destacado */
+    td.costo-cell {
+      font-weight: 700;
+      color: #1b5e20;
+      font-size: 14px;
+    }
+    .costo-valor {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: rgba(46, 125, 50, 0.08);
+      border-radius: 8px;
+      color: #1b5e20;
+    }
+
+    /* Observaciones: 2 líneas + tooltip */
+    td.obs-cell {
+      max-width: 240px;
+      text-align: left;
+      white-space: normal;
+      word-break: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.4;
+      cursor: help;
+      color: #555;
+      font-size: 13px;
+    }
+
+    /* Columna Acciones fija */
+    th:last-child,
+    td:last-child {
+      position: sticky;
+      right: 0;
+      background: var(--blanco);
+      box-shadow: -6px 0 14px rgba(0,0,0,0.06);
+      z-index: 1;
+      min-width: 140px;
+    }
+    thead th:last-child { background: transparent; box-shadow: none; }
+    tbody tr:nth-child(even) td:last-child { background: #fafcfb; }
+    tbody tr:hover td:last-child {
+      background: linear-gradient(90deg, rgba(47, 93, 57, 0.04) 0%, #f0f9f4 100%);
+    }
+
+    .actions button {
+      margin: 0 4px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .actions button i { font-size: 16px; }
+
+    .edit-btn { background: #1976d2; color: white; }
+    .delete-btn { background: #d32f2f; color: white; }
+
+    .edit-btn:hover { background: #1565c0; box-shadow: 0 2px 8px rgba(25, 118, 210, 0.35); }
+    .delete-btn:hover { background: #b71c1c; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.35); }
+
+    .empty-row td { padding: 48px 24px !important; text-align: center; border: none; }
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: var(--texto-suave);
+    }
+    .empty-state i { font-size: 48px; color: #b0b0b0; }
+    .empty-state p { margin: 0; font-size: 16px; font-weight: 600; color: var(--texto); }
+    .empty-state span { font-size: 14px; }
+  </style>
+  <script th:src="@{/js/toast.js}"></script>
+  <script th:src="@{/js/notificaciones.js}"></script>
+  <script th:src="@{/js/proteccion-vista.js}"></script>
+  <script>
+    // Establecer fecha máxima como hoy
+    document.addEventListener('DOMContentLoaded', function() {
+      const fechaInput = document.getElementById('fechaTratamiento');
+      if (fechaInput) {
+        const hoy = new Date().toISOString().split('T')[0];
+        fechaInput.setAttribute('max', hoy);
+      }
+
+      // Manejar tipo de tratamiento "Otro"
+      const tipoSelect = document.getElementById('tipoTratamiento');
+      const tipoOtroInput = document.getElementById('tipoTratamientoOtro');
+      const labelTipoOtro = document.getElementById('labelTipoOtro');
+
+      if (tipoSelect && tipoOtroInput) {
+        tipoSelect.addEventListener('change', function() {
+          if (this.value === 'Otro') {
+            tipoOtroInput.style.display = 'block';
+            labelTipoOtro.style.display = 'block';
+            tipoOtroInput.required = true;
+          } else {
+            tipoOtroInput.style.display = 'none';
+            labelTipoOtro.style.display = 'none';
+            tipoOtroInput.required = false;
+            tipoOtroInput.value = '';
+          }
+        });
+      }
+    });
+
+    function validarFormulario() {
+      const tipoSelect = document.getElementById('tipoTratamiento');
+      const tipoOtroInput = document.getElementById('tipoTratamientoOtro');
+      
+      if (tipoSelect.value === 'Otro' && (!tipoOtroInput.value || tipoOtroInput.value.trim() === '')) {
+        if (typeof showToast === 'function') showToast('Por favor, especifique el tipo de tratamiento', 'info'); else alert('Por favor, especifique el tipo de tratamiento');
+        tipoOtroInput.focus();
+        return false;
+      }
+
+      // Si es "Otro", usar el valor del input, sino el del select
+      if (tipoSelect.value === 'Otro') {
+        tipoSelect.value = tipoOtroInput.value.trim();
+      }
+
+      return true;
+    }
+
+    function mostrarFormularioEditarDesdeFila(row) {
+      if (!row || !row.dataset) return;
+      var d = row.dataset;
+      mostrarFormularioEditar(
+        d.id || '',
+        d.ganadoId || '',
+        d.tipo || '',
+        d.fecha || '',
+        d.obs || '',
+        d.vet || '',
+        d.costo || '0'
+      );
+    }
+
+    function mostrarFormularioEditar(id, ganadoId, tipo, fecha, obs, vet, costo) {
+      document.getElementById('form-editar').style.display = 'block';
+      document.getElementById('edit-id').value = id;
+      document.getElementById('edit-ganado').value = ganadoId || '';
+      
+      // Verificar si el tipo está en las opciones predefinidas
+      const tipoSelect = document.getElementById('edit-tipo');
+      const tipoOtroInput = document.getElementById('edit-tipoOtro');
+      const labelTipoOtro = document.getElementById('edit-labelTipoOtro');
+      
+      if (tipo && ['Vacunación', 'Desparasitación', 'Antibiótico', 'Cirugía', 'Revisión General', 'Tratamiento de Heridas', 'Control Reproductivo'].includes(tipo)) {
+        tipoSelect.value = tipo;
+        tipoOtroInput.style.display = 'none';
+        labelTipoOtro.style.display = 'none';
+      } else if (tipo) {
+        tipoSelect.value = 'Otro';
+        tipoOtroInput.value = tipo;
+        tipoOtroInput.style.display = 'block';
+        labelTipoOtro.style.display = 'block';
+      }
+      
+      document.getElementById('edit-fecha').value = fecha || '';
+      document.getElementById('edit-obs').value = obs || '';
+      document.getElementById('edit-vet').value = vet || '';
+      document.getElementById('edit-costo').value = costo || '';
+      
+      // Manejar cambio de tipo en edición
+      tipoSelect.addEventListener('change', function() {
+        if (this.value === 'Otro') {
+          tipoOtroInput.style.display = 'block';
+          labelTipoOtro.style.display = 'block';
+          tipoOtroInput.required = true;
+        } else {
+          tipoOtroInput.style.display = 'none';
+          labelTipoOtro.style.display = 'none';
+          tipoOtroInput.required = false;
+          tipoOtroInput.value = '';
+        }
+      });
+      
+      // Scroll al formulario de edición
+      document.getElementById('form-editar').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function eliminarTratamiento(id, fila) {
+      if (confirm('¿Está seguro de eliminar este tratamiento? Esta acción no se puede deshacer.')) {
+        fetch('/vet/tratamientos/eliminar/' + id, { method: 'DELETE' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'ok') {
+              fila.style.transition = 'opacity 0.3s';
+              fila.style.opacity = '0';
+              setTimeout(() => fila.remove(), 300);
+            } else {
+              if (typeof showToast === 'function') showToast('Error al eliminar el tratamiento', 'error'); else alert('Error al eliminar el tratamiento');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            if (typeof showToast === 'function') showToast('Error al eliminar el tratamiento', 'error'); else alert('Error al eliminar el tratamiento');
+          });
+      }
+    }
+  </script>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>🌿 AgroSoft</h1>
+    <span class="role-badge">Veterinario</span>
+  </div>
+  <ul class="nav-menu">
+    <li><a th:href="@{/dashboard/veterinario}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+    <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
+    <li><a th:href="@{/vet/tratamientos}" class="active"><i class="ri-medicine-bottle-line"></i> Tratamientos</a></li>
+    <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+    <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+    <li><a th:href="@{/trabajador/actividades}"><i class="ri-task-line"></i> Actividades</a></li>
+    <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+    <li><a th:href="@{/cuenta}"><i class="ri-user-settings-line"></i> Mi cuenta</a></li>
+    <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+  </ul>
+</aside>
+
+<main>
+  <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+  <div class="content-wrap">
+  <div class="page-banner">
+    <span class="banner-badge"><i class="ri-heart-pulse-line"></i> Sanidad</span>
+    <h1><i class="ri-medicine-bottle-line"></i> Gestión de Tratamientos Veterinarios</h1>
+    <p>Registre tratamientos, consulte el historial y mantenga el control sanitario del ganado.</p>
+  </div>
+
+  <!-- Mensajes de éxito/error -->
+  <div th:if="${success}" class="alert alert-success">
+    <i class="ri-checkbox-circle-line"></i>
+    <span th:text="${success}"></span>
+  </div>
+  <div th:if="${error}" class="alert alert-error">
+    <i class="ri-error-warning-line"></i>
+    <span th:text="${error}"></span>
+  </div>
+
+  <div class="form-section">
+    <h3><i class="ri-add-circle-line"></i> Registrar nuevo tratamiento</h3>
+    <form method="post" th:action="@{/vet/tratamientos/guardar}" id="form-nuevo-tratamiento" onsubmit="return validarFormulario()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="idGanado"><i class="ri-cow-line"></i> Paciente (Ganado) *</label>
+          <select name="idGanado" id="idGanado" required>
+            <option value="">-- Seleccione un paciente --</option>
+            <option th:each="g : ${ganado}" 
+                    th:value="${g.idGanado}" 
+                    th:text="${(g.tipo != null ? g.tipo : '—') + ' - ' + (g.raza != null && !g.raza.isEmpty() ? g.raza : 'Sin raza') + ' (ID: ' + g.idGanado + ')'}">
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="tipoTratamiento"><i class="ri-medicine-bottle-line"></i> Tipo de Tratamiento *</label>
+          <select name="tipoTratamiento" id="tipoTratamiento" required>
+            <option value="">-- Seleccione tipo --</option>
+            <option value="Vacunación">Vacunación</option>
+            <option value="Desparasitación">Desparasitación</option>
+            <option value="Antibiótico">Antibiótico</option>
+            <option value="Cirugía">Cirugía</option>
+            <option value="Revisión General">Revisión General</option>
+            <option value="Tratamiento de Heridas">Tratamiento de Heridas</option>
+            <option value="Control Reproductivo">Control Reproductivo</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="tipoTratamientoOtro" id="labelTipoOtro" style="display:none;"><i class="ri-edit-line"></i> Especificar tipo</label>
+          <input type="text" id="tipoTratamientoOtro" name="tipoTratamientoOtro" placeholder="Especifique el tipo de tratamiento" style="display:none;">
+        </div>
+
+        <div class="form-group">
+          <label for="fechaTratamiento"><i class="ri-calendar-line"></i> Fecha de Tratamiento *</label>
+          <input type="date" name="fechaTratamiento" id="fechaTratamiento" required max="">
+        </div>
+
+        <div class="form-group">
+          <label for="veterinarioResponsable"><i class="ri-user-line"></i> Veterinario Responsable</label>
+          <input type="text" name="veterinarioResponsable" id="veterinarioResponsable" placeholder="Nombre del veterinario">
+        </div>
+
+        <div class="form-group">
+          <label for="costo"><i class="ri-money-dollar-circle-line"></i> Costo</label>
+          <input type="number" name="costo" id="costo" placeholder="0.00" step="0.01" min="0">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="observaciones"><i class="ri-file-text-line"></i> Observaciones</label>
+          <textarea name="observaciones" id="observaciones" placeholder="Ingrese observaciones sobre el tratamiento..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit"><i class="ri-save-line"></i> Registrar Tratamiento</button>
+        <button type="reset"><i class="ri-eraser-line"></i> Limpiar Formulario</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="form-editar" class="form-section" style="display:none;">
+    <h3><i class="ri-edit-line"></i> Editar tratamiento</h3>
+    <form method="post" th:action="@{/vet/tratamientos/actualizar}">
+      <input type="hidden" name="idTratamiento" id="edit-id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="edit-ganado"><i class="ri-cow-line"></i> Paciente (Ganado) *</label>
+          <select name="idGanado" id="edit-ganado" required>
+            <option value="">-- Seleccione un paciente --</option>
+            <option th:each="g : ${ganado}" 
+                    th:value="${g.idGanado}" 
+                    th:text="${(g.tipo != null ? g.tipo : '—') + ' - ' + (g.raza != null && !g.raza.isEmpty() ? g.raza : 'Sin raza') + ' (ID: ' + g.idGanado + ')'}">
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-tipo"><i class="ri-medicine-bottle-line"></i> Tipo de Tratamiento *</label>
+          <select name="tipoTratamiento" id="edit-tipo" required>
+            <option value="">-- Seleccione tipo --</option>
+            <option value="Vacunación">Vacunación</option>
+            <option value="Desparasitación">Desparasitación</option>
+            <option value="Antibiótico">Antibiótico</option>
+            <option value="Cirugía">Cirugía</option>
+            <option value="Revisión General">Revisión General</option>
+            <option value="Tratamiento de Heridas">Tratamiento de Heridas</option>
+            <option value="Control Reproductivo">Control Reproductivo</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-tipoOtro" id="edit-labelTipoOtro" style="display:none;"><i class="ri-edit-line"></i> Especificar tipo</label>
+          <input type="text" id="edit-tipoOtro" name="tipoTratamientoOtro" placeholder="Especifique el tipo de tratamiento" style="display:none;">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-fecha"><i class="ri-calendar-line"></i> Fecha de Tratamiento *</label>
+          <input type="date" name="fechaTratamiento" id="edit-fecha" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-vet"><i class="ri-user-line"></i> Veterinario Responsable</label>
+          <input type="text" name="veterinarioResponsable" id="edit-vet" placeholder="Nombre del veterinario">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-costo"><i class="ri-money-dollar-circle-line"></i> Costo</label>
+          <input type="number" name="costo" id="edit-costo" placeholder="0.00" step="0.01" min="0">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="edit-obs"><i class="ri-file-text-line"></i> Observaciones</label>
+          <textarea name="observaciones" id="edit-obs" placeholder="Ingrese observaciones sobre el tratamiento..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit"><i class="ri-save-line"></i> Actualizar Tratamiento</button>
+        <button type="button" onclick="document.getElementById('form-editar').style.display='none'"><i class="ri-close-line"></i> Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <section class="tabla-section" aria-label="Listado de tratamientos">
+  <h3 class="section-title"><i class="ri-list-check-2"></i> Listado de tratamientos</h3>
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th><i class="ri-hashtag"></i> ID</th>
+        <th><i class="ri-cow-line"></i> Ganado</th>
+        <th><i class="ri-medicine-bottle-line"></i> Tipo</th>
+        <th><i class="ri-calendar-line"></i> Fecha</th>
+        <th><i class="ri-user-line"></i> Veterinario</th>
+        <th><i class="ri-file-text-line"></i> Observaciones</th>
+        <th><i class="ri-money-dollar-circle-line"></i> Costo</th>
+        <th><i class="ri-settings-3-line"></i> Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr th:if="${#lists.isEmpty(tratamientos)}" class="empty-row">
+      <td colspan="8">
+        <div class="empty-state">
+          <i class="ri-inbox-line"></i>
+          <p>No hay tratamientos registrados</p>
+          <span>Use el formulario de arriba para registrar un nuevo tratamiento.</span>
+        </div>
+      </td>
+    </tr>
+    <tr th:each="t : ${tratamientos}"
+        th:data-id="${t.idTratamiento}"
+        th:data-ganado-id="${t.ganado != null ? t.ganado.idGanado : ''}"
+        th:data-tipo="${t.tipoTratamiento}"
+        th:data-fecha="${t.fechaTratamiento}"
+        th:data-obs="${t.observaciones}"
+        th:data-vet="${t.veterinarioResponsable}"
+        th:data-costo="${t.costo != null ? t.costo.toString() : '0'}">
+      <td class="id-cell"><span class="id-badge" th:text="${t.idTratamiento}"></span></td>
+      <td th:text="${t.ganado != null ? (t.ganado.tipo + ' (ID: ' + t.ganado.idGanado + ')') : '—'}"></td>
+      <td><span class="tipo-pill otro" th:attr="data-tipo=${t.tipoTratamiento}" th:text="${t.tipoTratamiento}"></span></td>
+      <td th:text="${t.fechaTratamiento}"></td>
+      <td th:text="${t.veterinarioResponsable}"></td>
+      <td class="obs-cell" th:attr="title=${t.observaciones}" th:text="${t.observaciones}"></td>
+      <td class="costo-cell"><span class="costo-valor" th:text="${t.costo != null ? '$' + t.costo : 'N/A'}"></span></td>
+      <td class="actions">
+        <button type="button" class="edit-btn" onclick="mostrarFormularioEditarDesdeFila(this.closest('tr'))"><i class="ri-pencil-line"></i> Editar</button>
+        <button type="button" class="delete-btn" th:onclick="'eliminarTratamiento(' + ${t.idTratamiento} + ', this.closest(\\'tr\\'))'"><i class="ri-delete-bin-line"></i> Eliminar</button>
+      </td>
+    </tr>
+  </table>
+</div>
+  </section>
+
+  <div class="page-tip">
+    <i class="ri-information-line"></i>
+    <span>Las observaciones se muestran resumidas. Pase el cursor sobre una celda para ver el texto completo, o use <strong>Editar</strong> para ver y modificar todos los datos del tratamiento.</span>
+  </div>
+  </div><!-- content-wrap -->
+</main>
+</body>
+</html>

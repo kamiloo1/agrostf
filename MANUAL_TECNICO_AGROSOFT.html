@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual Técnico - AgroSoft CRUD</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.4; margin: 2cm; }
+h1 { font-size: 18pt; border-bottom: 1pt solid #333; padding-bottom: 4pt; }
+h2 { font-size: 14pt; margin-top: 16pt; }
+h3 { font-size: 12pt; margin-top: 10pt; }
+p { margin: 6pt 0; }
+ul { margin: 6pt 0; }
+li { margin: 2pt 0; }
+table { border-collapse: collapse; width: 100%; margin: 10pt 0; }
+th, td { border: 1pt solid #333; padding: 4pt 8pt; text-align: left; }
+th { background: #e0e0e0; font-weight: bold; }
+pre, code { font-family: Consolas, monospace; font-size: 10pt; background: #f5f5f5; padding: 6pt; display: block; white-space: pre-wrap; }
+hr { border: none; border-top: 1pt solid #999; margin: 12pt 0; }
+strong { font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>Manual Técnico - AgroSoft CRUD</h1>
+<p><strong>Versión actualizada a la fecha del proyecto</strong><br>
+Sistema de gestión agropecuaria: usuarios, ganado, cultivos, actividades, tratamientos, notificaciones, reportes y clima.</p>
+
+<hr>
+
+<h2>1. Introducción</h2>
+
+<h3>1.1 Propósito del sistema</h3>
+<p>AgroSoft CRUD es una aplicación web para la gestión de establecimientos agropecuarios. Permite:</p>
+<ul>
+<li><strong>Administración de usuarios</strong> con roles (Administrador, Veterinario, Trabajador).</li>
+<li><strong>Gestión de ganado:</strong> registro, actualización, estado de salud, tratamientos asociados.</li>
+<li><strong>Gestión de cultivos:</strong> registro, áreas, estados, fechas de siembra/cosecha.</li>
+<li><strong>Actividades por cultivo:</strong> tipo, descripción, trabajador responsable, estado.</li>
+<li><strong>Tratamientos veterinarios</strong> vinculados al ganado.</li>
+<li><strong>Notificaciones</strong> en el header y <strong>auditoría</strong> de acciones críticas.</li>
+<li><strong>Recuperación de contraseña</strong> por correo con token de un solo uso.</li>
+<li><strong>Reportes en PDF/Excel</strong> y <strong>consulta de clima</strong> (API OpenWeatherMap).</li>
+<li><strong>Envío de correos</strong> (plantillas, recuperación de contraseña).</li>
+</ul>
+
+<h3>1.2 Alcance</h3>
+<p>El manual describe la arquitectura, tecnologías, modelo de datos, flujos principales y diagramas (clases, flujo y actividades) del proyecto a la fecha.</p>
+
+<hr>
+
+<h2>2. Stack tecnológico</h2>
+<table>
+<tr><th>Tecnología</th><th>Versión / Uso</th></tr>
+<tr><td>Java</td><td>17</td></tr>
+<tr><td>Spring Boot</td><td>3.5.11</td></tr>
+<tr><td>Spring Security</td><td>(incluido)</td></tr>
+<tr><td>Spring Data JPA</td><td>(incluido)</td></tr>
+<tr><td>Thymeleaf</td><td>(incluido)</td></tr>
+<tr><td>MySQL</td><td>8 (XAMPP)</td></tr>
+<tr><td>Apache POI</td><td>5.2.5 (Excel)</td></tr>
+<tr><td>iText</td><td>7.2.5 (PDF)</td></tr>
+<tr><td>JFreeChart</td><td>1.5.3 (gráficos)</td></tr>
+<tr><td>Lombok</td><td>(opcional)</td></tr>
+</table>
+<p><strong>Base de datos:</strong> MySQL, nombre por defecto <code>agrostf</code>, puerto 3306 (XAMPP).<br>
+<strong>Servidor:</strong> Puerto 8085 (configurable en <code>application.properties</code>).</p>
+
+<hr>
+
+<h2>3. Estructura del proyecto</h2>
+<pre>agrosoft-crud final/
+├── pom.xml
+├── src/main/java/com/example/agrosoft1/crud/
+│   ├── AgrosotfCrudApplication.java
+│   ├── config/          # SecurityConfig, DataInitializer, ClimaProperties, etc.
+│   ├── controller/      # Login, Registro, Dashboard, Ganado, Cultivo, etc.
+│   ├── entity/          # Usuario, Role, Ganado, Cultivo, Tratamiento, Actividad, etc.
+│   ├── repository/     # JpaRepository por entidad
+│   ├── service/         # Lógica de negocio
+│   ├── util/            # ExcelImporter, ExcelExporter, PdfExporter
+│   └── pattern/         # Patrones (factory, observer, singleton, dao)
+├── src/main/resources/
+│   ├── application.properties
+│   ├── static/          # CSS, JS, imágenes
+│   └── templates/      # Vistas Thymeleaf (login, dashboard, etc.)
+├── DIAGRAMA_CLASES.md
+├── DIAGRAMA_FLUJO.md
+└── DIAGRAMA_ACTIVIDADES.md</pre>
+
+<hr>
+
+<h2>4. Modelo de datos (entidades)</h2>
+
+<h3>4.1 Entidades principales</h3>
+<table>
+<tr><th>Entidad</th><th>Tabla</th><th>Descripción breve</th></tr>
+<tr><td>Usuario</td><td>usuarios</td><td>Usuarios del sistema (correo, contraseña, rol).</td></tr>
+<tr><td>Role</td><td>roles</td><td>Roles: ADMIN, VETERINARIO, TRABAJADOR.</td></tr>
+<tr><td>Ganado</td><td>ganado</td><td>Animales (tipo, raza, edad, peso, estado de salud).</td></tr>
+<tr><td>Cultivo</td><td>cultivos</td><td>Cultivos (nombre, descripción, activo).</td></tr>
+<tr><td>Paciente</td><td>paciente</td><td>Pacientes (nombre, especie, raza, estado).</td></tr>
+<tr><td>Tratamiento</td><td>tratamientos</td><td>Tratamientos vinculados a Ganado.</td></tr>
+<tr><td>Actividad</td><td>actividades</td><td>Actividades vinculadas a Cultivo.</td></tr>
+<tr><td>Notificacion</td><td>notificaciones</td><td>Notificaciones por usuario (campana header).</td></tr>
+<tr><td>Auditoria</td><td>auditoria</td><td>Registro de acciones críticas.</td></tr>
+<tr><td>TokenRecuperacion</td><td>token_recuperacion</td><td>Tokens para recuperación de contraseña.</td></tr>
+<tr><td>PlantillaCorreo</td><td>plantillas_correo</td><td>Plantillas de correo reutilizables.</td></tr>
+</table>
+
+<h3>4.2 Relaciones principales</h3>
+<ul>
+<li><strong>Usuario</strong> N:1 <strong>Role</strong></li>
+<li><strong>Notificacion</strong> N:1 <strong>Usuario</strong></li>
+<li><strong>TokenRecuperacion</strong> N:1 <strong>Usuario</strong></li>
+<li><strong>Tratamiento</strong> N:1 <strong>Ganado</strong></li>
+<li><strong>Actividad</strong> N:1 <strong>Cultivo</strong></li>
+</ul>
+
+<hr>
+
+<h2>5. Capas de la aplicación</h2>
+
+<h3>5.1 Resumen de capas</h3>
+<table>
+<tr><th>Capa</th><th>Componentes principales</th></tr>
+<tr><td><strong>Entidades</strong></td><td>Usuario, Role, Ganado, Cultivo, Paciente, Tratamiento, Actividad, Notificacion, Auditoria, TokenRecuperacion, PlantillaCorreo</td></tr>
+<tr><td><strong>Repositorios</strong></td><td>Una interfaz JpaRepository por entidad</td></tr>
+<tr><td><strong>Servicios</strong></td><td>UsuarioService, GanadoService, CultivoService, TratamientoService, ActividadService, NotificacionService, AuditoriaService, RecuperacionContrasenaService, EmailService, ClimaService, ReportePdfService, VeterinarioService, CustomUserDetailsService</td></tr>
+<tr><td><strong>Controladores</strong></td><td>Login, Registro, Cuenta, Admin, Dashboard, Ganado, Cultivo, Tratamiento, Actividad, Paciente, RecuperarContrasena, Email, Reporte, Clima, Busquedas, SessionConfig, CargaDatos, DataLoad, ViewController, VetController, TrabajadorController, CustomErrorController</td></tr>
+<tr><td><strong>Config</strong></td><td>SecurityConfig, SecurityHeadersConfig, GlobalControllerAdvice, DataInitializer, ClimaProperties, WebClientConfig, SqlDataLoader</td></tr>
+<tr><td><strong>Util</strong></td><td>ExcelImporter, ExcelExporter, PdfExporter</td></tr>
+</table>
+
+<h3>5.2 Flujo de una petición</h3>
+<pre>Usuario (navegador) → Controller → Service → Repository → Base de datos
+                         ↑_______________|_______________|
+                         (vista / redirect / JSON)</pre>
+
+<hr>
+
+<h2>6. Seguridad y autenticación</h2>
+<ul>
+<li><strong>Spring Security:</strong> login por formulario, sesión HTTP, redirección por rol tras login.</li>
+<li><strong>Roles:</strong> ROLE_ADMIN, ROLE_VETERINARIO, ROLE_TRABAJADOR. El rol ADMIN no se puede elegir en el registro público; solo lo asigna un administrador.</li>
+<li><strong>Rutas públicas:</strong> /login, /registro, /recuperar, /recuperar/restablecer (con token), recursos estáticos.</li>
+<li><strong>Rutas por rol:</strong> /admin/* (administrador), /dashboard/veterinario, /trabajador/* (trabajador), etc.</li>
+<li><strong>Sesión:</strong> timeout configurable (por defecto 30 minutos), cookie httpOnly.</li>
+<li><strong>Recuperación de contraseña:</strong> token de un solo uso con expiración (24 h), enlace por correo.</li>
+</ul>
+
+<hr>
+
+<h2>7. Configuración relevante (application.properties)</h2>
+<ul>
+<li><strong>Base de datos:</strong> spring.datasource.url=jdbc:mysql://localhost:3306/agrostf?... , usuario/contraseña según XAMPP.</li>
+<li><strong>JPA:</strong> ddl-auto=update, dialecto MySQL8, UTF-8.</li>
+<li><strong>Servidor:</strong> server.port=8085, páginas de error personalizadas.</li>
+<li><strong>Sesión:</strong> server.servlet.session.timeout=30m, app.session.timeout.minutes=30.</li>
+<li><strong>Correo:</strong> SMTP Gmail (host, port, username, password de aplicación). Configurar con cuenta real.</li>
+<li><strong>Clima:</strong> app.clima.api.key, app.clima.api.url (OpenWeatherMap); clave real según documentación del proyecto.</li>
+<li><strong>Logging:</strong> nivel DEBUG para com.example.agrosoft1, archivo logs/agrosoft.log.</li>
+</ul>
+
+<hr>
+
+<h2>8. Diagramas del sistema</h2>
+<p>El proyecto incluye tres documentos con diagramas en sintaxis Mermaid (visualizables en GitHub, VS Code/Cursor con extensión Mermaid, o en mermaid.live):</p>
+
+<h3>8.1 Diagrama de clases (DIAGRAMA_CLASES.md)</h3>
+<ul>
+<li><strong>Entidades:</strong> atributos y relaciones (Usuario–Role, Notificacion–Usuario, TokenRecuperacion–Usuario, Tratamiento–Ganado, Actividad–Cultivo).</li>
+<li><strong>Repositorios:</strong> interfaces que extienden JpaRepository por entidad.</li>
+<li><strong>Servicios:</strong> dependencias entre servicios y repositorios.</li>
+<li><strong>Controladores:</strong> dependencias con servicios/repositorios.</li>
+<li><strong>Configuración y utilidades:</strong> SecurityConfig, DataInitializer, ClimaProperties, ExcelImporter, ExcelExporter.</li>
+</ul>
+
+<h3>8.2 Diagramas de flujo (DIAGRAMA_FLUJO.md)</h3>
+<ul>
+<li>Flujo de inicio de sesión (validación Spring Security, redirección por rol).</li>
+<li>Flujo de registro (validaciones, guardado, autologin y redirección).</li>
+<li>Flujo de recuperación de contraseña (solicitud, enlace, restablecer).</li>
+<li>Flujo CRUD de Ganado (listar, crear, actualizar, eliminar/desactivar).</li>
+<li>Flujo de acceso al dashboard por rol.</li>
+<li>Flujo general de una petición (capas).</li>
+<li>Flujo de notificaciones al crear/actualizar entidades.</li>
+</ul>
+
+<h3>8.3 Diagrama de actividades general (DIAGRAMA_ACTIVIDADES.md)</h3>
+<ul>
+<li>Un único diagrama de actividades que resume: entrada al sistema (login, registro, recuperar contraseña); validaciones y redirección al dashboard según rol; actividades por rol (administrador, veterinario, trabajador); auditoría y notificaciones asociadas a CRUD; decisión de seguir en el sistema o cerrar sesión.</li>
+</ul>
+
+<hr>
+
+<h2>9. Funcionalidades por rol</h2>
+
+<h3>9.1 Administrador</h3>
+<ul>
+<li>Dashboard con resumen (usuarios, cultivos, ganado, actividades).</li>
+<li>CRUD de usuarios y asignación de roles.</li>
+<li>CRUD de ganado y exportación PDF/estadísticas.</li>
+<li>CRUD de cultivos, exportación PDF/Excel, cambio de estado.</li>
+<li>Acceso a reportes, clima y notificaciones.</li>
+<li>Carga de datos (Excel) y configuración de sesión/notificaciones según implementación.</li>
+</ul>
+
+<h3>9.2 Veterinario</h3>
+<ul>
+<li>Dashboard con tratamientos, reportes y revisiones.</li>
+<li>Gestión de tratamientos vinculados al ganado.</li>
+<li>Consulta de ganado y reportes.</li>
+<li>Notificaciones.</li>
+</ul>
+
+<h3>9.3 Trabajador</h3>
+<ul>
+<li>Dashboard con actividades y cultivos.</li>
+<li>CRUD de actividades por cultivo (/trabajador/actividades).</li>
+<li>Consulta de cultivos.</li>
+<li>Notificaciones.</li>
+</ul>
+
+<hr>
+
+<h2>10. Referencias a documentos del proyecto</h2>
+<ul>
+<li><strong>DIAGRAMA_CLASES.md</strong> – Diagramas de clases (entidades, repositorios, servicios, controladores, config).</li>
+<li><strong>DIAGRAMA_FLUJO.md</strong> – Diagramas de flujo (login, registro, recuperación, CRUD, dashboard, notificaciones).</li>
+<li><strong>DIAGRAMA_ACTIVIDADES.md</strong> – Diagrama de actividades general del sistema.</li>
+<li><strong>application.properties</strong> – Configuración de BD, servidor, sesión, correo, clima y logging.</li>
+<li><strong>CONFIGURAR_API_CLIMA_REAL.md</strong> – (Si existe) instrucciones para la API de clima.</li>
+</ul>
+
+<hr>
+
+<h2>11. Requisitos de ejecución</h2>
+<ul>
+<li>JDK 17.</li>
+<li>Maven (para compilar y ejecutar).</li>
+<li>MySQL en ejecución (por ejemplo XAMPP con MySQL en el puerto 3306).</li>
+<li>Base de datos agrostf creada o permitir createDatabaseIfNotExist=true en la URL.</li>
+<li>Para correo: cuenta Gmail con contraseña de aplicación configurada en application.properties.</li>
+<li>Para clima real: API key de OpenWeatherMap en app.clima.api.key.</li>
+</ul>
+<p><strong>Comando típico:</strong> <code>mvn spring-boot:run</code> desde la raíz del proyecto (o ejecutar la clase <code>AgrosotfCrudApplication</code>).</p>
+
+<hr>
+<p><em>Manual técnico actualizado con la información del proyecto AgroSoft CRUD a la fecha. Los diagramas detallados se encuentran en los archivos DIAGRAMA_CLASES.md, DIAGRAMA_FLUJO.md y DIAGRAMA_ACTIVIDADES.md.</em></p>
+
+</body>
+</html>

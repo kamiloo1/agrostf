@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"></head>
+<body>
+  <!-- Menú lateral reutilizable. Uso: th:replace="~{fragments/sidebar-admin :: sidebar(activo='dashboard', roleBadge='Administrador')}" -->
+  <aside class="sidebar sidebar-agrosoft" th:fragment="sidebar(activo='dashboard', roleBadge='Administrador')">
+    <div class="sidebar-header">
+      <h1>🌿 AgroSoft</h1>
+      <span class="role-badge" th:text="${roleBadge}">Administrador</span>
+    </div>
+    <ul class="nav-menu">
+      <li><a th:href="@{/dashboard/administrador}" th:classappend="${activo == 'dashboard'} ? 'active' : ''"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+      <li><a th:href="@{/admin/usuarios}" th:classappend="${activo == 'usuarios'} ? 'active' : ''"><i class="ri-user-line"></i> Usuarios</a></li>
+      <li><a th:href="@{/admin/cultivos}" th:classappend="${activo == 'cultivos'} ? 'active' : ''"><i class="ri-leaf-line"></i> Cultivos</a></li>
+      <li><a th:href="@{/admin/ganado}" th:classappend="${activo == 'ganado'} ? 'active' : ''"><i class="ri-cow-line"></i> Ganado</a></li>
+      <li><a th:href="@{/admin/busquedas}" th:classappend="${activo == 'busquedas'} ? 'active' : ''"><i class="ri-search-line"></i> Búsquedas</a></li>
+      <li><a th:href="@{/admin/reportes}" th:classappend="${activo == 'reportes'} ? 'active' : ''"><i class="ri-file-chart-line"></i> Reportes</a></li>
+      <li><a th:href="@{/admin/correos}" th:classappend="${activo == 'correos'} ? 'active' : ''"><i class="ri-mail-send-line"></i> Correos</a></li>
+      <li><a th:href="@{/clima}" th:classappend="${activo == 'clima'} ? 'active' : ''"><i class="ri-sun-line"></i> Clima</a></li>
+      <li><a th:href="@{/vet/tratamientos}" th:classappend="${activo == 'tratamientos'} ? 'active' : ''"><i class="ri-medicine-bottle-line"></i> Tratamientos</a></li>
+      <li><a th:href="@{/cuenta}" th:classappend="${activo == 'cuenta'} ? 'active' : ''"><i class="ri-user-settings-line"></i> Mi cuenta</a></li>
+      <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+    </ul>
+  </aside>
+</body>
+</html>

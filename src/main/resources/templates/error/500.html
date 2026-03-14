@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error del servidor - AgroSoft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --verde: #2F5D39; --verde-oscuro: #1e4620; --verde-claro: #e8f5f0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f5f7fa 0%, var(--verde-claro) 100%);
+      color: #1a1a1a;
+    }
+    .box {
+      text-align: center;
+      padding: 3rem;
+      max-width: 480px;
+    }
+    .code { font-size: 6rem; font-weight: 700; color: var(--verde); line-height: 1; margin-bottom: 0.5rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--verde-oscuro); }
+    p { color: #555; margin-bottom: 1.5rem; }
+    a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: var(--verde);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    a:hover { background: var(--verde-oscuro); }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="code" th:text="${status}">500</div>
+    <h1 th:text="${titulo}">Error del servidor</h1>
+    <p>Algo falló en el servidor. Intenta de nuevo más tarde o vuelve al inicio.</p>
+    <p th:if="${message != null and !#strings.isEmpty(message)}" style="font-size: 0.9rem; color: #721c24; background: #f8d7da; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: left;">
+      <strong>Detalle:</strong> <span th:text="${message}"></span>
+    </p>
+    <a th:href="@{/}">Ir al inicio</a>
+    <span style="margin: 0 0.5rem;"></span>
+    <a th:href="@{/login}" style="background: #555;">Iniciar sesión</a>
+  </div>
+</body>
+</html>

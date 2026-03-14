@@ -9,12 +9,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      /* Paleta de colores unificada AgroSoft */
-      --verde-oscuro: #0d4f3d;
-      --verde-med: #1a7a5e;
-      --verde-acento: #2d8659;
+      --verde: #2F5D39;
+      --verde-oscuro: #1e4620;
       --verde-claro: #e8f5f0;
-      --verde-suave: #d4edda;
       --gris-fondo: #f5f7fa;
       --blanco: #ffffff;
       --texto: #1a1a1a;
@@ -26,117 +23,100 @@
     
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, var(--verde-oscuro) 0%, var(--verde-med) 100%);
+      background: #f5f7fa;
       min-height: 100vh;
       display: flex;
+      color: var(--texto);
     }
 
     .sidebar {
-      width: 280px;
-      background: linear-gradient(180deg, var(--verde-oscuro) 0%, #0a3d2d 100%);
-      color: white;
-      padding: 30px 20px;
       position: fixed;
+      left: 0;
+      top: 0;
+      width: 200px;
       height: 100vh;
       overflow-y: auto;
-      box-shadow: 4px 0 20px var(--sombra);
+      background: var(--verde);
+      color: white;
+      padding: 30px 20px;
+      border-radius: 0;
+      box-shadow: none;
       z-index: 1000;
     }
-
-    .sidebar-header {
-      text-align: center;
-      padding-bottom: 30px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      margin-bottom: 30px;
-    }
-
-    .sidebar-header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--verde-claro), #ffffff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
-    }
-
-    .sidebar-header .role-badge {
-      display: inline-block;
-      padding: 6px 15px;
-      background: rgba(232, 245, 240, 0.2);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--verde-claro);
-      border: 1px solid rgba(232, 245, 240, 0.3);
-    }
-
-    .nav-menu {
-      list-style: none;
-    }
-
-    .nav-menu li {
-      margin-bottom: 8px;
-    }
-
-    .nav-menu a {
-      display: flex;
-      align-items: center;
-      padding: 14px 18px;
-      color: rgba(255,255,255,0.8);
-      text-decoration: none;
-      border-radius: 12px;
-      transition: all 0.3s ease;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .nav-menu a i {
-      margin-right: 12px;
-      font-size: 20px;
-      width: 24px;
-    }
-
-    .nav-menu a:hover,
-    .nav-menu a.active {
-      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
-      color: white;
-      transform: translateX(5px);
-      box-shadow: 0 4px 12px rgba(26, 122, 94, 0.3);
-    }
-
-    .nav-menu .logout {
-      margin-top: 30px;
-      color: #ff6b6b;
-      border: 1px solid rgba(255, 107, 107, 0.3);
-    }
-
-    .nav-menu .logout:hover {
-      background: rgba(255, 107, 107, 0.2);
-      transform: translateX(0);
-    }
-
+    .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+    .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+    .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+    .nav-menu { list-style: none; }
+    .nav-menu li { margin-bottom: 8px; }
+    .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+    .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+    .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+    .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+    .nav-menu .logout:hover { background: rgba(255,255,255,0.1); }
     .main-content {
-      margin-left: 280px;
+      margin-left: 224px;
       flex: 1;
-      padding: 40px;
+      padding: 0;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, #f0f7f2 0%, #f5f7fa 100%);
+    }
+    .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+    .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+    .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+    .top-header .notif-wrap { position: relative; }
+    .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+    .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+    .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+    .notif-dropdown.show { display: flex; }
+    .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+    .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+    .notif-list { overflow-y: auto; max-height: 320px; }
+    .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+    .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+    .notif-item.notif-no-leida { background: #f0f9f4; }
+    .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+    .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+    .main-content .content-wrap { flex: 1; padding: 24px 28px 80px 28px; }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 20px rgba(47, 93, 57, 0.25);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .welcome-banner h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 4px 0; }
+    .welcome-banner p { margin: 0; opacity: 0.95; font-size: 0.95rem; }
+    .welcome-banner .date-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
 
     .page-header {
-      margin-bottom: 40px;
+      margin-bottom: 24px;
     }
 
     .page-header h2 {
-      font-size: 36px;
+      font-size: 1.6rem;
       font-weight: 700;
-      color: white;
-      margin-bottom: 10px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      color: var(--verde-oscuro);
+      margin-bottom: 6px;
     }
 
     .page-header p {
-      color: rgba(255,255,255,0.9);
-      font-size: 16px;
+      color: var(--texto-suave);
+      font-size: 14px;
     }
 
     .stats-grid {
@@ -148,12 +128,13 @@
 
     .stat-card {
       background: white;
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(47, 93, 57, 0.08);
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      border: 1px solid #e8ecef;
     }
 
     .stat-card::before {
@@ -163,39 +144,8 @@
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(90deg, var(--verde-med), var(--verde-acento));
-      z-index: 2;
-    }
-
-    /* Imágenes de fondo decorativas para las tarjetas */
-    .stat-card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity: 0.65;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    /* Dark overlay para oscurecer y resaltar */
-    .stat-card {
-      position: relative;
-    }
-
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.25) 100%);
+      border-radius: 16px 16px 0 0;
+      background: var(--verde);
       z-index: 1;
       pointer-events: none;
     }
@@ -203,31 +153,6 @@
     .stat-card > * {
       position: relative;
       z-index: 2;
-    }
-
-    /* Imágenes específicas por tipo de tarjeta con overlay oscuro */
-    .stat-card.tratamientos::after {
-      background-image: 
-        linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
-        url('https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&q=80');
-    }
-
-    .stat-card.reportes::after {
-      background-image: 
-        linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
-        url('https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&q=80');
-    }
-
-    .stat-card.revisiones::after {
-      background-image: 
-        linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
-        url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&q=80');
-    }
-
-    .stat-card.ganado::after {
-      background-image: 
-        linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%),
-        url('https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400&q=80');
     }
 
     .stat-card:hover {
@@ -253,84 +178,149 @@
       color: white;
     }
 
-    .stat-card-icon.tratamientos { background: linear-gradient(135deg, var(--verde-med), var(--verde-acento)); }
-    .stat-card-icon.reportes { background: linear-gradient(135deg, #2d8659, #3fa06f); }
-    .stat-card-icon.revisiones { background: linear-gradient(135deg, var(--verde-med), var(--verde-acento)); }
-    .stat-card-icon.ganado { background: linear-gradient(135deg, var(--verde-acento), #45b87a); }
+    .stat-card-icon.tratamientos { background: var(--verde); }
+    .stat-card-icon.reportes { background: var(--verde); }
+    .stat-card-icon.revisiones { background: var(--verde); }
+    .stat-card-icon.ganado { background: var(--verde); }
 
     .stat-card-value {
-      font-size: 42px;
+      font-size: 32px;
       font-weight: 700;
-      color: var(--verde-oscuro);
-      margin-bottom: 5px;
+      color: #1a1a1a;
+      margin-bottom: 4px;
     }
 
     .stat-card-label {
-      font-size: 14px;
-      color: #666;
+      font-size: 13px;
+      color: #555;
       font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--verde-oscuro);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title i { color: var(--verde); }
 
     .charts-section {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 25px;
-      margin-bottom: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
     }
 
     .chart-card {
       background: white;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 2px 16px rgba(47, 93, 57, 0.08);
+      border: 1px solid #e8ecef;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
     }
 
     .chart-card h3 {
-      font-size: 20px;
+      font-size: 1rem;
       font-weight: 600;
-      color: var(--verde-oscuro);
-      margin-bottom: 25px;
+      color: #1a1a1a;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
     }
 
     .chart-card h3 i {
-      margin-right: 10px;
-      color: var(--verde-med);
+      margin-right: 8px;
+      color: var(--verde);
     }
+
+    .chart-card .chart-container {
+      flex: 1;
+      min-height: 220px;
+      position: relative;
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    .module-card {
+      background: white;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 2px 14px rgba(47, 93, 57, 0.08);
+      border: 1px solid #e8ecef;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: all 0.25s ease;
+    }
+    .module-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(47, 93, 57, 0.15);
+      border-color: var(--verde);
+    }
+    .module-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--verde-claro);
+      color: var(--verde);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .module-card h4 { font-size: 1rem; font-weight: 600; color: var(--verde-oscuro); margin: 0 0 4px 0; }
+    .module-card p { font-size: 12px; color: var(--texto-suave); margin: 0; line-height: 1.4; }
 
     .quick-actions {
       background: white;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 16px rgba(47, 93, 57, 0.08);
+      border: 1px solid #e8ecef;
+      margin-bottom: 32px;
     }
 
     .quick-actions h3 {
-      font-size: 22px;
+      font-size: 1.1rem;
       font-weight: 600;
-      color: var(--verde-oscuro);
-      margin-bottom: 25px;
+      color: #1a1a1a;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+    .quick-actions h3 i { color: var(--verde); }
 
     .actions-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
     }
 
     .action-btn {
-      padding: 18px 24px;
-      background: linear-gradient(135deg, var(--verde-med), var(--verde-acento));
+      padding: 14px 20px;
+      background: var(--verde);
       color: white;
       border: none;
-      border-radius: 12px;
-      font-size: 15px;
+      border-radius: 10px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -344,32 +334,65 @@
 
     .action-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px var(--sombra);
+      box-shadow: 0 6px 18px var(--sombra);
+      background: #267a32;
+    }
+
+    .dashboard-tip {
+      background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+      border: 1px solid #c8e6c9;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 13px;
+      color: #2e7d32;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-tip i { font-size: 22px; opacity: 0.9; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+      .main-content { margin-left: 0; padding: 16px; }
     }
   </style>
   <script th:src="@{/js/proteccion-vista.js}"></script>
+  <script th:src="@{/js/notificaciones.js}"></script>
 </head>
 <body>
 
 <aside class="sidebar">
   <div class="sidebar-header">
-    <h1>🐄 AgroSoft</h1>
+    <h1>🌿 AgroSoft</h1>
     <span class="role-badge">Veterinario</span>
   </div>
   <ul class="nav-menu">
-    <li><a href="#" class="active"><i class="ri-dashboard-line"></i> Dashboard</a></li>
-    <li><a th:href="@{/vet/tratamientos}"><i class="ri-medicine-bottle-line"></i> Tratamientos</a></li>
+    <li><a th:href="@{/dashboard/veterinario}" class="active"><i class="ri-dashboard-line"></i> Dashboard</a></li>
     <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
-    <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+    <li><a th:href="@{/vet/tratamientos}"><i class="ri-medicine-bottle-line"></i> Tratamientos</a></li>
     <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+    <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+    <li><a th:href="@{/trabajador/actividades}"><i class="ri-task-line"></i> Actividades</a></li>
+    <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+    <li><a th:href="@{/cuenta}"><i class="ri-user-settings-line"></i> Mi cuenta</a></li>
     <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
   </ul>
 </aside>
 
 <div class="main-content">
+  <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+  <div class="content-wrap">
+  <div class="welcome-banner">
+    <div>
+      <h2><i class="ri-dashboard-line"></i> Panel Veterinario</h2>
+      <p>Gestión de tratamientos, reportes y cuidado del ganado</p>
+    </div>
+    <span class="date-badge" id="fechaHoy"></span>
+  </div>
+
   <div class="page-header">
-    <h2>Panel Veterinario</h2>
-    <p>Gestión de tratamientos y cuidado del ganado</p>
+    <h2>Resumen general</h2>
+    <p>Métricas y accesos rápidos a los módulos principales</p>
   </div>
 
   <div class="stats-grid">
@@ -422,19 +445,63 @@
     </div>
   </div>
 
+  <h3 class="section-title"><i class="ri-apps-line"></i> Módulos principales</h3>
+  <div class="modules-grid">
+    <a th:href="@{/vet/tratamientos}" class="module-card">
+      <div class="module-card-icon"><i class="ri-medicine-bottle-line"></i></div>
+      <div>
+        <h4>Tratamientos</h4>
+        <p>Registrar y consultar tratamientos veterinarios</p>
+      </div>
+    </a>
+    <a th:href="@{/admin/ganado}" class="module-card">
+      <div class="module-card-icon"><i class="ri-cow-line"></i></div>
+      <div>
+        <h4>Ganado</h4>
+        <p>Estado sanitario e inventario del rebaño</p>
+      </div>
+    </a>
+    <a th:href="@{/admin/reportes}" class="module-card">
+      <div class="module-card-icon"><i class="ri-file-chart-line"></i></div>
+      <div>
+        <h4>Reportes</h4>
+        <p>Estadísticas y exportación en PDF</p>
+      </div>
+    </a>
+    <a th:href="@{/trabajador/actividades}" class="module-card">
+      <div class="module-card-icon"><i class="ri-task-line"></i></div>
+      <div>
+        <h4>Actividades</h4>
+        <p>Seguimiento de tareas y cultivos</p>
+      </div>
+    </a>
+    <a th:href="@{/clima}" class="module-card">
+      <div class="module-card-icon"><i class="ri-sun-line"></i></div>
+      <div>
+        <h4>Clima</h4>
+        <p>Pronóstico y recomendaciones</p>
+      </div>
+    </a>
+  </div>
+
+  <h3 class="section-title"><i class="ri-pie-chart-line"></i> Estadísticas</h3>
   <div class="charts-section">
     <div class="chart-card">
       <h3><i class="ri-pie-chart-line"></i> Tratamientos por Tipo</h3>
-      <canvas id="tratamientosChart"></canvas>
+      <div class="chart-container">
+        <canvas id="tratamientosChart"></canvas>
+      </div>
     </div>
     <div class="chart-card">
       <h3><i class="ri-bar-chart-line"></i> Estado del Ganado</h3>
-      <canvas id="ganadoChart"></canvas>
+      <div class="chart-container">
+        <canvas id="ganadoChart"></canvas>
+      </div>
     </div>
   </div>
 
   <div class="quick-actions">
-    <h3>Acciones Rápidas</h3>
+    <h3><i class="ri-flashlight-line"></i> Acciones rápidas</h3>
     <div class="actions-grid">
       <a th:href="@{/vet/tratamientos}" class="action-btn">
         <i class="ri-add-circle-line"></i> Nuevo Tratamiento
@@ -445,54 +512,86 @@
       <a th:href="@{/admin/reportes}" class="action-btn">
         <i class="ri-file-download-line"></i> Generar Reporte
       </a>
+      <a th:href="@{/trabajador/actividades}" class="action-btn">
+        <i class="ri-task-line"></i> Actividades
+      </a>
     </div>
   </div>
+
+  <div class="dashboard-tip">
+    <i class="ri-lightbulb-line"></i>
+    <span>Usa los módulos principales para acceder rápido a Tratamientos, Ganado y Reportes. Los gráficos se actualizan con los datos del sistema.</span>
+  </div>
+  </div><!-- content-wrap -->
 </div>
 
 <script>
-  // Tratamientos Chart
-  const tratamientosCtx = document.getElementById('tratamientosChart').getContext('2d');
-  new Chart(tratamientosCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Vacunación', 'Desparasitación', 'Antibiótico', 'Revisión'],
-      datasets: [{
-        data: [3, 2, 1, 1],
-        backgroundColor: ['#1a7a5e', '#2d8659', '#3fa06f', '#45b87a'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' }
-      }
+  // Fecha actual en el banner
+  (function() {
+    var el = document.getElementById('fechaHoy');
+    if (el) {
+      var d = new Date();
+      var opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      el.textContent = d.toLocaleDateString('es-CO', opts);
     }
-  });
+  })();
 
-  // Ganado Chart
-  const ganadoCtx = document.getElementById('ganadoChart').getContext('2d');
-  new Chart(ganadoCtx, {
-    type: 'bar',
-    data: {
-      labels: ['Saludable', 'En Observación', 'Enfermo'],
-      datasets: [{
-        label: 'Ganado',
-        data: [6, 1, 1],
-        backgroundColor: '#2d8659',
-        borderRadius: 8
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
+  // Tratamientos Chart (dona) — colores veterinaria: violeta, azul marino, verde oscuro uniformes
+  var tratamientosCtx = document.getElementById('tratamientosChart');
+  if (tratamientosCtx) {
+    tratamientosCtx = tratamientosCtx.getContext('2d');
+    new Chart(tratamientosCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Vacunación', 'Desparasitación', 'Antibiótico', 'Revisión General', 'Otros'],
+        datasets: [{
+          data: [4, 3, 2, 2, 1],
+          backgroundColor: ['#8BC34A', '#2196F3', '#795548', '#AED581', '#8D6E63'],
+          borderWidth: 0
+        }]
       },
-      scales: {
-        y: { beginAtZero: true }
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 1.2,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { padding: 14, usePointStyle: true }
+          }
+        }
       }
-    }
-  });
+    });
+  }
+
+  // Ganado Chart (barras) — misma paleta veterinaria
+  var ganadoCtx = document.getElementById('ganadoChart');
+  if (ganadoCtx) {
+    ganadoCtx = ganadoCtx.getContext('2d');
+    new Chart(ganadoCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Saludable', 'En Observación', 'Enfermo'],
+        datasets: [{
+          label: 'Cantidad',
+          data: [6, 1, 1],
+          backgroundColor: ['#8BC34A', '#2196F3', '#795548'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 1.2,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+  }
 </script>
 
 </body>

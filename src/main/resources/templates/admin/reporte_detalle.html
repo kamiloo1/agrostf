@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${nombreReporte}">Reporte - AgroSoft</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <style>
+      :root { --verde: #2F5D39; --verde-oscuro: #1e4620; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; }
+      .sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100vh; overflow-y: auto; background: var(--verde); color: white; padding: 30px 20px; border-radius: 0; box-shadow: none; z-index: 1000; }
+      .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+      .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+      .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+      .nav-menu { list-style: none; }
+      .nav-menu li { margin-bottom: 8px; }
+      .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+      .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+      .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+      .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+      .main-content { margin-left: 224px; flex: 1; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+      .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+      .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+      .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+      .top-header .notif-wrap { position: relative; }
+      .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+      .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+      .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+      .notif-dropdown.show { display: flex; }
+      .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+      .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+      .notif-list { overflow-y: auto; max-height: 320px; }
+      .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+      .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+      .notif-item.notif-no-leida { background: #f0f9f4; }
+      .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+      .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+      .main-content .content-wrap { flex: 1; padding: 20px; }
+      @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+    </style>
+    <style>
+        :root {
+            --verde: #2F5D39;
+            --verde-oscuro: #1e4620;
+            --verde-claro: #e8f5f0;
+            --blanco: #ffffff;
+            --texto: #1a1a1a;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--verde-claro);
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--blanco);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: var(--verde);
+            margin-bottom: 10px;
+        }
+        .report-header {
+            border-bottom: 2px solid var(--verde-claro);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .report-header p {
+            color: #666;
+            margin: 5px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: var(--verde-claro);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-card h3 {
+            color: var(--verde);
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--verde);
+            margin: 10px 0;
+        }
+        .info-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .btn-back {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--verde);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-back:hover {
+            background: var(--verde);
+        }
+        .pattern-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+    </style>
+    <script th:src="@{/js/proteccion-vista.js}"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>🌿 AgroSoft</h1>
+            <span class="role-badge">Administrador</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+            <li><a th:href="@{/admin/usuarios}"><i class="ri-user-line"></i> Usuarios</a></li>
+            <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
+            <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
+            <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+            <li><a th:href="@{/admin/reportes}" class="active"><i class="ri-file-chart-line"></i> Reportes</a></li>
+            <li><a th:href="@{/admin/correos}"><i class="ri-mail-send-line"></i> Correos</a></li>
+            <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+            <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+        </ul>
+    </aside>
+    <div class="main-content">
+    <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+    <div class="content-wrap">
+    <div class="container">
+        <div class="report-header">
+            <h1>
+                <i class="ri-file-chart-line"></i> 
+                <span th:text="${nombreReporte}">Reporte</span>
+                <span class="pattern-badge">PATRÓN FACTORY</span>
+            </h1>
+            <p th:text="${descripcion}">Descripción del reporte</p>
+            <p><strong>Tipo:</strong> <span th:text="${tipoReporte}">GENERAL</span></p>
+            <p th:if="${reporte?.fechaGeneracion}">
+                <strong>Fecha de generación:</strong> 
+                <span th:text="${#temporals.format(reporte.fechaGeneracion, 'dd/MM/yyyy HH:mm:ss')}"></span>
+            </p>
+        </div>
+
+        <div class="info-box" th:if="${reporte?.tipo == 'CULTIVO'}">
+            <strong><i class="ri-information-line"></i> Reporte de Cultivos:</strong><br>
+            Este reporte muestra estadísticas específicas de los cultivos del sistema.
+        </div>
+
+        <div class="info-box" th:if="${reporte?.tipo == 'GANADO'}">
+            <strong><i class="ri-information-line"></i> Reporte de Ganado:</strong><br>
+            Este reporte muestra estadísticas específicas del ganado del sistema.
+        </div>
+
+        <div class="info-box" th:if="${reporte?.tipo == 'GENERAL'}">
+            <strong><i class="ri-information-line"></i> Reporte General:</strong><br>
+            Este reporte muestra estadísticas generales de todo el sistema.
+        </div>
+
+        <div class="stats-grid" th:if="${reporte}">
+            <!-- Reporte de Cultivos -->
+            <div class="stat-card" th:if="${reporte.totalCultivos != null}">
+                <h3>Total Cultivos</h3>
+                <div class="value" th:text="${reporte.totalCultivos}">0</div>
+            </div>
+            <div class="stat-card" th:if="${reporte.cultivosActivos != null}">
+                <h3>Cultivos Activos</h3>
+                <div class="value" th:text="${reporte.cultivosActivos}">0</div>
+            </div>
+            <div class="stat-card" th:if="${reporte.cultivosInactivos != null}">
+                <h3>Cultivos Inactivos</h3>
+                <div class="value" th:text="${reporte.cultivosInactivos}">0</div>
+            </div>
+
+            <!-- Reporte de Ganado -->
+            <div class="stat-card" th:if="${reporte.totalGanado != null}">
+                <h3>Total Ganado</h3>
+                <div class="value" th:text="${reporte.totalGanado}">0</div>
+            </div>
+            <div class="stat-card" th:if="${reporte.ganadoActivo != null}">
+                <h3>Ganado Activo</h3>
+                <div class="value" th:text="${reporte.ganadoActivo}">0</div>
+            </div>
+            <div class="stat-card" th:if="${reporte.ganadoInactivo != null}">
+                <h3>Ganado Inactivo</h3>
+                <div class="value" th:text="${reporte.ganadoInactivo}">0</div>
+            </div>
+
+            <!-- Reporte General -->
+            <div class="stat-card" th:if="${reporte.totalUsuarios != null}">
+                <h3>Total Usuarios</h3>
+                <div class="value" th:text="${reporte.totalUsuarios}">0</div>
+            </div>
+            <div class="stat-card" th:if="${reporte.totalRegistros != null}">
+                <h3>Total Registros</h3>
+                <div class="value" th:text="${reporte.totalRegistros}">0</div>
+            </div>
+        </div>
+
+        <a th:href="@{/admin/reportes}" class="btn-back">
+            <i class="ri-arrow-left-line"></i> Volver a Reportes
+        </a>
+    </div>
+    </div><!-- content-wrap -->
+    </div><!-- main-content -->
+</body>
+</html>
+

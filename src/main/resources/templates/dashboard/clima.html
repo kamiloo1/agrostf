@@ -4,17 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clima en Colombia - AgroSoft</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
     <style>
+      :root { --verde: #2F5D39; --verde-oscuro: #1e4620; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; }
+      .sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100vh; overflow-y: auto; background: var(--verde); color: white; padding: 30px 20px; border-radius: 0; box-shadow: none; z-index: 1000; }
+      .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+      .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+      .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+      .nav-menu { list-style: none; }
+      .nav-menu li { margin-bottom: 8px; }
+      .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+      .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+      .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+      .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+      .main-content { margin-left: 224px; flex: 1; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+      .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+      .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+      .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+      .top-header .notif-wrap { position: relative; }
+      .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+      .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+      .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+      .notif-dropdown.show { display: flex; }
+      .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+      .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+      .notif-list { overflow-y: auto; max-height: 320px; }
+      .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+      .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+      .notif-item.notif-no-leida { background: #f0f9f4; }
+      .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+      .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+      .main-content .content-wrap { flex: 1; padding: 20px; }
+      @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+    </style>
+    <style>
         :root {
-            --verde-oscuro: #0d4f3d;
-            --verde-med: #1a7a5e;
-            --verde-acento: #2d8659;
+            --verde: #2F5D39;
+            --verde-oscuro: #1e4620;
             --verde-claro: #e8f5f0;
             --blanco: #ffffff;
             --texto: #1a1a1a;
             --texto-suave: #666;
-            --sombra: rgba(0,0,0,0.1);
+            --sombra: rgba(47,93,57,0.12);
         }
         * {
             margin: 0;
@@ -23,11 +57,10 @@
         }
         body {
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #e8f5f0 0%, #c8e6c9 50%, #a8d5ba 100%);
+            background: var(--verde-claro);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             min-height: 100vh;
-            padding: 20px;
             position: relative;
             overflow-x: hidden;
         }
@@ -81,7 +114,7 @@
             }
         }
         h1 {
-            color: var(--verde-oscuro);
+            color: var(--verde);
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -119,13 +152,13 @@
         }
         .search-section input:focus {
             outline: none;
-            border-color: var(--verde-acento);
+            border-color: var(--verde);
             box-shadow: 0 4px 12px rgba(45, 134, 89, 0.2);
             transform: translateY(-1px);
         }
         .search-section button {
             padding: 14px 28px;
-            background: linear-gradient(135deg, var(--verde-acento) 0%, var(--verde-med) 100%);
+            background: var(--verde);
             color: white;
             border: none;
             border-radius: 12px;
@@ -156,7 +189,7 @@
             height: 300px;
         }
         .search-section button:hover {
-            background: linear-gradient(135deg, var(--verde-med) 0%, var(--verde-oscuro) 100%);
+            background: var(--verde);
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(45, 134, 89, 0.4);
         }
@@ -178,7 +211,7 @@
         .ciudad-favorita {
             padding: 10px 20px;
             background: linear-gradient(135deg, var(--verde-claro) 0%, #d4edda 100%);
-            border: 2px solid var(--verde-acento);
+            border: 2px solid var(--verde);
             border-radius: 25px;
             cursor: pointer;
             font-size: 14px;
@@ -197,7 +230,7 @@
             width: 0;
             height: 0;
             border-radius: 50%;
-            background: var(--verde-acento);
+            background: var(--verde);
             transform: translate(-50%, -50%);
             transition: width 0.5s, height 0.5s;
             z-index: 0;
@@ -207,11 +240,11 @@
             height: 200px;
         }
         .ciudad-favorita:hover {
-            background: var(--verde-acento);
+            background: var(--verde);
             color: white;
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 6px 20px rgba(45, 134, 89, 0.3);
-            border-color: var(--verde-med);
+            border-color: var(--verde);
         }
         .ciudad-favorita:active {
             transform: translateY(-1px) scale(1.02);
@@ -223,7 +256,7 @@
             margin-bottom: 20px;
         }
         .clima-card {
-            background: linear-gradient(135deg, var(--verde-acento) 0%, var(--verde-med) 50%, var(--verde-oscuro) 100%);
+            background: linear-gradient(135deg, var(--verde) 0%, var(--verde) 50%, var(--verde) 100%);
             background-size: 200% 200%;
             animation: gradientMove 8s ease infinite;
             color: white;
@@ -412,7 +445,7 @@
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.12);
             margin-top: 25px;
-            border-left: 5px solid var(--verde-acento);
+            border-left: 5px solid var(--verde);
             animation: slideUp 0.8s ease-out;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
@@ -457,7 +490,7 @@
             box-shadow: 0 12px 40px rgba(0,0,0,0.15);
         }
         .recomendacion-card h3 {
-            color: var(--verde-oscuro);
+            color: var(--verde);
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -475,7 +508,7 @@
         }
         .loading i {
             font-size: 56px;
-            color: var(--verde-acento);
+            color: var(--verde);
             animation: spin 1s linear infinite;
             display: inline-block;
             margin-bottom: 20px;
@@ -539,7 +572,7 @@
             gap: 8px;
             margin-top: 25px;
             padding: 12px 24px;
-            color: var(--verde-acento);
+            color: var(--verde);
             text-decoration: none;
             font-weight: 600;
             background: var(--blanco);
@@ -549,10 +582,10 @@
             border: 2px solid transparent;
         }
         .back-link:hover {
-            color: var(--verde-med);
+            color: var(--verde);
             transform: translateX(-5px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            border-color: var(--verde-acento);
+            border-color: var(--verde);
         }
         .back-link i {
             transition: transform 0.3s ease;
@@ -637,8 +670,47 @@
         }
     </style>
     <script th:src="@{/js/proteccion-vista.js}"></script>
+    <script th:src="@{/js/toast.js}"></script>
+    <script th:src="@{/js/notificaciones.js}"></script>
 </head>
 <body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>🌿 AgroSoft</h1>
+            <span class="role-badge" th:text="${isVeterinario ? 'Veterinario' : (isTrabajador ? 'Trabajador' : 'Administrador')}">Administrador</span>
+        </div>
+        <ul class="nav-menu">
+            <th:block th:if="${isVeterinario}">
+                <li><a th:href="@{/dashboard/veterinario}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+                <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
+                <li><a th:href="@{/vet/tratamientos}"><i class="ri-medicine-bottle-line"></i> Tratamientos</a></li>
+                <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+                <li><a th:href="@{/clima}" class="active"><i class="ri-sun-line"></i> Clima</a></li>
+            </th:block>
+            <th:block th:if="${isTrabajador}">
+                <li><a th:href="@{/dashboard/trabajador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+                <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
+                <li><a th:href="@{/trabajador/actividades}"><i class="ri-task-line"></i> Actividades</a></li>
+                <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+                <li><a th:href="@{/clima}" class="active"><i class="ri-sun-line"></i> Clima</a></li>
+            </th:block>
+            <th:block th:if="${isAdmin}">
+                <li><a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+                <li><a th:href="@{/admin/usuarios}"><i class="ri-user-line"></i> Usuarios</a></li>
+                <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
+                <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
+                <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+                <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+                <li><a th:href="@{/admin/correos}"><i class="ri-mail-send-line"></i> Correos</a></li>
+                <li><a th:href="@{/clima}" class="active"><i class="ri-sun-line"></i> Clima</a></li>
+            </th:block>
+            <li><a th:href="@{/cuenta/cambiar-password}"><i class="ri-lock-password-line"></i> Mi cuenta</a></li>
+            <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+        </ul>
+    </aside>
+    <div class="main-content">
+    <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+    <div class="content-wrap">
     <div class="container">
         <div class="header">
             <h1><i class="ri-sun-line"></i> Clima en Colombia</h1>
@@ -755,6 +827,8 @@
             <i class="ri-arrow-left-line"></i> Volver al Dashboard
         </a>
     </div>
+    </div><!-- content-wrap -->
+    </div><!-- main-content -->
 
     <script>
         // Función para verificar el estado de autenticación
@@ -802,17 +876,11 @@
         
         // Función para buscar clima con AJAX
         function buscarClima() {
-            console.log('=== INICIANDO BÚSQUEDA DE CLIMA ===');
             const ciudad = document.getElementById('ciudadInput').value.trim();
-            // Siempre usar Colombia como país
             const pais = 'CO';
             
-            console.log('Ciudad ingresada:', ciudad);
-            console.log('País: Colombia (CO)');
-            
             if (!ciudad) {
-                alert('Por favor ingresa el nombre de una ciudad de Colombia');
-                console.warn('Búsqueda cancelada: ciudad vacía');
+                if (typeof showToast === 'function') showToast('Por favor ingresa el nombre de una ciudad de Colombia', 'info'); else alert('Por favor ingresa el nombre de una ciudad de Colombia');
                 return;
             }
             
@@ -842,15 +910,6 @@
             // Siempre buscar en Colombia
             const url = `/clima/api?ciudad=${encodeURIComponent(ciudad)}&pais=CO&_t=${timestamp}`;
             
-            console.log('=== DETALLES DE LA PETICIÓN ===');
-            console.log('URL completa:', url);
-            console.log('Cookies disponibles:', document.cookie);
-            console.log('Timestamp:', timestamp);
-            
-            // Hacer petición AJAX con headers para evitar cache
-            console.log('Iniciando petición fetch a:', url);
-            console.log('Cookies disponibles:', document.cookie);
-            
             fetch(url, {
                 method: 'GET',
                 headers: {
@@ -862,10 +921,6 @@
                 cache: 'no-store'
             })
                 .then(response => {
-                    console.log('Respuesta recibida:', response.status, response.statusText);
-                    console.log('Content-Type:', response.headers.get('content-type'));
-                    console.log('URL final:', response.url);
-                    
                     // Verificar si fue redirigido al login
                     if (response.url && response.url.includes('/login')) {
                         console.error('Fue redirigido al login - sesión expirada o no autenticado');
@@ -887,8 +942,6 @@
                     }
                     
                     const contentType = response.headers.get('content-type');
-                    console.log('Content-Type recibido:', contentType);
-                    
                     if (!contentType || !contentType.includes('application/json')) {
                         return response.text().then(text => {
                             console.error('Respuesta no es JSON. Content-Type:', contentType);
@@ -906,7 +959,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Datos recibidos:', data);
                     if (data && data.ciudad) {
                         // Actualizar el campo de entrada con la ciudad buscada
                         document.getElementById('ciudadInput').value = data.ciudad;
@@ -929,7 +981,7 @@
                                 <strong><i class="ri-error-warning-line"></i> Sesión Expirada:</strong>
                                 <p>Tu sesión ha expirado. Por favor, recarga la página e inicia sesión nuevamente.</p>
                                 <p style="font-size: 12px; margin-top: 10px;">
-                                    <a href="/login" style="color: var(--verde-acento); text-decoration: underline;">Ir al login</a>
+                                    <a href="/login" style="color: var(--verde); text-decoration: underline;">Ir al login</a>
                                 </p>
                             </div>
                         `;
@@ -941,7 +993,7 @@
                                 <p style="font-size: 12px; margin-top: 10px;">Detalle: ${mensajeError}</p>
                                 <p style="font-size: 12px;">Verifica la consola del navegador (F12) para más detalles.</p>
                                 <p style="font-size: 12px; margin-top: 10px;">
-                                    <button onclick="buscarClima()" style="padding: 8px 16px; background: var(--verde-acento); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                    <button onclick="buscarClima()" style="padding: 8px 16px; background: var(--verde); color: white; border: none; border-radius: 5px; cursor: pointer;">
                                         Reintentar
                                     </button>
                                 </p>
@@ -967,14 +1019,13 @@
             fetch('/clima/limpiar-cache')
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Cache limpiado:', data);
-                    alert('Cache limpiado exitosamente. Los próximos datos serán actualizados.');
+                    if (typeof showToast === 'function') showToast('Cache limpiado exitosamente. Los próximos datos serán actualizados.', 'success'); else alert('Cache limpiado exitosamente. Los próximos datos serán actualizados.');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="ri-refresh-line"></i> Limpiar Cache';
                 })
                 .catch(error => {
                     console.error('Error al limpiar cache:', error);
-                    alert('Error al limpiar el cache: ' + error.message);
+                    if (typeof showToast === 'function') showToast('Error al limpiar el cache: ' + error.message, 'error'); else alert('Error al limpiar el cache: ' + error.message);
                     btn.disabled = false;
                     btn.innerHTML = '<i class="ri-refresh-line"></i> Limpiar Cache';
                 });
@@ -1159,8 +1210,6 @@
         
         // Configurar event listeners para los botones de ciudades rápidas
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Página cargada, configurando event listeners...');
-            
             // Configurar click en botones de ciudades rápidas
             const ciudadesFavoritas = document.querySelectorAll('.ciudad-favorita');
             ciudadesFavoritas.forEach(function(boton) {
@@ -1177,13 +1226,8 @@
             const paisInput = document.getElementById('paisInput');
             
             if (container && ciudadInput) {
-                const ciudad = ciudadInput.value.trim() || 'Bogotá';
-                
-                console.log('Ciudad inicial:', ciudad);
-                
                 // Esperar un momento para que la página termine de cargar completamente
                 setTimeout(function() {
-                    console.log('Iniciando búsqueda automática del clima...');
                     buscarClima();
                 }, 300);
             } else {
@@ -1192,12 +1236,7 @@
         });
         
         // También intentar cargar si la página ya está cargada (por si acaso)
-        if (document.readyState === 'loading') {
-            // DOM aún no está listo, el listener de arriba lo manejará
-            console.log('DOM aún cargando, esperando...');
-        } else {
-            // DOM ya está listo
-            console.log('DOM ya está listo, ejecutando carga inmediata...');
+        if (document.readyState !== 'loading') {
             setTimeout(function() {
                 // Configurar botones de ciudades rápidas
                 const ciudadesFavoritas = document.querySelectorAll('.ciudad-favorita');

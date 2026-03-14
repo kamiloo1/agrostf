@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - AgroSoft</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <style>
+      :root { --verde: #2F5D39; --verde-oscuro: #1e4620; --verde-claro: #e8f5f0; --texto-principal: #1F1F1F; --bordes-cards: #E8E8E8; --fondo: #FFFFFF; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; color: var(--texto-principal); }
+      .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; overflow-y: auto; background: var(--verde); color: white; padding: 30px 20px; border-radius: 0; box-shadow: none; z-index: 1000; }
+      .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+      .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+      .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+      .nav-menu { list-style: none; }
+      .nav-menu li { margin-bottom: 8px; }
+      .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+      .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+      .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+      .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+      .main-content { margin-left: 264px; flex: 1; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+      .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+      .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+      .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+      .top-header .notif-wrap { position: relative; }
+      .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+      .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+      .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+      .notif-dropdown.show { display: flex; }
+      .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+      .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+      .notif-list { overflow-y: auto; max-height: 320px; }
+      .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+      .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+      .notif-item.notif-no-leida { background: #f0f9f4; }
+      .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+      .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+      .main-content .content-wrap { flex: 1; padding: 20px; }
+      @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+    </style>
+    <style>
+        :root {
+            /* Paleta de colores unificada AgroSoft */
+            --verde: #2F5D39;
+            --verde-oscuro: #1e4620;
+            --verde-claro: #e8f5f0;
+            --verde-claro: #e8f5f0;
+            --gris-fondo: #f5f7fa;
+            --gris-borde: #e9ecef;
+            --blanco: #ffffff;
+            --texto: #1a1a1a;
+            --texto-suave: #495057;
+            --sombra: rgba(13, 79, 61, 0.15);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif; 
+            margin: 0;
+            background: linear-gradient(135deg, var(--gris-fondo) 0%, var(--verde-claro) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: var(--texto);
+            min-height: 100vh;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header-section {
+            background: var(--blanco);
+            padding: 25px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header-section h1 {
+            color: var(--verde);
+            margin: 0;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-section h1 i {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .btn-dashboard {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--verde) 0%, var(--verde) 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(45, 134, 89, 0.3);
+        }
+        
+        .btn-dashboard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(45, 134, 89, 0.4);
+        }
+        
+        .btn-dashboard i {
+            transition: transform 0.3s ease;
+        }
+        
+        .btn-dashboard:hover i {
+            transform: translateX(-3px);
+        }
+        
+        h3 { 
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: var(--verde);
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-user { 
+            margin-bottom: 25px; 
+            padding: 30px; 
+            background: var(--blanco);
+            border: 1px solid var(--gris-borde); 
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-user:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        
+        .form-user h3 {
+            margin-top: 0;
+            color: var(--verde);
+            border-bottom: 3px solid var(--verde);
+            padding-bottom: 10px;
+        }
+        
+        .form-user input, .form-user select { 
+            margin: 10px 0; 
+            padding: 14px 18px; 
+            width: 100%;
+            border: 2px solid var(--gris-borde);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: var(--blanco);
+        }
+        
+        .form-user input:focus, .form-user select:focus {
+            outline: none;
+            border-color: var(--verde);
+            box-shadow: 0 4px 12px rgba(45, 134, 89, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .form-user button { 
+            margin-top: 15px; 
+            margin-right: 10px;
+            padding: 14px 28px;
+            background: var(--verde);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(45, 134, 89, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-user button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(45, 134, 89, 0.4);
+        }
+        
+        .form-user button[type="button"] {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+        
+        .form-user button[type="button"]:hover {
+            background: linear-gradient(135deg, #5a6268, #495057);
+        }
+        
+        .table-container {
+            background: var(--blanco);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            animation: fadeInUp 0.6s ease-out;
+            animation-delay: 0.2s;
+            animation-fill-mode: both;
+        }
+        
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            margin: 0;
+        }
+        
+        th { 
+            background: var(--verde);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td { 
+            border-bottom: 1px solid var(--gris-borde); 
+            padding: 16px; 
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        tr {
+            transition: all 0.3s ease;
+        }
+        
+        tr:hover {
+            background: var(--verde-claro);
+            transform: scale(1.01);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-activo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactivo {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .actions { 
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .actions button { 
+            margin: 0;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-editar {
+            background: var(--verde);
+            color: white;
+        }
+        
+        .btn-editar:hover {
+            background: var(--verde);
+        }
+        
+        .btn-activar {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-activar:hover {
+            background: linear-gradient(135deg, #218838, #1aa179);
+        }
+        
+        .btn-desactivar {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: white;
+        }
+        
+        .btn-desactivar:hover {
+            background: linear-gradient(135deg, #e0a800, #f57c00);
+        }
+        
+        .export-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: var(--blanco);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInUp 0.6s ease-out;
+            animation-delay: 0.4s;
+            animation-fill-mode: both;
+        }
+        
+        .btn-excel {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-excel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .actions button {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 10px 5px;
+            }
+        }
+    </style>
+    <script th:src="@{/js/proteccion-vista.js}"></script>
+    <script th:src="@{/js/toast.js}"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>🌿 AgroSoft</h1>
+            <span class="role-badge">Administrador</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+            <li><a th:href="@{/admin/usuarios}" class="active"><i class="ri-user-line"></i> Usuarios</a></li>
+            <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
+            <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
+            <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+            <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+            <li><a th:href="@{/admin/correos}"><i class="ri-mail-send-line"></i> Correos</a></li>
+            <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+            <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+        </ul>
+    </aside>
+    <div class="main-content">
+    <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+    <div class="content-wrap">
+    <div class="container">
+
+<!-- HEADER CON TÍTULO Y BOTÓN DASHBOARD -->
+<div class="header-section">
+    <h1><i class="ri-user-settings-line"></i> Gestión de Usuarios</h1>
+    <a th:href="@{/dashboard/administrador}" class="btn-dashboard">
+        <i class="ri-arrow-left-line"></i> Volver al Dashboard
+    </a>
+</div>
+<div id="flashSuccess" th:if="${success}" th:text="${success}" style="display:none;"></div>
+<div id="flashError" th:if="${errorValidacion}" th:text="${errorValidacion}" style="display:none;"></div>
+<script>
+    (function() {
+        var s = document.getElementById('flashSuccess');
+        var e = document.getElementById('flashError');
+        if (s && s.textContent && typeof showToast === 'function') showToast(s.textContent.trim(), 'success');
+        if (e && e.textContent && typeof showToast === 'function') showToast(e.textContent.trim(), 'error');
+    })();
+</script>
+<script>
+    function mostrarFormularioEditarDesdeFila(btn) {
+        const fila = btn.closest('tr');
+        const id = fila.dataset.id;
+        const nombre = fila.dataset.nombre || '';
+        const email = fila.dataset.email;
+        const rol = fila.dataset.rol;
+        const numeroDocumento = fila.dataset.numeroDocumento || '';
+        const telefono = fila.dataset.telefono || '';
+
+        document.getElementById('form-editar').style.display = 'block';
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-nombre').value = nombre;
+        document.getElementById('edit-email').value = email;
+        document.getElementById('edit-numeroDocumento').value = numeroDocumento;
+        document.getElementById('edit-telefono').value = telefono;
+        
+        // Buscar el option que coincida con el rol y seleccionarlo
+        const selectRol = document.getElementById('edit-roleId');
+        for (let i = 0; i < selectRol.options.length; i++) {
+            if (selectRol.options[i].text === rol) {
+                selectRol.selectedIndex = i;
+                break;
+            }
+        }
+        
+        // Scroll suave al formulario
+        document.getElementById('form-editar').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function cambiarEstadoUsuario(btn) {
+        const fila = btn.closest('tr');
+        const id = fila.dataset.id;
+        const activo = fila.dataset.activo === 'true';
+        const nuevoEstado = !activo;
+        const accion = nuevoEstado ? 'activar' : 'desactivar';
+        
+        if (confirm(`¿${accion.charAt(0).toUpperCase() + accion.slice(1)} este usuario?`)) {
+            fetch('/admin/usuarios/cambiar-estado/' + id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ activo: nuevoEstado })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error en la respuesta del servidor');
+            })
+            .then(data => {
+                if (data.status === 'ok') {
+                    // Recargar la página para reflejar los cambios
+                    location.reload();
+                } else {
+                    if (typeof showToast === 'function') showToast('Error al cambiar el estado del usuario.', 'error'); else alert('Error al cambiar el estado del usuario.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (typeof showToast === 'function') showToast('Error al cambiar el estado del usuario: ' + error.message, 'error'); else alert('Error al cambiar el estado del usuario: ' + error.message);
+            });
+        }
+    }
+</script>
+
+<!-- FORMULARIO CREAR USUARIO -->
+<div class="form-user">
+    <h3><i class="ri-user-add-line"></i> Crear Usuario</h3>
+    <form method="post" th:action="@{/admin/usuarios/guardar}">
+        <input type="text" name="nombre" placeholder="Nombre completo">
+        <input type="email" name="correo" placeholder="Correo electrónico" required>
+        <input type="text" name="numeroDocumento" placeholder="Número de Documento">
+        <input type="text" name="telefono" placeholder="Teléfono">
+        <input type="password" name="password" placeholder="Contraseña" required>
+        <select name="role.id" required>
+            <option value="">-- Seleccione Rol --</option>
+            <option th:each="role : ${roles}" 
+                    th:value="${role.id}" 
+                    th:text="${role.nombre}">
+            </option>
+        </select>
+        <button type="submit"><i class="ri-add-circle-line"></i> Crear Usuario</button>
+    </form>
+</div>
+
+<!-- FORMULARIO EDITAR USUARIO -->
+<div id="form-editar" class="form-user" style="display: none;">
+    <h3><i class="ri-edit-box-line"></i> Editar Usuario</h3>
+    <form method="post" th:action="@{/admin/usuarios/actualizar}">
+        <input type="hidden" name="id" id="edit-id">
+        <input type="text" name="nombre" id="edit-nombre" placeholder="Nombre completo">
+        <input type="email" name="correo" id="edit-email" placeholder="Correo electrónico" required>
+        <input type="text" name="numeroDocumento" id="edit-numeroDocumento" placeholder="Número de Documento">
+        <input type="text" name="telefono" id="edit-telefono" placeholder="Teléfono">
+        <input type="password" name="password" placeholder="Nueva contraseña (dejar vacío para no cambiar)">
+        <select name="role.id" id="edit-roleId" required>
+            <option value="">-- Seleccione Rol --</option>
+            <option th:each="role : ${roles}" 
+                    th:value="${role.id}" 
+                    th:text="${role.nombre}">
+            </option>
+        </select>
+        <button type="submit"><i class="ri-save-3-line"></i> Actualizar</button>
+        <button type="button" onclick="document.getElementById('form-editar').style.display='none'"><i class="ri-close-circle-line"></i> Cancelar</button>
+    </form>
+</div>
+
+<!-- TABLA USUARIOS -->
+<h3><i class="ri-list-check"></i> Lista de Usuarios</h3>
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="u, iStat : ${usuariosLista}"
+                th:attr="data-id=${u.id}, 
+                         data-nombre=${u.nombre != null ? #strings.escapeXml(u.nombre) : ''}, 
+                         data-email=${#strings.escapeXml(u.correo)}, 
+                         data-rol=${u.role != null ? #strings.escapeXml(u.role.nombre) : 'Sin rol'},
+                         data-numero-documento=${u.numeroDocumento != null ? #strings.escapeXml(u.numeroDocumento) : ''},
+                         data-telefono=${u.telefono != null ? #strings.escapeXml(u.telefono) : ''},
+                         data-activo=${u.activo != null ? u.activo : true}">
+                <td th:text="${iStat.index + 1}"></td>
+                <td th:text="${u.nombre != null ? u.nombre : 'Sin nombre'}"></td>
+                <td th:text="${u.correo}"></td>
+                <td th:text="${u.role != null ? u.role.nombre : 'Sin rol'}"></td>
+                <td>
+                    <span th:if="${u.activo != null && u.activo}" class="status-badge status-activo">
+                        <i class="ri-checkbox-circle-line"></i> Activo
+                    </span>
+                    <span th:if="${u.activo == null || !u.activo}" class="status-badge status-inactivo">
+                        <i class="ri-close-circle-line"></i> Inactivo
+                    </span>
+                </td>
+                <td class="actions">
+                    <button class="btn-editar" onclick="mostrarFormularioEditarDesdeFila(this)">
+                        <i class="ri-pencil-line"></i> Editar
+                    </button>
+                    <button th:if="${u.activo != null && u.activo}" 
+                            class="btn-desactivar" 
+                            onclick="cambiarEstadoUsuario(this)"
+                            title="Desactivar usuario">
+                        <i class="ri-toggle-line"></i> Desactivar
+                    </button>
+                    <button th:if="${u.activo == null || !u.activo}" 
+                            class="btn-activar" 
+                            onclick="cambiarEstadoUsuario(this)"
+                            title="Activar usuario">
+                        <i class="ri-toggle-fill"></i> Activar
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECCIÓN EXPORTAR -->
+<div class="export-section">
+    <a th:href="@{/admin/usuarios/exportar}" class="btn-excel">
+        <i class="ri-file-excel-2-line"></i> Exportar a Excel
+    </a>
+    <div style="color: var(--texto-suave); font-size: 14px;">
+        <i class="ri-information-line"></i> Total de usuarios: <strong th:text="${usuarios}">0</strong>
+    </div>
+</div>
+
+    </div>
+    </div><!-- content-wrap -->
+    </div><!-- main-content -->
+</body>
+</html>

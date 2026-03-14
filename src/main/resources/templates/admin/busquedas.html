@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Búsquedas y Carga de Datos - AgroSoft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root { --verde: #2F5D39; --verde-oscuro: #1e4620; --texto-principal: #1F1F1F; --bordes-cards: #E8E8E8; --fondo: #FFFFFF; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; color: var(--texto-principal); }
+    .sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100vh; overflow-y: auto; background: var(--verde); color: white; padding: 30px 20px; border-radius: 0; box-shadow: none; z-index: 1000; }
+    .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+    .sidebar-header h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px; }
+    .sidebar-header .role-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; font-weight: 600; color: white; }
+    .nav-menu { list-style: none; }
+    .nav-menu li { margin-bottom: 8px; }
+    .nav-menu a { display: flex; align-items: center; padding: 12px 16px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 14px; font-weight: 500; }
+    .nav-menu a i { margin-right: 12px; font-size: 18px; width: 20px; }
+    .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.15); color: white; }
+    .nav-menu .logout { margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+    .main-content { margin-left: 224px; flex: 1; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    .top-header { background: #e8f0e8; padding: 16px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(47,93,57,0.1); }
+    .top-header .greeting { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+    .top-header .user-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(47,93,57,0.4); object-fit: cover; background: var(--verde); }
+    .top-header .notif-wrap { position: relative; }
+    .top-header .notif-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; color: var(--verde); font-size: 20px; cursor: pointer; }
+    .top-header .notif-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; background: #dc3545; color: white; font-size: 11px; font-weight: 600; border-radius: 9px; display: none; align-items: center; justify-content: center; z-index: 10; }
+    .notif-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 340px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e0e0e0; display: none; flex-direction: column; z-index: 1001; overflow: hidden; }
+    .notif-dropdown.show { display: flex; }
+    .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8faf8; }
+    .notif-leer-todas { background: none; border: none; color: var(--verde); font-size: 12px; cursor: pointer; }
+    .notif-list { overflow-y: auto; max-height: 320px; }
+    .notif-loading, .notif-empty { padding: 24px; text-align: center; color: #666; font-size: 14px; }
+    .notif-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+    .notif-item.notif-no-leida { background: #f0f9f4; }
+    .notif-item-mensaje { font-size: 14px; color: #1a1a1a; }
+    .notif-item-meta { font-size: 11px; color: #888; margin-top: 4px; }
+    .main-content .content-wrap { flex: 1; padding: 30px; }
+    @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
+  <style>
+    :root {
+      --verde: #2F5D39;
+      --verde-oscuro: #1e4620;
+      --verde-claro: #CFE6AD;
+      --amarillo-claro: #F3F5A8;
+      --texto-principal: #1F1F1F;
+      --texto-secundario: #6F6F6F;
+      --bordes-cards: #E8E8E8;
+      --fondo: #FFFFFF;
+    }
+    
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--fondo);
+      min-height: 100vh;
+      display: flex;
+      color: var(--texto-principal);
+    }
+
+    .page-header {
+      margin-bottom: 30px;
+    }
+
+    .page-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--texto-principal);
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: var(--texto-secundario);
+      font-size: 16px;
+    }
+
+    .sections-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .section-card {
+      background: var(--fondo);
+      border: 1px solid var(--bordes-cards);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .section-card h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--texto-principal);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-card h3 i {
+      color: var(--verde);
+      font-size: 24px;
+    }
+
+    .search-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .filter-group {
+      background: rgba(207, 230, 173, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid var(--verde-claro);
+    }
+
+    .filter-group h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--verde);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-group h4 i {
+      font-size: 16px;
+    }
+
+    .btn-secondary {
+      background: var(--texto-secundario);
+      color: white;
+      margin-left: 10px;
+    }
+
+    .btn-secondary:hover {
+      background: #5a5a5a;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--texto-principal);
+    }
+
+    .form-group select,
+    .form-group input {
+      padding: 12px 16px;
+      border: 1px solid var(--bordes-cards);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .form-group select:focus,
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--verde);
+      box-shadow: 0 0 0 3px rgba(74, 124, 71, 0.1);
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--verde);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--verde);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(47, 93, 57, 0.3);
+    }
+
+    .btn-load {
+      background: var(--verde);
+      color: white;
+      padding: 16px 32px;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .btn-load:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(47, 93, 57, 0.4);
+    }
+
+    .btn-load i {
+      font-size: 20px;
+    }
+
+    .results-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(207, 230, 173, 0.1);
+      border-radius: 8px;
+      border: 1px solid var(--verde-claro);
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .results-table th,
+    .results-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--bordes-cards);
+    }
+
+    .results-table th {
+      background: var(--verde-claro);
+      color: var(--verde);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .results-table td {
+      font-size: 14px;
+      color: var(--texto-principal);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--texto-secundario);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: var(--bordes-cards);
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .loading i {
+      animation: spin 1s linear infinite;
+      font-size: 24px;
+      color: var(--verde);
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert.active {
+      display: block;
+    }
+
+    .alert-success {
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: #4caf50;
+    }
+
+    .alert-error {
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      color: #f44336;
+    }
+
+    .alert-info {
+      background: rgba(33, 150, 243, 0.1);
+      border: 1px solid rgba(33, 150, 243, 0.3);
+      color: #2196f3;
+    }
+
+    .data-status {
+      background: var(--verde-claro);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .data-status h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--verde);
+      margin-bottom: 12px;
+    }
+
+    .data-status-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(47, 93, 57, 0.1);
+    }
+
+    .data-status-item:last-child {
+      border-bottom: none;
+    }
+
+    .data-status-item span:first-child {
+      color: var(--texto-secundario);
+    }
+
+    .data-status-item span:last-child {
+      font-weight: 600;
+      color: var(--verde);
+    }
+
+    @media (max-width: 1024px) {
+      .sections-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+    }
+  </style>
+  <script th:src="@{/js/proteccion-vista.js}"></script>
+  <script th:src="@{/js/notificaciones.js}"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>🌿 AgroSoft</h1>
+            <span class="role-badge">Administrador</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a th:href="@{/dashboard/administrador}"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+            <li><a th:href="@{/admin/usuarios}"><i class="ri-user-line"></i> Usuarios</a></li>
+            <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
+            <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
+            <li><a th:href="@{/admin/busquedas}" class="active"><i class="ri-search-line"></i> Búsquedas</a></li>
+            <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
+            <li><a th:href="@{/admin/correos}"><i class="ri-mail-send-line"></i> Correos</a></li>
+            <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
+            <li><a th:href="@{/logout}" class="logout"><i class="ri-logout-box-r-line"></i> Cerrar Sesión</a></li>
+        </ul>
+    </aside>
+    <div class="main-content">
+  <header class="top-header" th:replace="~{fragments/top-header :: header}"></header>
+  <div class="content-wrap">
+  <div class="page-header">
+    <h2><i class="ri-search-line"></i> Búsquedas y Carga de Datos</h2>
+    <p>Busca información en el sistema y gestiona la carga inicial de datos</p>
+  </div>
+
+  <div class="alert" id="alertMessage"></div>
+
+  <div class="sections-grid">
+    <!-- Sección de Búsquedas -->
+    <div class="section-card">
+      <h3><i class="ri-search-line"></i> Búsqueda Avanzada</h3>
+      <form class="search-form" id="searchForm">
+        <div class="form-group">
+          <label for="searchType">Tipo de búsqueda</label>
+          <select id="searchType" name="searchType" required>
+            <option value="">Selecciona un tipo...</option>
+            <option value="usuarios">Usuarios</option>
+            <option value="ganado">Ganado</option>
+            <option value="cultivos">Cultivos</option>
+            <option value="tratamientos">Tratamientos</option>
+            <option value="actividades">Actividades</option>
+          </select>
+        </div>
+        
+        <!-- Filtros dinámicos según el tipo -->
+        <div id="dynamicFilters"></div>
+        
+        <!-- Filtros comunes -->
+        <div class="form-group">
+          <label for="searchTerm">Búsqueda general (opcional)</label>
+          <input type="text" id="searchTerm" name="searchTerm" placeholder="Buscar en todos los campos...">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sortBy">Ordenar por</label>
+            <select id="sortBy" name="sortBy">
+              <option value="">Sin ordenar</option>
+              <option value="id">ID</option>
+              <option value="nombre">Nombre</option>
+              <option value="fecha">Fecha</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sortOrder">Orden</label>
+            <select id="sortOrder" name="sortOrder">
+              <option value="asc">Ascendente</option>
+              <option value="desc">Descendente</option>
+            </select>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+          <i class="ri-search-line"></i> Buscar
+        </button>
+        <button type="button" class="btn btn-secondary" id="clearFilters">
+          <i class="ri-eraser-line"></i> Limpiar Filtros
+        </button>
+      </form>
+      
+      <div class="loading" id="searchLoading">
+        <i class="ri-loader-4-line"></i>
+        <p>Buscando...</p>
+      </div>
+
+      <div class="results-section" id="resultsSection" style="display: none;">
+        <h4 style="margin-top: 20px; margin-bottom: 10px;">Resultados</h4>
+        <div id="resultsContainer"></div>
+      </div>
+    </div>
+
+    <!-- Sección de Carga de Datos -->
+    <div class="section-card">
+      <h3><i class="ri-database-2-line"></i> Carga Inicial de Datos</h3>
+      
+      <div class="data-status" id="dataStatus">
+        <h4><i class="ri-information-line"></i> Estado Actual de la Base de Datos</h4>
+        <div class="data-status-item">
+          <span>Usuarios:</span>
+          <span id="statusUsuarios">Cargando...</span>
+        </div>
+        <div class="data-status-item">
+          <span>Ganado:</span>
+          <span id="statusGanado">Cargando...</span>
+        </div>
+        <div class="data-status-item">
+          <span>Tratamientos:</span>
+          <span id="statusTratamientos">Cargando...</span>
+        </div>
+        <div class="data-status-item">
+          <span>Roles:</span>
+          <span id="statusRoles">Cargando...</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; padding: 20px; background: rgba(207, 230, 173, 0.1); border-radius: 8px; border: 2px dashed var(--verde-claro);">
+        <h4 style="margin-bottom: 15px; color: var(--verde);">
+          <i class="ri-file-excel-2-line"></i> Cargar Datos desde Excel
+        </h4>
+        <p style="font-size: 13px; color: var(--texto-secundario); margin-bottom: 15px;">
+          Sube un archivo Excel (.xlsx) con hojas separadas: <strong>Usuarios</strong>, <strong>Ganado</strong>, <strong>Tratamientos</strong>, <strong>Cultivos</strong>
+        </p>
+        
+        <form id="excelUploadForm" enctype="multipart/form-data" style="margin-bottom: 15px;">
+          <input type="file" id="excelFile" name="archivo" accept=".xlsx,.xls" 
+                 style="padding: 10px; border: 2px solid var(--bordes-cards); border-radius: 8px; width: 100%; margin-bottom: 10px; cursor: pointer;">
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i class="ri-upload-cloud-2-line"></i> Subir y Cargar Excel
+          </button>
+        </form>
+        
+        <div class="loading" id="excelLoading" style="display: none;">
+          <i class="ri-loader-4-line"></i>
+          <p>Procesando archivo Excel...</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid var(--verde-claro);">
+        <h4 style="margin-bottom: 15px; color: var(--verde);">
+          <i class="ri-database-2-line"></i> Carga Automática (Método Anterior)
+        </h4>
+        <p style="font-size: 13px; color: var(--texto-secundario); margin-bottom: 15px;">
+          Genera datos de ejemplo automáticamente (método anterior)
+        </p>
+        <button type="button" class="btn btn-load" id="loadDataBtn">
+          <i class="ri-database-2-line"></i> Cargar Datos Iniciales
+        </button>
+      </div>
+
+      <div class="loading" id="loadLoading">
+        <i class="ri-loader-4-line"></i>
+        <p>Cargando datos...</p>
+      </div>
+    </div>
+  </div>
+  </div><!-- content-wrap -->
+</div><!-- main-content -->
+
+<script>
+  // Cargar estado inicial
+  document.addEventListener('DOMContentLoaded', function() {
+    verificarEstadoDatos();
+    
+    // Event listener para cambio de tipo de búsqueda
+    document.getElementById('searchType').addEventListener('change', function() {
+      actualizarFiltrosDinamicos(this.value);
+    });
+    
+    // Event listener para búsqueda
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      realizarBusqueda();
+    });
+    
+    // Event listener para limpiar filtros
+    document.getElementById('clearFilters').addEventListener('click', function() {
+      limpiarFiltros();
+    });
+    
+    // Event listener para carga de datos
+    document.getElementById('loadDataBtn').addEventListener('click', function() {
+      if (confirm('¿Estás seguro de que deseas cargar los datos iniciales? Esto agregará registros de ejemplo a la base de datos.')) {
+        cargarDatosIniciales();
+      }
+    });
+    
+    // Event listener para subida de Excel
+    document.getElementById('excelUploadForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      cargarDatosDesdeExcel();
+    });
+  });
+
+  function actualizarFiltrosDinamicos(tipo) {
+    const container = document.getElementById('dynamicFilters');
+    container.innerHTML = '';
+    
+    if (!tipo) return;
+    
+    let html = '<div class="filter-group"><h4><i class="ri-filter-line"></i> Filtros Específicos</h4>';
+    
+    switch(tipo) {
+      case 'usuarios':
+        html += `
+          <div class="form-row">
+            <div class="form-group">
+              <label for="filterRol">Rol</label>
+              <select id="filterRol" name="filterRol">
+                <option value="">Todos los roles</option>
+                <option value="ADMIN">Administrador</option>
+                <option value="VETERINARIO">Veterinario</option>
+                <option value="TRABAJADOR">Trabajador</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filterActivo">Estado</label>
+              <select id="filterActivo" name="filterActivo">
+                <option value="">Todos</option>
+                <option value="true">Activo</option>
+                <option value="false">Inactivo</option>
+              </select>
+            </div>
+          </div>
+        `;
+        break;
+        
+      case 'ganado':
+        html += `
+          <div class="form-row">
+            <div class="form-group">
+              <label for="filterTipo">Tipo de animal</label>
+              <select id="filterTipo" name="filterTipo">
+                <option value="">Todos los tipos</option>
+                <option value="Vaca">Vaca</option>
+                <option value="Cerdo">Cerdo</option>
+                <option value="Oveja">Oveja</option>
+                <option value="Cabra">Cabra</option>
+                <option value="Caballo">Caballo</option>
+                <option value="Pollo">Pollo</option>
+                <option value="Pavo">Pavo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filterEstado">Estado de salud</label>
+              <select id="filterEstado" name="filterEstado">
+                <option value="">Todos los estados</option>
+                <option value="Saludable">Saludable</option>
+                <option value="En observación">En observación</option>
+                <option value="Enfermo">Enfermo</option>
+                <option value="En Tratamiento">En Tratamiento</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="filterPesoMin">Peso mínimo (kg)</label>
+              <input type="number" id="filterPesoMin" name="filterPesoMin" step="0.1" min="0" placeholder="Ej: 50">
+            </div>
+            <div class="form-group">
+              <label for="filterPesoMax">Peso máximo (kg)</label>
+              <input type="number" id="filterPesoMax" name="filterPesoMax" step="0.1" min="0" placeholder="Ej: 500">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="filterRaza">Raza</label>
+            <input type="text" id="filterRaza" name="filterRaza" placeholder="Ej: Holstein, Yorkshire...">
+          </div>
+        `;
+        break;
+        
+      case 'cultivos':
+        html += `
+          <div class="form-row">
+            <div class="form-group">
+              <label for="filterTipoCultivo">Tipo de cultivo</label>
+              <input type="text" id="filterTipoCultivo" name="filterTipoCultivo" placeholder="Ej: Maíz, Trigo...">
+            </div>
+            <div class="form-group">
+              <label for="filterEstadoCultivo">Estado</label>
+              <select id="filterEstadoCultivo" name="filterEstadoCultivo">
+                <option value="">Todos los estados</option>
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+                <option value="Cosechado">Cosechado</option>
+              </select>
+            </div>
+          </div>
+        `;
+        break;
+        
+      case 'tratamientos':
+        html += `
+          <div class="form-row">
+            <div class="form-group">
+              <label for="filterTipoTratamiento">Tipo de tratamiento</label>
+              <input type="text" id="filterTipoTratamiento" name="filterTipoTratamiento" placeholder="Ej: Vacunación, Desparasitación...">
+            </div>
+            <div class="form-group">
+              <label for="filterFechaDesde">Fecha desde</label>
+              <input type="date" id="filterFechaDesde" name="filterFechaDesde">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="filterFechaHasta">Fecha hasta</label>
+            <input type="date" id="filterFechaHasta" name="filterFechaHasta">
+          </div>
+        `;
+        break;
+        
+      case 'actividades':
+        html += `
+          <div class="form-row">
+            <div class="form-group">
+              <label for="filterTipoActividad">Tipo de actividad</label>
+              <input type="text" id="filterTipoActividad" name="filterTipoActividad" placeholder="Ej: Siembra, Riego...">
+            </div>
+            <div class="form-group">
+              <label for="filterEstadoActividad">Estado</label>
+              <select id="filterEstadoActividad" name="filterEstadoActividad">
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En progreso">En progreso</option>
+                <option value="Completada">Completada</option>
+              </select>
+            </div>
+          </div>
+        `;
+        break;
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function limpiarFiltros() {
+    document.getElementById('searchType').value = '';
+    document.getElementById('searchTerm').value = '';
+    const sortBy = document.getElementById('sortBy');
+    const sortOrder = document.getElementById('sortOrder');
+    if (sortBy) sortBy.value = '';
+    if (sortOrder) sortOrder.value = 'asc';
+    document.getElementById('dynamicFilters').innerHTML = '';
+    document.getElementById('resultsSection').style.display = 'none';
+  }
+
+  function verificarEstadoDatos() {
+    fetch('/admin/data/verificar')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error en la respuesta del servidor: ' + response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status === 'success') {
+          document.getElementById('statusUsuarios').textContent = data.usuarios || 0;
+          document.getElementById('statusGanado').textContent = data.ganado || 0;
+          document.getElementById('statusTratamientos').textContent = data.tratamientos || 0;
+          document.getElementById('statusRoles').textContent = data.roles || 0;
+        } else {
+          console.error('Error en la respuesta:', data);
+          document.getElementById('statusUsuarios').textContent = 'Error';
+          document.getElementById('statusGanado').textContent = 'Error';
+          document.getElementById('statusTratamientos').textContent = 'Error';
+          document.getElementById('statusRoles').textContent = 'Error';
+        }
+      })
+      .catch(error => {
+        console.error('Error al verificar estado:', error);
+        document.getElementById('statusUsuarios').textContent = 'Error';
+        document.getElementById('statusGanado').textContent = 'Error';
+        document.getElementById('statusTratamientos').textContent = 'Error';
+        document.getElementById('statusRoles').textContent = 'Error';
+      });
+  }
+
+  function realizarBusqueda() {
+    const searchType = document.getElementById('searchType').value;
+    const searchTerm = document.getElementById('searchTerm').value;
+    const sortBy = document.getElementById('sortBy').value;
+    const sortOrder = document.getElementById('sortOrder').value;
+    
+    if (!searchType) {
+      mostrarAlerta('Por favor selecciona un tipo de búsqueda', 'error');
+      return;
+    }
+    
+    // Recopilar todos los filtros
+    const filtros = {
+      tipo: searchType,
+      termino: searchTerm,
+      ordenarPor: sortBy,
+      orden: sortOrder
+    };
+    
+    // Agregar filtros específicos según el tipo
+    const dynamicFilters = document.getElementById('dynamicFilters');
+    if (dynamicFilters) {
+      const filterInputs = dynamicFilters.querySelectorAll('input, select');
+      filterInputs.forEach(input => {
+        if (input.value && input.name) {
+          filtros[input.name] = input.value;
+        }
+      });
+    }
+    
+    const loading = document.getElementById('searchLoading');
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsContainer = document.getElementById('resultsContainer');
+    
+    loading.classList.add('active');
+    resultsSection.style.display = 'none';
+    
+    // Construir URL con parámetros
+    const params = new URLSearchParams();
+    Object.keys(filtros).forEach(key => {
+      if (filtros[key]) {
+        params.append(key, filtros[key]);
+      }
+    });
+    
+    fetch(`/admin/busquedas/buscar?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'include'
+    })
+      .then(response => {
+        // Verificar si la respuesta es HTML (error de autenticación)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+          throw new Error('Error de autenticación: Por favor, recarga la página e inicia sesión nuevamente');
+        }
+        
+        if (!response.ok) {
+          throw new Error('Error en la respuesta del servidor: ' + response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+        loading.classList.remove('active');
+        
+        if (data.status === 'success') {
+          if (data.resultados && data.resultados.length > 0) {
+            mostrarResultados(data.resultados, searchType);
+            resultsSection.style.display = 'block';
+            mostrarAlerta(`✓ Se encontraron ${data.resultados.length} resultado(s)`, 'success');
+          } else {
+            mostrarResultadosVacios();
+            resultsSection.style.display = 'block';
+            mostrarAlerta('No se encontraron resultados para tu búsqueda', 'info');
+          }
+        } else {
+          console.error('Error en la respuesta:', data);
+          mostrarAlerta('Error: ' + (data.mensaje || 'Error desconocido'), 'error');
+        }
+      })
+      .catch(error => {
+        loading.classList.remove('active');
+        console.error('Error completo:', error);
+        
+        let mensajeError = 'Error al realizar la búsqueda: ' + error.message;
+        
+        // Si el error menciona autenticación, mostrar mensaje más claro
+        if (error.message.includes('autenticación') || error.message.includes('HTML')) {
+          mensajeError = 'Error de autenticación. Por favor, recarga la página e inicia sesión nuevamente.';
+        }
+        
+        mostrarAlerta(mensajeError, 'error');
+        resultsSection.style.display = 'block';
+        document.getElementById('resultsContainer').innerHTML = `
+          <div class="empty-state">
+            <i class="ri-error-warning-line"></i>
+            <p>Error al realizar la búsqueda</p>
+            <p style="font-size: 12px; margin-top: 8px; color: #f44336;">${mensajeError}</p>
+            <p style="font-size: 11px; margin-top: 8px; color: #999;">Si el problema persiste, recarga la página (F5)</p>
+          </div>
+        `;
+      });
+  }
+
+  function mostrarResultados(resultados, tipo) {
+    const container = document.getElementById('resultsContainer');
+    if (!container) {
+      console.error('No se encontró el contenedor de resultados');
+      return;
+    }
+    
+    let html = '<table class="results-table"><thead><tr>';
+    
+    // Headers según el tipo
+    if (tipo === 'usuarios') {
+      html += '<th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Activo</th></tr></thead><tbody>';
+      resultados.forEach(item => {
+        html += `<tr>
+          <td>${item.id || '-'}</td>
+          <td>${item.nombre || '-'}</td>
+          <td>${item.email || '-'}</td>
+          <td>${item.rol || '-'}</td>
+          <td>${item.activo ? 'Sí' : 'No'}</td>
+        </tr>`;
+      });
+    } else if (tipo === 'ganado') {
+      html += '<th>ID</th><th>Tipo</th><th>Raza</th><th>Edad</th><th>Peso</th><th>Estado</th></tr></thead><tbody>';
+      resultados.forEach(item => {
+        html += `<tr>
+          <td>${item.idGanado || '-'}</td>
+          <td>${item.tipo || '-'}</td>
+          <td>${item.raza || '-'}</td>
+          <td>${item.edad || '-'}</td>
+          <td>${item.peso || '-'}</td>
+          <td>${item.estadoSalud || '-'}</td>
+        </tr>`;
+      });
+    } else if (tipo === 'cultivos') {
+      html += '<th>ID</th><th>Nombre</th><th>Tipo</th><th>Área</th><th>Estado</th></tr></thead><tbody>';
+      resultados.forEach(item => {
+        html += `<tr>
+          <td>${item.id || '-'}</td>
+          <td>${item.nombre || '-'}</td>
+          <td>${item.tipo || '-'}</td>
+          <td>${item.area || '-'}</td>
+          <td>${item.estado || '-'}</td>
+        </tr>`;
+      });
+    } else if (tipo === 'actividades') {
+      html += '<th>ID</th><th>Tipo</th><th>Descripción</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>';
+      resultados.forEach(item => {
+        html += `<tr>
+          <td>${item.idActividad || '-'}</td>
+          <td>${item.tipo || '-'}</td>
+          <td>${item.descripcion || '-'}</td>
+          <td>${item.fecha || '-'}</td>
+          <td>${item.estado || '-'}</td>
+        </tr>`;
+      });
+    } else if (tipo === 'tratamientos') {
+      html += '<th>ID</th><th>Tipo</th><th>Fecha</th><th>Observaciones</th><th>Ganado ID</th></tr></thead><tbody>';
+      resultados.forEach(item => {
+        html += `<tr>
+          <td>${item.id || '-'}</td>
+          <td>${item.tipo || '-'}</td>
+          <td>${item.fecha || '-'}</td>
+          <td>${item.observaciones || '-'}</td>
+          <td>${item.ganadoId || '-'}</td>
+        </tr>`;
+      });
+    } else {
+      // Tipo desconocido - mostrar todos los campos disponibles
+      html += '<th>Campo</th><th>Valor</th></tr></thead><tbody>';
+      resultados.forEach(item => {
+        Object.keys(item).forEach(key => {
+          html += `<tr>
+            <td><strong>${key}</strong></td>
+            <td>${item[key] || '-'}</td>
+          </tr>`;
+        });
+      });
+    }
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function mostrarResultadosVacios() {
+    const container = document.getElementById('resultsContainer');
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="ri-search-line"></i>
+        <p>No se encontraron resultados</p>
+      </div>
+    `;
+  }
+
+  function cargarDatosIniciales() {
+    const loading = document.getElementById('loadLoading');
+    const btn = document.getElementById('loadDataBtn');
+    
+    loading.classList.add('active');
+    btn.disabled = true;
+    
+    fetch('/admin/busquedas/cargar-datos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        loading.classList.remove('active');
+        btn.disabled = false;
+        
+        if (data.status === 'success') {
+          mostrarAlerta(`✓ ${data.mensaje}. Creados: ${data.creados || 0} registros. Total: ${data.despues || 0}`, 'success');
+          verificarEstadoDatos();
+        } else {
+          mostrarAlerta('✗ Error: ' + (data.mensaje || 'Error desconocido'), 'error');
+        }
+      })
+      .catch(error => {
+        loading.classList.remove('active');
+        btn.disabled = false;
+        mostrarAlerta('✗ Error al cargar datos: ' + error.message, 'error');
+        console.error('Error:', error);
+      });
+  }
+  
+  function cargarDatosDesdeExcel() {
+    const fileInput = document.getElementById('excelFile');
+    const loading = document.getElementById('excelLoading');
+    const form = document.getElementById('excelUploadForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+      mostrarAlerta('✗ Por favor, selecciona un archivo Excel', 'error');
+      return;
+    }
+    
+    const file = fileInput.files[0];
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      mostrarAlerta('✗ El archivo debe ser un Excel (.xlsx o .xls)', 'error');
+      return;
+    }
+    
+    loading.style.display = 'block';
+    submitBtn.disabled = true;
+    
+    const formData = new FormData();
+    formData.append('archivo', file);
+    
+    fetch('/admin/busquedas/cargar-excel', {
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
+        
+        if (data.status === 'success') {
+          let mensaje = `✓ ${data.mensaje || 'Datos importados exitosamente'}\n\n`;
+          mensaje += `• Usuarios creados: ${data.usuarios || 0}\n`;
+          mensaje += `• Ganado creado: ${data.ganado || 0}\n`;
+          mensaje += `• Tratamientos creados: ${data.tratamientos || 0}\n`;
+          mensaje += `• Cultivos creados: ${data.cultivos || 0}\n\n`;
+          mensaje += `Totales en BD:\n`;
+          mensaje += `• Usuarios: ${data.usuariosTotal || 0}\n`;
+          mensaje += `• Ganado: ${data.ganadoTotal || 0}\n`;
+          mensaje += `• Tratamientos: ${data.tratamientosTotal || 0}\n`;
+          mensaje += `• Cultivos: ${data.cultivosTotal || 0}`;
+          
+          if (data.errores && data.errores.length > 0) {
+            mensaje += `\n\n⚠️ Errores encontrados:\n${data.errores.join('\n')}`;
+          }
+          
+          mostrarAlerta(mensaje, 'success');
+          verificarEstadoDatos();
+          fileInput.value = ''; // Limpiar el input
+        } else {
+          mostrarAlerta('✗ Error: ' + (data.mensaje || 'Error desconocido'), 'error');
+        }
+      })
+      .catch(error => {
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
+        mostrarAlerta('✗ Error al procesar el archivo Excel: ' + error.message, 'error');
+        console.error('Error:', error);
+      });
+  }
+
+  function mostrarAlerta(mensaje, tipo) {
+    const alert = document.getElementById('alertMessage');
+    alert.textContent = mensaje;
+    alert.className = 'alert active alert-' + tipo;
+    
+    // Scroll to top to show alert
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    setTimeout(() => {
+      alert.classList.remove('active');
+    }, 5000);
+  }
+</script>
+
+</body>
+</html>
+
