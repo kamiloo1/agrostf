@@ -12,14 +12,15 @@ RUN mvn package -DskipTests -B
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-RUN adduser -D appuser
+COPY --from=build /app/target/Agrosotf-crud-0.0.1-SNAPSHOT.jar app.jar
+COPY entrypoint.sh /app/entrypoint.sh
+RUN sed -i 's/\r$//' /app/entrypoint.sh
+
+RUN adduser -D appuser && chmod +x /app/entrypoint.sh && chown -R appuser:appuser /app
 USER appuser
 
-COPY --from=build /app/target/Agrosotf-crud-0.0.1-SNAPSHOT.jar app.jar
-
-# Railway inyecta PORT; escuchar en todas las interfaces
 ENV JAVA_OPTS="-Dserver.address=0.0.0.0"
 ENV PORT=8080
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT} -jar app.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]
