@@ -1,12 +1,11 @@
 package com.example.agrosoft1.crud.pattern.observer;
 
 import com.example.agrosoft1.crud.entity.Usuario;
-import com.example.agrosoft1.crud.service.EmailService;
+import com.example.agrosoft1.crud.service.MailDispatchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Observador concreto que envía notificaciones por email
@@ -20,7 +19,7 @@ public class NotificacionEmailObserver implements Observador {
     private static final Logger logger = LoggerFactory.getLogger(NotificacionEmailObserver.class);
     
     @Autowired(required = false)
-    private EmailService emailService;
+    private MailDispatchService mailDispatchService;
     
     @Override
     public void actualizar(String evento, Usuario usuario, Object datosAdicionales) {
@@ -34,17 +33,9 @@ public class NotificacionEmailObserver implements Observador {
             String cuerpo = generarCuerpoEmail(evento, usuario, datosAdicionales);
             
             // Solo enviar email si el servicio está disponible
-            if (emailService != null && usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
-                // Enviar en segundo plano para no bloquear la respuesta HTTP.
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        emailService.enviarCorreo(usuario.getCorreo(), asunto, cuerpo);
-                        logger.info("Email de notificación enviado a {} para evento: {}",
-                                usuario.getCorreo(), evento);
-                    } catch (Exception ex) {
-                        logger.error("Error en envío asíncrono de email: {}", ex.getMessage(), ex);
-                    }
-                });
+            if (mailDispatchService != null && usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
+                mailDispatchService.enviarCorreoAsync(usuario.getCorreo(), asunto, cuerpo);
+                logger.debug("Encolado envío de notificación por email a {} (evento: {})", usuario.getCorreo(), evento);
             } else {
                 logger.debug("Email no enviado - servicio no disponible o correo vacío");
             }

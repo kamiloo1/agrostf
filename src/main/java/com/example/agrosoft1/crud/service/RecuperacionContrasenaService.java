@@ -22,16 +22,16 @@ public class RecuperacionContrasenaService {
     private final UsuarioRepository usuarioRepository;
     private final TokenRecuperacionRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final MailDispatchService mailDispatchService;
 
     public RecuperacionContrasenaService(UsuarioRepository usuarioRepository,
                                          TokenRecuperacionRepository tokenRepository,
                                          PasswordEncoder passwordEncoder,
-                                         EmailService emailService) {
+                                         MailDispatchService mailDispatchService) {
         this.usuarioRepository = usuarioRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
+        this.mailDispatchService = mailDispatchService;
     }
 
     /**
@@ -56,7 +56,7 @@ public class RecuperacionContrasenaService {
         String mensaje = "Hola,\n\nHas solicitado restablecer tu contraseña en AgroSoft.\n\n"
                 + "Haz clic en el siguiente enlace (válido por " + EXPIRACION_HORAS + " horas):\n\n"
                 + enlace + "\n\nSi no solicitaste este correo, ignóralo.\n\n— AgroSoft";
-        emailService.enviarCorreo(usuario.getCorreo(), asunto, mensaje);
+        mailDispatchService.enviarCorreoAsync(usuario.getCorreo(), asunto, mensaje);
     }
 
     /**

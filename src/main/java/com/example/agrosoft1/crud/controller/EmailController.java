@@ -5,6 +5,7 @@ import com.example.agrosoft1.crud.entity.Usuario;
 import com.example.agrosoft1.crud.repository.PlantillaCorreoRepository;
 import com.example.agrosoft1.crud.repository.UsuarioRepository;
 import com.example.agrosoft1.crud.service.EmailService;
+import com.example.agrosoft1.crud.service.MailDispatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +31,9 @@ public class EmailController {
     
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private MailDispatchService mailDispatchService;
     
     @Autowired
     private PlantillaCorreoRepository plantillaCorreoRepository;
@@ -144,8 +148,8 @@ public class EmailController {
             return "redirect:/admin/correos";
         }
         
-        // Enviar en segundo plano para evitar que el navegador quede cargando.
-        emailService.enviarCorreosMasivosAsync(listaCorreos, asuntoFinal, mensajeFinal);
+        // Enviar en segundo plano (executor dedicado) para no bloquear la petición HTTP.
+        mailDispatchService.enviarCorreosMasivosAsync(listaCorreos, asuntoFinal, mensajeFinal);
         redirectAttributes.addFlashAttribute("success",
                 String.format("Envío iniciado para %d destinatario(s). Revisa los logs para ver el resultado.", listaCorreos.size()));
         
@@ -168,10 +172,8 @@ public class EmailController {
                 .filter(email -> email.matches("^[A-Za-z0-9+_.-]+@(.+)$"))
                 .collect(Collectors.toList());
         
-        int enviados = emailService.enviarCorreosMasivos(listaCorreos, asunto, mensaje);
-        
-        return String.format("{\"status\":\"ok\",\"enviados\":%d,\"total\":%d}", 
-            enviados, listaCorreos.size());
+        mailDispatchService.enviarCorreosMasivosAsync(listaCorreos, asunto, mensaje);
+        return String.format("{\"status\":\"queued\",\"total\":%d}", listaCorreos.size());
     }
 }
 

@@ -65,6 +65,10 @@
         button:hover {
             background: var(--verde);
         }
+        button:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
+        }
         .alert {
             padding: 12px 20px;
             border-radius: 8px;
@@ -397,7 +401,7 @@
             <i class="ri-mail-send-line"></i> Enviar Correo
         </h2>
 
-        <form method="post" th:action="@{/admin/correos/enviar}">
+        <form method="post" th:action="@{/admin/correos/enviar}" id="form-envio-correos" onsubmit="return prepararEnvioCorreos(this)">
             <input type="hidden" name="plantillaId" id="plantillaId" value="">
             
             <div class="form-group">
@@ -423,7 +427,7 @@
                     placeholder="Escriba aquí el contenido del mensaje..."></textarea>
             </div>
 
-            <button type="submit"><i class="ri-send-plane-line"></i> Enviar Correos Masivos</button>
+            <button type="submit" id="btn-enviar-correos"><i class="ri-send-plane-line"></i> Enviar Correos Masivos</button>
         </form>
 
         <a th:href="@{/dashboard/administrador}"><i class="ri-arrow-left-line"></i> Volver al Dashboard</a>
@@ -432,6 +436,15 @@
     </div><!-- main-content -->
 
     <script>
+        function prepararEnvioCorreos(form) {
+            const btn = document.getElementById('btn-enviar-correos');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="ri-time-line"></i> En cola...';
+            }
+            return true;
+        }
+
         function cargarPlantilla(plantillaId) {
             // Buscar la plantilla en el DOM
             const plantillaCard = document.querySelector(`[data-id="${plantillaId}"]`);
