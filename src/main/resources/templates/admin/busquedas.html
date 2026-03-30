@@ -419,6 +419,7 @@
             <option value="cultivos">Cultivos</option>
             <option value="tratamientos">Tratamientos</option>
             <option value="actividades">Actividades</option>
+            <option value="global">Global (todo el sistema)</option>
           </select>
         </div>
         
@@ -576,6 +577,17 @@
     container.innerHTML = '';
     
     if (!tipo) return;
+    if (tipo === 'global') {
+      container.innerHTML = `
+        <div class="filter-group">
+          <h4><i class="ri-global-line"></i> Búsqueda global</h4>
+          <p style="font-size: 13px; color: var(--texto-secundario);">
+            Busca en usuarios, ganado, cultivos, tratamientos y actividades al mismo tiempo.
+          </p>
+        </div>
+      `;
+      return;
+    }
     
     let html = '<div class="filter-group"><h4><i class="ri-filter-line"></i> Filtros Específicos</h4>';
     
@@ -925,6 +937,17 @@
           <td>${item.fecha || '-'}</td>
           <td>${item.observaciones || '-'}</td>
           <td>${item.ganadoId || '-'}</td>
+        </tr>`;
+      });
+    } else if (tipo === 'global') {
+      html += '<th>Entidad</th><th>ID</th><th>Título</th><th>Detalle</th><th>Acción</th></tr></thead><tbody>';
+      resultados.forEach(item => {
+        html += `<tr>
+          <td>${item.tipoEntidad || '-'}</td>
+          <td>${item.id || '-'}</td>
+          <td>${item.titulo || '-'}</td>
+          <td>${item.detalle || '-'}</td>
+          <td><a href="${item.url || '#'}" style="color: var(--verde); font-weight: 600;">Ver módulo</a></td>
         </tr>`;
       });
     } else {

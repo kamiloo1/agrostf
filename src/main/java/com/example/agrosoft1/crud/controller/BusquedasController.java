@@ -98,6 +98,9 @@ public class BusquedasController {
                 case "actividades":
                     resultados = buscarActividades(termino, filterTipoActividad, filterEstadoActividad, ordenarPor, orden);
                     break;
+                case "global":
+                    resultados = buscarGlobal(termino);
+                    break;
                 default:
                     logger.warn("Tipo de búsqueda no válido: {}", tipo);
                     response.put("status", "error");
@@ -563,6 +566,87 @@ public class BusquedasController {
         }
         
         return resultados;
+    }
+
+    private List<Map<String, Object>> buscarGlobal(String termino) {
+        List<Map<String, Object>> resultados = new ArrayList<>();
+        String query = termino == null ? "" : termino.trim().toLowerCase();
+        if (query.isEmpty()) {
+            return resultados;
+        }
+
+        usuarioRepository.findAll().stream()
+                .filter(u -> (u.getNombre() != null && u.getNombre().toLowerCase().contains(query))
+                        || (u.getEmail() != null && u.getEmail().toLowerCase().contains(query)))
+                .limit(5)
+                .forEach(u -> resultados.add(crearResultadoGlobal(
+                        "Usuario",
+                        u.getId(),
+                        u.getNombre(),
+                        u.getEmail(),
+                        "/admin/usuarios"
+                )));
+
+        ganadoRepository.findAll().stream()
+                .filter(g -> (g.getTipo() != null && g.getTipo().toLowerCase().contains(query))
+                        || (g.getRaza() != null && g.getRaza().toLowerCase().contains(query))
+                        || (g.getEstadoSalud() != null && g.getEstadoSalud().toLowerCase().contains(query)))
+                .limit(5)
+                .forEach(g -> resultados.add(crearResultadoGlobal(
+                        "Ganado",
+                        g.getIdGanado(),
+                        g.getTipo(),
+                        g.getRaza(),
+                        "/admin/ganado"
+                )));
+
+        cultivoRepository.findAll().stream()
+                .filter(c -> (c.getNombre() != null && c.getNombre().toLowerCase().contains(query))
+                        || (c.getDescripcion() != null && c.getDescripcion().toLowerCase().contains(query)))
+                .limit(5)
+                .forEach(c -> resultados.add(crearResultadoGlobal(
+                        "Cultivo",
+                        c.getId(),
+                        c.getNombre(),
+                        c.getDescripcion(),
+                        "/admin/cultivos"
+                )));
+
+        tratamientoRepository.findAll().stream()
+                .filter(t -> (t.getTipoTratamiento() != null && t.getTipoTratamiento().toLowerCase().contains(query))
+                        || (t.getObservaciones() != null && t.getObservaciones().toLowerCase().contains(query)))
+                .limit(5)
+                .forEach(t -> resultados.add(crearResultadoGlobal(
+                        "Tratamiento",
+                        t.getIdTratamiento(),
+                        t.getTipoTratamiento(),
+                        t.getObservaciones(),
+                        "/vet/tratamientos"
+                )));
+
+        actividadRepository.findAll().stream()
+                .filter(a -> (a.getTipoActividad() != null && a.getTipoActividad().toLowerCase().contains(query))
+                        || (a.getDescripcion() != null && a.getDescripcion().toLowerCase().contains(query)))
+                .limit(5)
+                .forEach(a -> resultados.add(crearResultadoGlobal(
+                        "Actividad",
+                        a.getIdActividad(),
+                        a.getTipoActividad(),
+                        a.getDescripcion(),
+                        "/trabajador/actividades"
+                )));
+
+        return resultados;
+    }
+
+    private Map<String, Object> crearResultadoGlobal(String tipo, Object id, String titulo, String detalle, String url) {
+        Map<String, Object> item = new HashMap<>();
+        item.put("tipoEntidad", tipo);
+        item.put("id", id);
+        item.put("titulo", titulo != null ? titulo : "-");
+        item.put("detalle", detalle != null ? detalle : "-");
+        item.put("url", url);
+        return item;
     }
 }
 

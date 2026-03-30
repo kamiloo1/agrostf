@@ -54,6 +54,8 @@ public class DashboardController {
         model.addAttribute("ganadoSaludable", 0);
         model.addAttribute("actividadesPendientes", 0);
         model.addAttribute("totalActividades", 0);
+        model.addAttribute("porcentajeGanadoSaludable", 0);
+        model.addAttribute("porcentajeActividadesCompletadas", 0);
         try {
             model.addAttribute("usuarios", usuarioService.listarUsuarios().size());
         } catch (Exception e) { logger.warn("usuarios: {}", e.getMessage()); }
@@ -61,12 +63,21 @@ public class DashboardController {
             model.addAttribute("cultivos", cultivoService.listarCultivos().size());
         } catch (Exception e) { logger.warn("cultivos: {}", e.getMessage()); }
         try {
-            model.addAttribute("ganado", ganadoService.contarGanado());
-            model.addAttribute("ganadoSaludable", ganadoService.contarGanadoSaludable());
+            long ganado = ganadoService.contarGanado();
+            long ganadoSaludable = ganadoService.contarGanadoSaludable();
+            model.addAttribute("ganado", ganado);
+            model.addAttribute("ganadoSaludable", ganadoSaludable);
+            int porcentajeGanado = ganado > 0 ? (int) ((ganadoSaludable * 100) / ganado) : 0;
+            model.addAttribute("porcentajeGanadoSaludable", porcentajeGanado);
         } catch (Exception e) { logger.warn("ganado: {}", e.getMessage()); }
         try {
-            model.addAttribute("actividadesPendientes", actividadService.contarActividadesPendientes());
-            model.addAttribute("totalActividades", actividadService.listarActividades().size());
+            long pendientes = actividadService.contarActividadesPendientes();
+            long total = actividadService.listarActividades().size();
+            model.addAttribute("actividadesPendientes", pendientes);
+            model.addAttribute("totalActividades", total);
+            long completadas = Math.max(total - pendientes, 0);
+            int porcentajeCompletadas = total > 0 ? (int) ((completadas * 100) / total) : 0;
+            model.addAttribute("porcentajeActividadesCompletadas", porcentajeCompletadas);
         } catch (Exception e) { logger.warn("actividades: {}", e.getMessage()); }
         logger.info("Dashboard administrador listo");
         return "dashboard/administrador";

@@ -290,6 +290,7 @@
     <li><a th:href="@{/admin/cultivos}"><i class="ri-leaf-line"></i> Cultivos</a></li>
     <li><a th:href="@{/admin/ganado}"><i class="ri-cow-line"></i> Ganado</a></li>
     <li><a th:href="@{/admin/busquedas}"><i class="ri-search-line"></i> Búsquedas</a></li>
+    <li><a th:href="@{/admin/auditoria}"><i class="ri-shield-check-line"></i> Auditoría</a></li>
     <li><a th:href="@{/admin/reportes}"><i class="ri-file-chart-line"></i> Reportes</a></li>
     <li><a th:href="@{/admin/correos}"><i class="ri-mail-send-line"></i> Correos</a></li>
     <li><a th:href="@{/clima}"><i class="ri-sun-line"></i> Clima</a></li>
@@ -345,7 +346,7 @@
           <i class="ri-cow-line"></i>
         </div>
       </div>
-      <div class="stat-card-change"><span th:text="${ganadoSaludable}">0</span> saludable</div>
+      <div class="stat-card-change"><span th:text="${porcentajeGanadoSaludable}">0</span>% saludable</div>
     </div>
 
     <div class="stat-card actividades">
@@ -358,7 +359,7 @@
           <i class="ri-task-line"></i>
         </div>
       </div>
-      <div class="stat-card-change">⏱ Requieren atención</div>
+      <div class="stat-card-change"><span th:text="${porcentajeActividadesCompletadas}">0</span>% completadas</div>
     </div>
   </div>
 
@@ -420,6 +421,9 @@
       </a>
       <a th:href="@{/admin/usuarios/exportar}" class="action-btn">
         <i class="ri-download-line"></i> Exportar Datos
+      </a>
+      <a th:href="@{/admin/auditoria}" class="action-btn">
+        <i class="ri-shield-check-line"></i> Ver Auditoría
       </a>
     </div>
   </div>

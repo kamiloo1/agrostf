@@ -56,6 +56,9 @@ public class CultivoService {
         }
         
         Cultivo guardado = cultivoRepository.save(cultivo);
+        if (auditoriaService != null) {
+            auditoriaService.registrar("CREAR", "Cultivo", guardado.getId(), guardado.getNombre());
+        }
         if (notificacionService != null) {
             String msg = "Nuevo cultivo registrado: " + guardado.getNombre();
             notificacionService.notificarAdministradores(msg, "CULTIVO", "/admin/cultivos");
@@ -109,6 +112,11 @@ public class CultivoService {
 
     @SuppressWarnings("null")
     public void eliminarCultivo(Long id) {
+        Optional<Cultivo> cultivo = cultivoRepository.findById(id);
+        if (auditoriaService != null) {
+            String detalle = cultivo.map(Cultivo::getNombre).orElse("Cultivo eliminado");
+            auditoriaService.registrar("ELIMINAR", "Cultivo", id, detalle);
+        }
         cultivoRepository.deleteById(id);
     }
 

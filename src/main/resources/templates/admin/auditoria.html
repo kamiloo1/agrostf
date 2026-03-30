@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auditoría - AgroSoft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root { --verde:#2F5D39; --borde:#e8e8e8; --texto:#1f1f1f; --suave:#6f6f6f; --fondo:#f5f7fa; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--fondo); color: var(--texto); }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 28px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .header h1 { font-size: 24px; color: var(--verde); }
+    .header a { text-decoration: none; color: white; background: var(--verde); padding: 10px 14px; border-radius: 8px; font-weight: 600; }
+    .card { background: white; border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--borde); text-align: left; font-size: 13px; }
+    th { background: #f0f6f1; color: var(--verde); font-weight: 700; }
+    td small { color: var(--suave); }
+    .empty { padding: 22px; color: var(--suave); }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #eef5ef; color: var(--verde); font-weight: 600; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1><i class="ri-shield-check-line"></i> Auditoría del sistema</h1>
+      <a th:href="@{/dashboard/administrador}"><i class="ri-arrow-left-line"></i> Volver al dashboard</a>
+    </div>
+
+    <div class="card">
+      <table th:if="${!#lists.isEmpty(registros)}">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Acción</th>
+            <th>Entidad</th>
+            <th>ID Entidad</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="r : ${registros}">
+            <td th:text="${#temporals.format(r.fecha, 'yyyy-MM-dd HH:mm:ss')}">2026-03-30 10:00:00</td>
+            <td th:text="${r.usuario != null ? r.usuario : 'sistema'}">admin</td>
+            <td><span class="pill" th:text="${r.accion}">CREAR</span></td>
+            <td th:text="${r.entidad}">Cultivo</td>
+            <td th:text="${r.idEntidad}">1</td>
+            <td><small th:text="${r.detalles}">Detalle</small></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="empty" th:if="${#lists.isEmpty(registros)}">
+        Aún no hay eventos registrados en auditoría.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -4,6 +4,7 @@ import com.example.agrosoft1.crud.service.RecuperacionContrasenaService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,9 +34,7 @@ public class RecuperarContrasenaController {
             redirectAttributes.addFlashAttribute("error", "Indica tu correo electrónico.");
             return "redirect:/recuperar";
         }
-        String urlBase = request.getScheme() + "://" + request.getServerName()
-                + (request.getServerPort() == 80 || request.getServerPort() == 443 ? "" : ":" + request.getServerPort())
-                + request.getContextPath();
+        String urlBase = construirUrlBasePublica(request);
         recuperacionService.solicitarRecuperacion(correo.trim(), urlBase);
         redirectAttributes.addFlashAttribute("success", "Si ese correo está registrado, recibirás un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada.");
         return "redirect:/recuperar";
@@ -76,5 +75,40 @@ public class RecuperarContrasenaController {
         }
         redirectAttributes.addFlashAttribute("error", "No se pudo restablecer la contraseña. El enlace puede haber expirado.");
         return "redirect:/recuperar";
+    }
+
+    private String construirUrlBasePublica(HttpServletRequest request) {
+        String proto = obtenerPrimero(request.getHeader("X-Forwarded-Proto"));
+        String host = obtenerPrimero(request.getHeader("X-Forwarded-Host"));
+        String port = obtenerPrimero(request.getHeader("X-Forwarded-Port"));
+
+        String scheme = StringUtils.hasText(proto) ? proto : request.getScheme();
+        String serverHost = StringUtils.hasText(host) ? host : request.getServerName();
+
+        // Si X-Forwarded-Host ya incluye puerto, no duplicarlo.
+        if (StringUtils.hasText(serverHost) && serverHost.contains(":")) {
+            return scheme + "://" + serverHost + request.getContextPath();
+        }
+
+        int defaultPort = "https".equalsIgnoreCase(scheme) ? 443 : 80;
+        int detectedPort = request.getServerPort();
+        if (StringUtils.hasText(port)) {
+            try {
+                detectedPort = Integer.parseInt(port);
+            } catch (NumberFormatException ignored) {
+                // Conserva el puerto detectado por el servlet container.
+            }
+        }
+
+        String portPart = detectedPort == defaultPort ? "" : ":" + detectedPort;
+        return scheme + "://" + serverHost + portPart + request.getContextPath();
+    }
+
+    private String obtenerPrimero(String header) {
+        if (!StringUtils.hasText(header)) {
+            return null;
+        }
+        int comma = header.indexOf(',');
+        return comma >= 0 ? header.substring(0, comma).trim() : header.trim();
     }
 }
