@@ -5,7 +5,6 @@ import com.example.agrosoft1.crud.entity.Usuario;
 import com.example.agrosoft1.crud.repository.PlantillaCorreoRepository;
 import com.example.agrosoft1.crud.repository.UsuarioRepository;
 import com.example.agrosoft1.crud.service.EmailService;
-import com.example.agrosoft1.crud.service.MailDispatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,9 +29,6 @@ public class EmailController {
     
     @Autowired
     private EmailService emailService;
-
-    @Autowired
-    private MailDispatchService mailDispatchService;
     
     @Autowired
     private PlantillaCorreoRepository plantillaCorreoRepository;
@@ -135,24 +130,38 @@ public class EmailController {
             redirectAttributes.addFlashAttribute("error", "El mensaje es obligatorio");
             return "redirect:/admin/correos";
         }
-        
-        // Procesar lista de correos (separados por comas, punto y coma, o saltos de línea)
-        List<String> listaCorreos = Arrays.stream(correos.split("[,\\n;]"))
-                .map(String::trim)
-                .filter(email -> !email.isEmpty())
-                .filter(email -> email.matches("^[A-Za-z0-9+_.-]+@(.+)$"))
-                .collect(Collectors.toList());
-        
+
+        if (!emailService.puedeEnviarCorreo()) {
+            redirectAttributes.addFlashAttribute("error",
+                    "El correo no está configurado. En Railway: RESEND_API_KEY y RESEND_FROM (dominio verificado). "
+                            + "En local: SPRING_MAIL_USERNAME y SPRING_MAIL_PASSWORD (Gmail).");
+            return "redirect:/admin/correos";
+        }
+
+        List<String> listaCorreos = EmailService.parseDestinatarios(correos);
+
         if (listaCorreos.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "No se encontraron correos electrónicos válidos");
             return "redirect:/admin/correos";
         }
-        
-        // Enviar en segundo plano (executor dedicado) para no bloquear la petición HTTP.
-        mailDispatchService.enviarCorreosMasivosAsync(listaCorreos, asuntoFinal, mensajeFinal);
-        redirectAttributes.addFlashAttribute("success",
-                String.format("Envío iniciado para %d destinatario(s). Revisa los logs para ver el resultado.", listaCorreos.size()));
-        
+
+        EmailService.ResultadoEnvioMasivo res = emailService.enviarCorreosMasivosConResultado(
+                listaCorreos, asuntoFinal, mensajeFinal);
+
+        if (res.exitosos() == 0 && res.fallidos() > 0) {
+            redirectAttributes.addFlashAttribute("error", String.format(
+                    "No se envió ningún correo (%d destinatario(s)). Revisa Resend, dominio verificado, "
+                            + "SMTP (local) o los logs del servidor.",
+                    res.fallidos()));
+        } else if (res.fallidos() > 0) {
+            redirectAttributes.addFlashAttribute("success", String.format(
+                    "Enviados: %d de %d. Fallaron %d; revisa restricciones del proveedor o logs.",
+                    res.exitosos(), res.total(), res.fallidos()));
+        } else {
+            redirectAttributes.addFlashAttribute("success", String.format(
+                    "Envío completado: %d correo(s) enviado(s) correctamente.", res.exitosos()));
+        }
+
         return "redirect:/admin/correos";
     }
     
@@ -166,14 +175,12 @@ public class EmailController {
             @RequestParam String asunto,
             @RequestParam String mensaje) {
         
-        List<String> listaCorreos = Arrays.stream(correos.split("[,\\n;]"))
-                .map(String::trim)
-                .filter(email -> !email.isEmpty())
-                .filter(email -> email.matches("^[A-Za-z0-9+_.-]+@(.+)$"))
-                .collect(Collectors.toList());
-        
-        mailDispatchService.enviarCorreosMasivosAsync(listaCorreos, asunto, mensaje);
-        return String.format("{\"status\":\"queued\",\"total\":%d}", listaCorreos.size());
+        List<String> listaCorreos = EmailService.parseDestinatarios(correos);
+        if (!emailService.puedeEnviarCorreo()) {
+            return "{\"status\":\"error\",\"message\":\"mail not configured\"}";
+        }
+        EmailService.ResultadoEnvioMasivo res = emailService.enviarCorreosMasivosConResultado(listaCorreos, asunto, mensaje);
+        return String.format("{\"status\":\"done\",\"ok\":%d,\"fail\":%d}", res.exitosos(), res.fallidos());
     }
 }
 

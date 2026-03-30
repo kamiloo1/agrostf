@@ -8,7 +8,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Servicio para envío masivo de correos electrónicos.
@@ -18,6 +23,15 @@ import java.util.List;
  */
 @Service
 public class EmailService {
+
+    private static final Pattern PATRON_EMAIL = Pattern.compile(
+            "^[a-zA-Z0-9._+\\-]+@[a-zA-Z0-9][a-zA-Z0-9.\\-]*\\.[a-zA-Z]{2,}$");
+
+    public record ResultadoEnvioMasivo(int exitosos, int fallidos) {
+        public int total() {
+            return exitosos + fallidos;
+        }
+    }
     
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
     
@@ -29,6 +43,36 @@ public class EmailService {
     
     @Value("${spring.mail.username:}")
     private String remitente;
+
+    /**
+     * Indica si hay canal de envío disponible (Resend o SMTP).
+     */
+    public boolean puedeEnviarCorreo() {
+        return resendMailSender.isConfigured() || mailSender != null;
+    }
+
+    /**
+     * Parsea texto con direcciones separadas por coma, punto y coma, salto de línea o espacio.
+     * Elimina duplicados (sin distinguir mayúsculas) y filtra formatos inválidos.
+     */
+    public static List<String> parseDestinatarios(String correos) {
+        if (correos == null || correos.isBlank()) {
+            return List.of();
+        }
+        Set<String> vistos = new HashSet<>();
+        List<String> lista = new ArrayList<>();
+        for (String parte : correos.split("[,\\n;\\r\\s]+")) {
+            String t = parte.trim();
+            if (t.isEmpty() || !PATRON_EMAIL.matcher(t).matches()) {
+                continue;
+            }
+            String clave = t.toLowerCase(Locale.ROOT);
+            if (vistos.add(clave)) {
+                lista.add(t);
+            }
+        }
+        return lista;
+    }
     
     /**
      * Envía un correo a un único destinatario
@@ -104,16 +148,23 @@ public class EmailService {
      * @return Número de correos enviados exitosamente
      */
     public int enviarCorreosMasivos(List<String> destinatarios, String asunto, String mensaje) {
+        return enviarCorreosMasivosConResultado(destinatarios, asunto, mensaje).exitosos();
+    }
+
+    /**
+     * Envío masivo con conteo de éxitos y fallos (para mensajes en pantalla).
+     */
+    public ResultadoEnvioMasivo enviarCorreosMasivosConResultado(List<String> destinatarios, String asunto, String mensaje) {
         if (destinatarios == null || destinatarios.isEmpty()) {
             logger.warn("Lista de destinatarios vacía");
-            return 0;
+            return new ResultadoEnvioMasivo(0, 0);
         }
-        
+
         int enviados = 0;
         int fallidos = 0;
-        
+
         logger.info("Iniciando envío masivo a {} destinatarios", destinatarios.size());
-        
+
         for (String destinatario : destinatarios) {
             if (destinatario != null && !destinatario.trim().isEmpty()) {
                 boolean enviado = enviarCorreo(destinatario.trim(), asunto, mensaje);
@@ -124,9 +175,9 @@ public class EmailService {
                 }
             }
         }
-        
+
         logger.info("Envío masivo completado: {} exitosos, {} fallidos", enviados, fallidos);
-        return enviados;
+        return new ResultadoEnvioMasivo(enviados, fallidos);
     }
 
     
