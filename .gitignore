@@ -37,3 +37,7 @@ logs/
 *.log
 .env
 .env.local
+
+### Exportes / manuales locales (no versionar)
+MANUAL_TECNICO*.bak
+MANUAL_TECNICO_AGROSOFT_archivos/

@@ -80,6 +80,14 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
+    /** Conteo por nombre de rol en BD (ADMIN, VETERINARIO, TRABAJADOR). */
+    public long contarUsuariosPorNombreRol(String nombreRol) {
+        if (nombreRol == null || nombreRol.isBlank()) {
+            return 0;
+        }
+        return usuarioRepository.countByRole_Nombre(nombreRol.trim());
+    }
+
     // Guardar usuario (nuevo registro - sin rol asignado)
     public Usuario guardarUsuario(Usuario usuario) {
         // Validación: No duplicar correos

@@ -56,9 +56,17 @@ public class DashboardController {
         model.addAttribute("totalActividades", 0);
         model.addAttribute("porcentajeGanadoSaludable", 0);
         model.addAttribute("porcentajeActividadesCompletadas", 0);
+        model.addAttribute("usuariosRolAdmin", 0);
+        model.addAttribute("usuariosRolVeterinario", 0);
+        model.addAttribute("usuariosRolTrabajador", 0);
         try {
             model.addAttribute("usuarios", usuarioService.listarUsuarios().size());
-        } catch (Exception e) { logger.warn("usuarios: {}", e.getMessage()); }
+            model.addAttribute("usuariosRolAdmin", usuarioService.contarUsuariosPorNombreRol("ADMIN"));
+            model.addAttribute("usuariosRolVeterinario", usuarioService.contarUsuariosPorNombreRol("VETERINARIO"));
+            model.addAttribute("usuariosRolTrabajador", usuarioService.contarUsuariosPorNombreRol("TRABAJADOR"));
+        } catch (Exception e) {
+            logger.warn("usuarios: {}", e.getMessage());
+        }
         try {
             model.addAttribute("cultivos", cultivoService.listarCultivos().size());
         } catch (Exception e) { logger.warn("cultivos: {}", e.getMessage()); }

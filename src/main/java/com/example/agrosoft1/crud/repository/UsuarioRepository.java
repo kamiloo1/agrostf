@@ -22,4 +22,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     default Optional<Usuario> findByEmail(String email) {
         return findByCorreo(email);
     }
+
+    long countByRole_Nombre(String nombreRol);
 }

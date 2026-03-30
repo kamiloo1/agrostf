@@ -430,6 +430,11 @@
   </div><!-- content-wrap -->
 </div><!-- main-content -->
 
+<script th:inline="javascript">
+  const USUARIOS_POR_ROL_ADMIN = /*[[${usuariosRolAdmin}]]*/ 0;
+  const USUARIOS_POR_ROL_VET = /*[[${usuariosRolVeterinario}]]*/ 0;
+  const USUARIOS_POR_ROL_TRAB = /*[[${usuariosRolTrabajador}]]*/ 0;
+</script>
 <script>
   // Gráfica de área: Cost vs Revenue - 260px de alto
   const costRevenueCtx = document.getElementById('costRevenueChart').getContext('2d');
@@ -507,7 +512,7 @@
     data: {
       labels: ['Administradores', 'Veterinarios', 'Trabajadores'],
       datasets: [{
-        data: [2, 1, 1],
+        data: [USUARIOS_POR_ROL_ADMIN, USUARIOS_POR_ROL_VET, USUARIOS_POR_ROL_TRAB],
         backgroundColor: [
           '#14532D',
           '#1D4ED8',
