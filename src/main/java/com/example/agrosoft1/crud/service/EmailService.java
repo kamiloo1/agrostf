@@ -23,6 +23,9 @@ public class EmailService {
     
     @Autowired(required = false)
     private JavaMailSender mailSender;
+
+    @Autowired
+    private ResendMailSender resendMailSender;
     
     @Value("${spring.mail.username:}")
     private String remitente;
@@ -36,6 +39,9 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarCorreo(String destinatario, String asunto, String mensaje) {
+        if (resendMailSender.isConfigured()) {
+            return resendMailSender.enviar(destinatario, asunto, mensaje);
+        }
         if (mailSender == null) {
             logger.warn("JavaMailSender no configurado. Verifica la configuración de correo en application.properties");
             logger.warn("Simulando envío de correo a: {}", destinatario);

@@ -61,18 +61,18 @@ Ese error suele aparecer cuando la cuenta no tiene un **Team** (equipo) o el pro
 
 ---
 
-## Paso 4: Correo (Gmail SMTP)
+## Paso 4: Correo (Resend recomendado en Railway)
 
-En **Variables** del servicio de la app, define:
+En muchos planes de Railway **Gmail SMTP (puerto 587) está bloqueado**. La app usa **Resend por HTTPS** si defines:
 
 | Variable | Descripción |
 |----------|-------------|
-| `SPRING_MAIL_USERNAME` | Tu Gmail completo |
-| `SPRING_MAIL_PASSWORD` | Contraseña de aplicación de Google (16 caracteres) |
+| `RESEND_API_KEY` | API key de [resend.com](https://resend.com) (`re_...`) |
+| `RESEND_FROM` | Ej. `onboarding@resend.dev` (pruebas) o correo de dominio verificado |
 
 Opcional: `APP_CLIMA_API_KEY` (OpenWeatherMap).
 
-**Importante:** en algunos planes de Railway el **SMTP saliente (puerto 587)** está bloqueado; si en los logs aparece **timeout** al conectar con `smtp.gmail.com`, el fallo es de red del proveedor, no de la contraseña. En ese caso hace falta un **plan que permita SMTP** o desplegar en otro servidor donde Gmail SMTP sea accesible.
+Si **no** pones `RESEND_API_KEY`, se intentará Gmail con `SPRING_MAIL_USERNAME` / `SPRING_MAIL_PASSWORD` (solo útil si tu plan permite SMTP saliente).
 
 ---
 
