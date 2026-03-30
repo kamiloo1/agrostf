@@ -23,9 +23,6 @@ public class EmailService {
     
     @Autowired(required = false)
     private JavaMailSender mailSender;
-
-    @Autowired
-    private ResendMailSender resendMailSender;
     
     @Value("${spring.mail.username:}")
     private String remitente;
@@ -39,9 +36,6 @@ public class EmailService {
      * @return true si se envió correctamente, false en caso contrario
      */
     public boolean enviarCorreo(String destinatario, String asunto, String mensaje) {
-        if (resendMailSender.isConfigured()) {
-            return resendMailSender.enviar(destinatario, asunto, mensaje);
-        }
         if (mailSender == null) {
             logger.warn("JavaMailSender no configurado. Verifica la configuración de correo en application.properties");
             logger.warn("Simulando envío de correo a: {}", destinatario);
@@ -80,6 +74,9 @@ public class EmailService {
             } else {
                 logger.error("❌ Error al enviar correo a {}: {}", destinatario, e.getMessage());
                 logger.error("Causa: {}", e.getCause() != null ? e.getCause().getMessage() : "Desconocida");
+                if (errorMsg.contains("timeout") || errorMsg.contains("timed out") || errorMsg.contains("couldn't connect")) {
+                    logger.error("Si esto ocurre en Railway: muchos planes bloquean SMTP saliente (587). Prueba otro hosting o un plan que permita SMTP.");
+                }
             }
             return false;
         } catch (Exception e) {

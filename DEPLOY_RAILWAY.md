@@ -61,26 +61,18 @@ Ese error suele aparecer cuando la cuenta no tiene un **Team** (equipo) o el pro
 
 ---
 
-## Paso 4: Correo en Railway (importante)
+## Paso 4: Correo (Gmail SMTP)
 
-En planes **Free / Trial / Hobby**, Railway suele **bloquear SMTP saliente** (puertos 587/465).  
-Por eso **Gmail por `smtp.gmail.com` puede dar timeout** aunque la contraseña sea correcta.
-
-**Recomendado:** [Resend](https://resend.com) por **HTTPS** (API). Crea una cuenta, genera una **API key** y en Variables de tu servicio añade:
-
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `RESEND_API_KEY` | API key de Resend | `re_...` |
-| `RESEND_FROM` | Remitente (pruebas o dominio verificado) | `onboarding@resend.dev` o `notificaciones@tudominio.com` |
-
-Opcional: mismo servicio, variables de clima y SMTP (solo si tu plan permite SMTP o usas otro host):
+En **Variables** del servicio de la app, define:
 
 | Variable | Descripción |
 |----------|-------------|
-| `APP_CLIMA_API_KEY` | OpenWeatherMap |
-| `SPRING_MAIL_USERNAME` / `SPRING_MAIL_PASSWORD` | Solo si usas SMTP y no Resend |
+| `SPRING_MAIL_USERNAME` | Tu Gmail completo |
+| `SPRING_MAIL_PASSWORD` | Contraseña de aplicación de Google (16 caracteres) |
 
-Sin `RESEND_API_KEY` ni credenciales SMTP válidas, el envío de correo no funcionará.
+Opcional: `APP_CLIMA_API_KEY` (OpenWeatherMap).
+
+**Importante:** en algunos planes de Railway el **SMTP saliente (puerto 587)** está bloqueado; si en los logs aparece **timeout** al conectar con `smtp.gmail.com`, el fallo es de red del proveedor, no de la contraseña. En ese caso hace falta un **plan que permita SMTP** o desplegar en otro servidor donde Gmail SMTP sea accesible.
 
 ---
 
