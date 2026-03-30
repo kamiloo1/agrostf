@@ -144,22 +144,10 @@ public class EmailController {
             return "redirect:/admin/correos";
         }
         
-        // Enviar correos
-        int enviados = emailService.enviarCorreosMasivos(listaCorreos, asuntoFinal, mensajeFinal);
-        
-        if (enviados > 0) {
-            redirectAttributes.addFlashAttribute("success", 
-                String.format("Se enviaron %d correo(s) exitosamente de %d destinatario(s)", 
-                    enviados, listaCorreos.size()));
-        } else {
-            redirectAttributes.addFlashAttribute("error", 
-                "⚠️ No se pudo enviar ningún correo. El servidor de correo no está configurado. " +
-                "Consulta el archivo CONFIGURAR_ENVIO_CORREOS.md para instrucciones detalladas. " +
-                "Resumen: 1) Activa verificación en 2 pasos en Gmail, " +
-                "2) Genera contraseña de aplicación (https://myaccount.google.com/apppasswords), " +
-                "3) Actualiza spring.mail.username y spring.mail.password en application.properties, " +
-                "4) Reinicia la aplicación.");
-        }
+        // Enviar en segundo plano para evitar que el navegador quede cargando.
+        emailService.enviarCorreosMasivosAsync(listaCorreos, asuntoFinal, mensajeFinal);
+        redirectAttributes.addFlashAttribute("success",
+                String.format("Envío iniciado para %d destinatario(s). Revisa los logs para ver el resultado.", listaCorreos.size()));
         
         return "redirect:/admin/correos";
     }

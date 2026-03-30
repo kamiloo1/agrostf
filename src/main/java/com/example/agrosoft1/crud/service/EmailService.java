@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Servicio para envío masivo de correos electrónicos.
@@ -118,6 +119,19 @@ public class EmailService {
         
         logger.info("Envío masivo completado: {} exitosos, {} fallidos", enviados, fallidos);
         return enviados;
+    }
+
+    /**
+     * Dispara el envío masivo en segundo plano para no bloquear la respuesta HTTP.
+     */
+    public void enviarCorreosMasivosAsync(List<String> destinatarios, String asunto, String mensaje) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                enviarCorreosMasivos(destinatarios, asunto, mensaje);
+            } catch (Exception e) {
+                logger.error("Error en envío asíncrono de correos masivos: {}", e.getMessage(), e);
+            }
+        });
     }
     
     /**

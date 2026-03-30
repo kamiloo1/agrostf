@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Observador concreto que envía notificaciones por email
@@ -34,9 +35,16 @@ public class NotificacionEmailObserver implements Observador {
             
             // Solo enviar email si el servicio está disponible
             if (emailService != null && usuario.getCorreo() != null && !usuario.getCorreo().isEmpty()) {
-                emailService.enviarCorreo(usuario.getCorreo(), asunto, cuerpo);
-                logger.info("Email de notificación enviado a {} para evento: {}", 
-                    usuario.getCorreo(), evento);
+                // Enviar en segundo plano para no bloquear la respuesta HTTP.
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        emailService.enviarCorreo(usuario.getCorreo(), asunto, cuerpo);
+                        logger.info("Email de notificación enviado a {} para evento: {}",
+                                usuario.getCorreo(), evento);
+                    } catch (Exception ex) {
+                        logger.error("Error en envío asíncrono de email: {}", ex.getMessage(), ex);
+                    }
+                });
             } else {
                 logger.debug("Email no enviado - servicio no disponible o correo vacío");
             }
