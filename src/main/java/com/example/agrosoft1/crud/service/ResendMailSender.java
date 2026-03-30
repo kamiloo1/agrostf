@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import jakarta.annotation.PostConstruct;
+
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +34,15 @@ public class ResendMailSender {
 
     public ResendMailSender(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("https://api.resend.com").build();
+    }
+
+    @PostConstruct
+    void logModoCorreo() {
+        if (isConfigured()) {
+            log.info("Correo: modo Resend activo (RESEND_API_KEY / app.resend.api.key)");
+        } else {
+            log.warn("Correo: Resend no configurado; se usará SMTP. En Railway suele fallar Gmail (puerto 587 bloqueado). Añade RESEND_API_KEY.");
+        }
     }
 
     public boolean isConfigured() {
