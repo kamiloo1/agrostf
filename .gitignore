@@ -37,6 +37,8 @@ logs/
 *.log
 .env
 .env.local
+# Contraseña de aplicación Gmail solo en tu PC (no subir)
+src/main/resources/application-local.properties
 
 ### Exportes / manuales locales (no versionar)
 MANUAL_TECNICO*.bak

@@ -1,0 +1,12 @@
+# Copiá este archivo como: application-local.properties
+# (en la misma carpeta: src/main/resources/)
+#
+# Ese archivo NO se sube a Git. Acá va la contraseña de APLICACIÓN de Google
+# (16 letras, sin espacios), la que creás en:
+# https://myaccount.google.com/apppasswords
+# No uses tu contraseña normal de Gmail.
+
+spring.mail.password=PON_ACA_TU_CONTRASENA_DE_APLICACION
+
+# Si querés forzar Gmail y no Resend en esta PC, dejá la línea de abajo así:
+# app.resend.api.key=
