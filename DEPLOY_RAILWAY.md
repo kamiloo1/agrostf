@@ -27,6 +27,17 @@ Guía para subir el proyecto a [Railway](https://railway.app) y dejarlo en produ
 2. Elige **"Database"** → **"Add MySQL"** (o busca "MySQL" en plantillas).
 3. Se desplegará un servicio MySQL. Espera a que esté en estado **Active**.
 
+### Si sale **"Equipo no encontrado"** al dar a MySQL
+
+Ese error suele aparecer cuando la cuenta no tiene un **Team** (equipo) o el proyecto no está bien vinculado. Prueba:
+
+1. **Crear un Team:** menú de Railway (abajo a la izquierda o en tu avatar) → **"Create Team"** o **"New Team"**. Crea un equipo (aunque sea solo para ti), vuelve al proyecto y asegúrate de que el proyecto pertenece a ese equipo. Luego intenta de nuevo **+ New** → **MySQL**.
+2. **Usar MySQL externo:** si sigue fallando, puedes usar una base MySQL externa (por ejemplo [PlanetScale](https://planetscale.com) o [Aiven](https://aiven.io) en plan gratuito). En ese caso **no añadas** MySQL en Railway; en el Paso 3, en lugar de referenciar variables, añade en tu servicio de app estas variables con los datos de tu MySQL externo:
+   - `SPRING_DATASOURCE_URL` = `jdbc:mysql://HOST:PUERTO/NOMBRE_BD?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true`
+   - `SPRING_DATASOURCE_USERNAME` = usuario
+   - `SPRING_DATASOURCE_PASSWORD` = contraseña  
+   La app ya está preparada para leer estas variables en Railway (perfil `railway`).
+
 ---
 
 ## Paso 3: Conectar la app con MySQL
@@ -50,17 +61,26 @@ Guía para subir el proyecto a [Railway](https://railway.app) y dejarlo en produ
 
 ---
 
-## Paso 4: Variables opcionales (correo y API clima)
+## Paso 4: Correo en Railway (importante)
 
-En el mismo servicio de la app, en **Variables**, puedes añadir:
+En planes **Free / Trial / Hobby**, Railway suele **bloquear SMTP saliente** (puertos 587/465).  
+Por eso **Gmail por `smtp.gmail.com` puede dar timeout** aunque la contraseña sea correcta.
+
+**Recomendado:** [Resend](https://resend.com) por **HTTPS** (API). Crea una cuenta, genera una **API key** y en Variables de tu servicio añade:
 
 | Variable | Descripción | Ejemplo |
 |----------|-------------|---------|
-| `SPRING_MAIL_USERNAME` | Gmail para envío de correos | `tucorreo@gmail.com` |
-| `SPRING_MAIL_PASSWORD` | Contraseña de aplicación de Gmail | (16 caracteres) |
-| `APP_CLIMA_API_KEY` | API key de OpenWeatherMap | (key de openweathermap.org) |
+| `RESEND_API_KEY` | API key de Resend | `re_...` |
+| `RESEND_FROM` | Remitente (pruebas o dominio verificado) | `onboarding@resend.dev` o `notificaciones@tudominio.com` |
 
-Sin estas variables, el correo y el clima pueden no funcionar o usar valores por defecto.
+Opcional: mismo servicio, variables de clima y SMTP (solo si tu plan permite SMTP o usas otro host):
+
+| Variable | Descripción |
+|----------|-------------|
+| `APP_CLIMA_API_KEY` | OpenWeatherMap |
+| `SPRING_MAIL_USERNAME` / `SPRING_MAIL_PASSWORD` | Solo si usas SMTP y no Resend |
+
+Sin `RESEND_API_KEY` ni credenciales SMTP válidas, el envío de correo no funcionará.
 
 ---
 
